@@ -41,11 +41,3 @@ export const Default: Story = {};
 export const ReceiveActive: Story = {
   args: { activeRoute: '/receive' }
 };
-
-export const Compact: Story = {
-  args: { size: 'sm' }
-};
-
-export const Large: Story = {
-  args: { size: 'lg' }
-};

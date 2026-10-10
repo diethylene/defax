@@ -1,16 +1,10 @@
-import {
-  ChangeDetectionStrategy,
-  Component,
-  computed,
-  input
-} from '@angular/core';
+import { ChangeDetectionStrategy, Component, input } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { NgIcon } from '@ng-icons/core';
 import type { NavItem } from './nav-item';
-import { type NavSize, navSizes } from './nav-size';
 
 const itemBase =
-  'inline-flex items-center text-sm font-medium transition-colors outline-none select-none focus-visible:ring-2 focus-visible:ring-ring/50';
+  'rounded-sm px-1.5 py-[2px] text-sm font-medium flex items-center gap-1.5 outline-hidden select-none data-disabled:pointer-events-none data-disabled:opacity-50';
 
 @Component({
   selector: 'app-nav',
@@ -21,18 +15,14 @@ const itemBase =
 export class NavComponent {
   readonly items = input.required<NavItem[]>();
   readonly activeRoute = input('');
-  readonly size = input<NavSize>('default');
   readonly ariaLabel = input('Navigation');
 
   protected readonly containerClasses =
-    'inline-flex items-center gap-1 rounded-2xl border border-border bg-background p-1 shadow-sm';
-  protected readonly sizeClasses = computed(() => navSizes[this.size()]);
+    'bg-background h-8 gap-0.5 rounded-lg border p-[3px] flex items-center';
 
   protected itemClasses(item: NavItem): string {
-    const state = this.isActive(item)
-      ? 'bg-muted text-foreground'
-      : 'text-muted-foreground hover:bg-muted hover:text-foreground';
-    return `${itemBase} ${this.sizeClasses().item} ${state}`;
+    const state = this.isActive(item) ? 'bg-muted' : 'hover:bg-muted';
+    return `${itemBase} ${state}`;
   }
 
   protected isActive(item: NavItem): boolean {

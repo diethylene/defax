@@ -8,26 +8,22 @@ import { toSignal } from '@angular/core/rxjs-interop';
 import { NgIcon, provideIcons } from '@ng-icons/core';
 import { lucideMoon, lucideSun } from '@ng-icons/lucide';
 import { Store } from '@ngrx/store';
-import { HlmButtonImports } from '@spartan-ng/helm/button';
 import { toggleMode } from '../../../store/actions/application-config.actions';
 import { selectMode } from '../../../store/selectors/application-config.selectors';
 
 @Component({
   selector: 'app-theme-toggle',
-  imports: [NgIcon, ...HlmButtonImports],
+  imports: [NgIcon],
   providers: [provideIcons({ lucideMoon, lucideSun })],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <button
-      hlmBtn
-      size="icon"
-      variant="ghost"
       type="button"
-      class="text-muted-foreground"
+      class="inline-flex size-6 items-center justify-center rounded-sm outline-none select-none hover:bg-muted focus-visible:ring-2 focus-visible:ring-ring/50"
       [attr.aria-label]="label()"
       (click)="toggle()"
     >
-      <ng-icon [name]="isDark() ? 'lucideSun' : 'lucideMoon'" />
+      <ng-icon [name]="isDark() ? 'lucideSun' : 'lucideMoon'" class="size-4" />
     </button>
   `
 })
