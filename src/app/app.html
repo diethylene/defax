@@ -1,22 +1,5 @@
-<div class="flex min-h-dvh items-center justify-center bg-background p-6 text-foreground">
-  <div hlmCard class="w-full max-w-sm">
-    <div hlmCardHeader>
-      <div hlmCardTitle>defax</div>
-      <div hlmCardDescription>Spartan UI is wired up and ready.</div>
-    </div>
-    <div hlmCardContent class="flex flex-col gap-4">
-      <label hlmLabel for="name">Name</label>
-      <input hlmInput id="name" placeholder="Enter your name" />
-      <div class="flex gap-2">
-        <button hlmBtn>Submit</button>
-        <button hlmBtn variant="outline">Cancel</button>
-      </div>
-    </div>
-    <div hlmCardFooter class="justify-between">
-      <span hlmBadge variant="secondary">spartan</span>
-      <span class="text-muted-foreground text-sm">Tailwind v4</span>
-    </div>
-  </div>
-</div>
+<app-navbar />
 
-<router-outlet />
+<main>
+  <router-outlet />
+</main>

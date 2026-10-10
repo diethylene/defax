@@ -1,0 +1,41 @@
+<header
+  class="sticky top-0 z-50 flex items-center justify-between gap-4 border-b border-border bg-background px-4 py-3 sm:px-6"
+>
+  <app-nav
+    [items]="primaryItems"
+    [activeRoute]="activeRoute()"
+    ariaLabel="Primary"
+  >
+    <a
+      nav-leading
+      routerLink="/"
+      class="mr-1 inline-flex items-center gap-2 rounded-lg outline-none focus-visible:ring-2 focus-visible:ring-ring/50"
+      aria-label="Defax home"
+    >
+      <span
+        class="inline-flex size-9 items-center justify-center rounded-lg bg-foreground text-background"
+      >
+        <ng-icon name="lucideArrowLeftRight" class="size-4" />
+      </span>
+      <span class="hidden text-sm font-semibold sm:inline">defax</span>
+    </a>
+    <span
+      nav-leading
+      class="hidden h-5 w-px bg-border sm:block"
+      aria-hidden="true"
+    ></span>
+  </app-nav>
+
+  <app-nav
+    [items]="secondaryItems"
+    [activeRoute]="activeRoute()"
+    ariaLabel="Secondary"
+  >
+    <span
+      nav-trailing
+      class="hidden h-5 w-px bg-border sm:block"
+      aria-hidden="true"
+    ></span>
+    <app-theme-toggle nav-trailing />
+  </app-nav>
+</header>

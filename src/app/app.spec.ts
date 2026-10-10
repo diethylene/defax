@@ -1,32 +1,37 @@
 import { TestBed } from '@angular/core/testing';
+import { provideRouter } from '@angular/router';
+import { provideEffects } from '@ngrx/effects';
+import { provideRouterStore, routerReducer } from '@ngrx/router-store';
+import { provideStore } from '@ngrx/store';
 import { App } from './app';
+import { ApplicationConfigEffects } from './store/effects/application-config.effects';
+import { applicationConfigReducer } from './store/reducers/application-config.reducer';
 
 describe('App', () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [App]
+      imports: [App],
+      providers: [
+        provideRouter([]),
+        provideStore({
+          applicationConfig: applicationConfigReducer,
+          router: routerReducer
+        }),
+        provideEffects(ApplicationConfigEffects),
+        provideRouterStore()
+      ]
     }).compileComponents();
   });
 
   it('should create the app', () => {
     const fixture = TestBed.createComponent(App);
-    const app = fixture.componentInstance;
-    expect(app).toBeTruthy();
+    expect(fixture.componentInstance).toBeTruthy();
   });
 
-  it('should render the spartan card title', async () => {
+  it('should render the navbar', () => {
     const fixture = TestBed.createComponent(App);
-    await fixture.whenStable();
+    fixture.detectChanges();
     const compiled = fixture.nativeElement as HTMLElement;
-    expect(compiled.querySelector('[hlmCardTitle]')?.textContent).toContain(
-      'defax'
-    );
-  });
-
-  it('should render spartan buttons', async () => {
-    const fixture = TestBed.createComponent(App);
-    await fixture.whenStable();
-    const compiled = fixture.nativeElement as HTMLElement;
-    expect(compiled.querySelectorAll('button[hlmBtn]').length).toBe(2);
+    expect(compiled.querySelector('app-navbar')).toBeTruthy();
   });
 });

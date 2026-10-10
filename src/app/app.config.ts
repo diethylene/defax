@@ -6,6 +6,7 @@ import {
 } from '@angular/core';
 import { provideRouter } from '@angular/router';
 import { provideEffects } from '@ngrx/effects';
+import { provideRouterStore, routerReducer } from '@ngrx/router-store';
 import { provideStore, Store } from '@ngrx/store';
 import { provideSpartanHlm } from '@spartan-ng/helm/utils';
 import { routes } from './app.routes';
@@ -20,9 +21,13 @@ import { applicationConfigReducer } from './store/reducers/application-config.re
 export const appConfig: ApplicationConfig = {
   providers: [
     provideBrowserGlobalErrorListeners(),
-    provideStore({ applicationConfig: applicationConfigReducer }),
+    provideStore({
+      applicationConfig: applicationConfigReducer,
+      router: routerReducer
+    }),
     provideEffects(ApplicationConfigEffects),
     provideRouter(routes),
+    provideRouterStore(),
     provideSpartanHlm(),
     {
       provide: APP_INITIALIZER,
