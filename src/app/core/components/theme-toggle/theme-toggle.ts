@@ -23,7 +23,7 @@ import { selectMode } from '../../../store/selectors/application-config.selector
       [attr.aria-label]="label()"
       (click)="toggle()"
     >
-      <ng-icon [name]="isDark() ? 'lucideSun' : 'lucideMoon'" class="size-4" />
+      <ng-icon [name]="isDark() ? 'lucideSun' : 'lucideMoon'" size="16px" />
     </button>
   `
 })

@@ -7,7 +7,7 @@
       [attr.aria-current]="isActive(item) ? 'page' : null"
     >
       @if (item.icon) {
-        <ng-icon [name]="item.icon" class="size-4" />
+        <ng-icon [name]="item.icon" size="16px" />
       }
       <span [class.hidden]="item.hideLabelOnMobile" class="sm:inline">{{
         item.label
