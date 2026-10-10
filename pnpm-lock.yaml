@@ -187,6 +187,12 @@ importers:
       '@angular/router':
         specifier: ^22.2.0
         version: 22.2.2(@angular/common@22.2.2(@angular/core@22.2.2(@angular/compiler@22.2.2)(rxjs@7.8.2))(rxjs@7.8.2))(@angular/core@22.2.2(@angular/compiler@22.2.2)(rxjs@7.8.2))(@angular/platform-browser@22.2.2(@angular/animations@22.2.2(@angular/core@22.2.2(@angular/compiler@22.2.2)(rxjs@7.8.2)))(@angular/common@22.2.2(@angular/core@22.2.2(@angular/compiler@22.2.2)(rxjs@7.8.2))(rxjs@7.8.2))(@angular/core@22.2.2(@angular/compiler@22.2.2)(rxjs@7.8.2)))(rxjs@7.8.2)
+      '@ng-icons/core':
+        specifier: ^36.1.0
+        version: 36.1.0(@angular-devkit/schematics@22.2.2(chokidar@5.0.0))(@angular/common@22.2.2(@angular/core@22.2.2(@angular/compiler@22.2.2)(rxjs@7.8.2))(rxjs@7.8.2))(@angular/core@22.2.2(@angular/compiler@22.2.2)(rxjs@7.8.2))(@schematics/angular@22.2.2(chokidar@5.0.0))(rxjs@7.8.2)
+      '@ng-icons/lucide':
+        specifier: ^36.1.0
+        version: 36.1.0(@ng-icons/core@36.1.0(@angular-devkit/schematics@22.2.2(chokidar@5.0.0))(@angular/common@22.2.2(@angular/core@22.2.2(@angular/compiler@22.2.2)(rxjs@7.8.2))(rxjs@7.8.2))(@angular/core@22.2.2(@angular/compiler@22.2.2)(rxjs@7.8.2))(@schematics/angular@22.2.2(chokidar@5.0.0))(rxjs@7.8.2))
       '@ngrx/effects':
         specifier: ^22.0.1
         version: 22.0.1(@angular/core@22.2.2(@angular/compiler@22.2.2)(rxjs@7.8.2))(@ngrx/store@22.0.1(@angular/core@22.2.2(@angular/compiler@22.2.2)(rxjs@7.8.2))(rxjs@7.8.2))(rxjs@7.8.2)
@@ -2473,6 +2479,20 @@ packages:
     peerDependencies:
       '@emnapi/core': ^1.7.1 || ^2.0.0-alpha.4
       '@emnapi/runtime': ^1.7.1 || ^2.0.0-alpha.4
+
+  '@ng-icons/core@36.1.0':
+    resolution: {integrity: sha512-2o6M/K29lPN3wGq/nOxqVjzDV25HHIh6PXm2/ISwKa0eFbbDYwYkg7g9msjPS40OmQpqBgSVLIwinEifEOQNjg==}
+    peerDependencies:
+      '@angular-devkit/schematics': '>=22.0.0'
+      '@angular/common': '>=22.0.0'
+      '@angular/core': '>=22.0.0'
+      '@schematics/angular': '>=22.0.0'
+      rxjs: ^6.5.3 || ^7.4.0
+
+  '@ng-icons/lucide@36.1.0':
+    resolution: {integrity: sha512-RoDBblnFoIo6NfN3rhz+i6wrUK5/STzk1E6JXBPtbFCU86pm1Nz1Yf8Zny/LtMqF05+FJv7Xzwbhyp9Z4+WFlg==}
+    peerDependencies:
+      '@ng-icons/core': ^36.1.0
 
   '@ngrx/effects@22.0.1':
     resolution: {integrity: sha512-SRI6Q04rJfrf/qUwphzoJU8IJsPAPzP0MmmXK5qbMUuZ24V1JbAyI5+c0bEVzIFMMOooAU7wkO6iuJg5TVjmsw==}
@@ -9464,6 +9484,20 @@ snapshots:
       '@emnapi/runtime': 1.9.2
       '@tybys/wasm-util': 0.10.4
     optional: true
+
+  '@ng-icons/core@36.1.0(@angular-devkit/schematics@22.2.2(chokidar@5.0.0))(@angular/common@22.2.2(@angular/core@22.2.2(@angular/compiler@22.2.2)(rxjs@7.8.2))(rxjs@7.8.2))(@angular/core@22.2.2(@angular/compiler@22.2.2)(rxjs@7.8.2))(@schematics/angular@22.2.2(chokidar@5.0.0))(rxjs@7.8.2)':
+    dependencies:
+      '@angular-devkit/schematics': 22.2.2(chokidar@5.0.0)
+      '@angular/common': 22.2.2(@angular/core@22.2.2(@angular/compiler@22.2.2)(rxjs@7.8.2))(rxjs@7.8.2)
+      '@angular/core': 22.2.2(@angular/compiler@22.2.2)(rxjs@7.8.2)
+      '@schematics/angular': 22.2.2(chokidar@5.0.0)
+      rxjs: 7.8.2
+      tslib: 2.8.1
+
+  '@ng-icons/lucide@36.1.0(@ng-icons/core@36.1.0(@angular-devkit/schematics@22.2.2(chokidar@5.0.0))(@angular/common@22.2.2(@angular/core@22.2.2(@angular/compiler@22.2.2)(rxjs@7.8.2))(rxjs@7.8.2))(@angular/core@22.2.2(@angular/compiler@22.2.2)(rxjs@7.8.2))(@schematics/angular@22.2.2(chokidar@5.0.0))(rxjs@7.8.2))':
+    dependencies:
+      '@ng-icons/core': 36.1.0(@angular-devkit/schematics@22.2.2(chokidar@5.0.0))(@angular/common@22.2.2(@angular/core@22.2.2(@angular/compiler@22.2.2)(rxjs@7.8.2))(rxjs@7.8.2))(@angular/core@22.2.2(@angular/compiler@22.2.2)(rxjs@7.8.2))(@schematics/angular@22.2.2(chokidar@5.0.0))(rxjs@7.8.2)
+      tslib: 2.8.1
 
   '@ngrx/effects@22.0.1(@angular/core@22.2.2(@angular/compiler@22.2.2)(rxjs@7.8.2))(@ngrx/store@22.0.1(@angular/core@22.2.2(@angular/compiler@22.2.2)(rxjs@7.8.2))(rxjs@7.8.2))(rxjs@7.8.2)':
     dependencies:
