@@ -1,0 +1,18 @@
+<nav [attr.aria-label]="ariaLabel()" [class]="containerClasses()" data-slot="nav">
+  <ng-content select="[nav-leading]" />
+  @for (item of items(); track item.route) {
+    <a
+      [routerLink]="item.route"
+      [class]="itemClasses(item)"
+      [attr.aria-current]="isActive(item) ? 'page' : null"
+    >
+      @if (item.icon) {
+        <ng-icon [name]="item.icon" [class]="sizeClasses().icon" />
+      }
+      <span [class.hidden]="item.hideLabelOnMobile" class="sm:inline">{{
+        item.label
+      }}</span>
+    </a>
+  }
+  <ng-content select="[nav-trailing]" />
+</nav>
