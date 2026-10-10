@@ -9,8 +9,6 @@ import { NgIcon } from '@ng-icons/core';
 import type { NavItem } from './nav-item';
 import { type NavSize, navSizes } from './nav-size';
 
-const containerBase =
-  'inline-flex items-center gap-1 rounded-2xl border border-border bg-background shadow-sm';
 const itemBase =
   'inline-flex items-center text-sm font-medium transition-colors outline-none select-none focus-visible:ring-2 focus-visible:ring-ring/50';
 
@@ -26,9 +24,8 @@ export class NavComponent {
   readonly size = input<NavSize>('default');
   readonly ariaLabel = input('Navigation');
 
-  protected readonly containerClasses = computed(
-    () => `${containerBase} ${navSizes[this.size()].container}`
-  );
+  protected readonly containerClasses =
+    'inline-flex items-center gap-1 rounded-2xl border border-border bg-background p-1 shadow-sm';
   protected readonly sizeClasses = computed(() => navSizes[this.size()]);
 
   protected itemClasses(item: NavItem): string {

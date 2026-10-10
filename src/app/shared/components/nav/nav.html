@@ -1,4 +1,4 @@
-<nav [attr.aria-label]="ariaLabel()" [class]="containerClasses()" data-slot="nav">
+<nav [attr.aria-label]="ariaLabel()" [class]="containerClasses" data-slot="nav">
   <ng-content select="[nav-leading]" />
   @for (item of items(); track item.route) {
     <a
