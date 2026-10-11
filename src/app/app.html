@@ -1,5 +1,13 @@
-<app-navbar />
+<div class="grid h-dvh grid-rows-[auto_1fr_auto]">
+  <app-navbar />
 
-<main>
-  <router-outlet />
-</main>
+  <main class="min-h-0 overflow-y-auto">
+    <router-outlet />
+  </main>
+
+  <footer
+    class="border-t border-border px-4 py-2 text-sm text-muted-foreground"
+  >
+    Status bar
+  </footer>
+</div>
