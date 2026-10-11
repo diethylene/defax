@@ -13,7 +13,7 @@ const meta: Meta<StatusLightComponent> = {
   argTypes: {
     variant: {
       control: 'select',
-      options: ['neutral', 'positive', 'warning', 'negative', 'info']
+      options: ['neutral', 'positive', 'warning', 'negative']
     },
     size: {
       control: 'select',
@@ -33,7 +33,6 @@ export const Neutral: Story = { args: { variant: 'neutral' } };
 export const Positive: Story = { args: { variant: 'positive' } };
 export const Warning: Story = { args: { variant: 'warning' } };
 export const Negative: Story = { args: { variant: 'negative' } };
-export const Info: Story = { args: { variant: 'info' } };
 
 export const Sizes: Story = {
   render: () => ({
