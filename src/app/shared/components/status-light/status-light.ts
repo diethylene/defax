@@ -29,7 +29,8 @@ const statusLightDotVariants = cva('shrink-0 rounded-full', {
       neutral: 'bg-neutral-400',
       positive: 'bg-green-500',
       warning: 'bg-amber-500',
-      negative: 'bg-red-600'
+      negative: 'bg-red-600',
+      info: 'bg-blue-500'
     },
     size: {
       sm: 'size-1.5',

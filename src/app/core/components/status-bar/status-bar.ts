@@ -3,9 +3,8 @@ import { RouterLink } from '@angular/router';
 import { NgIcon, provideIcons } from '@ng-icons/core';
 import { lucideHelpCircle, lucideLock } from '@ng-icons/lucide';
 import { signalState } from '@ngrx/signals';
-import type { StatusLightVariant } from '../../../shared/components/status-light/status-light';
 import { StatusPill } from './status-pill';
-import { statusStates } from './status-state';
+import { type StatusBarStatus, statusStates } from './status-state';
 
 @Component({
   selector: 'app-status-bar',
@@ -16,7 +15,7 @@ import { statusStates } from './status-state';
 })
 export class StatusBar {
   private readonly state = signalState({
-    status: 'positive' as StatusLightVariant
+    status: 'positive' as StatusBarStatus
   });
 
   protected readonly status = this.state.status;

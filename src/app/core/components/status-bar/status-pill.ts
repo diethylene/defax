@@ -4,11 +4,8 @@ import {
   computed,
   input
 } from '@angular/core';
-import {
-  StatusLightComponent,
-  type StatusLightVariant
-} from '../../../shared/components/status-light/status-light';
-import { statusStates } from './status-state';
+import { StatusLightComponent } from '../../../shared/components/status-light/status-light';
+import { type StatusBarStatus, statusStates } from './status-state';
 
 @Component({
   selector: 'app-status-pill',
@@ -26,7 +23,7 @@ import { statusStates } from './status-state';
   `
 })
 export class StatusPill {
-  readonly status = input.required<StatusLightVariant>();
+  readonly status = input.required<StatusBarStatus>();
 
   protected readonly state = computed(() => statusStates[this.status()]);
 }

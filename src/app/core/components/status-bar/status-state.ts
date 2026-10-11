@@ -1,12 +1,14 @@
 import type { StatusLightVariant } from '../../../shared/components/status-light/status-light';
 
+export type StatusBarStatus = Exclude<StatusLightVariant, 'info'>;
+
 export interface StatusState {
   label: string;
   labelMobile: string;
   description: string;
 }
 
-export const statusStates: Record<StatusLightVariant, StatusState> = {
+export const statusStates: Record<StatusBarStatus, StatusState> = {
   neutral: {
     label: 'Checking your network',
     labelMobile: 'Checking network',
