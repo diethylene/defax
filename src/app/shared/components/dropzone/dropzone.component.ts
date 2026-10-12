@@ -59,7 +59,11 @@ export class DropzoneComponent {
     match(this.phase())
       .with('disabled', () => `${baseContainer} pointer-events-none opacity-50`)
       .with('drag-over', () => this.dragOverClasses())
-      .with('picker-open', () => `${baseContainer} border-2 border-primary`)
+      .with(
+        'picker-open',
+        () =>
+          `${baseContainer} border border-primary ring-1 ring-inset ring-primary`
+      )
       .with(
         'idle',
         () => `${baseContainer} border border-dashed border-neutral-300`
@@ -70,8 +74,8 @@ export class DropzoneComponent {
   protected readonly iconBoxClasses = computed(() => {
     const base = 'flex size-10 items-center justify-center rounded-[10px]';
     return this.isDraggingValid()
-      ? `${base} bg-neutral-900 text-neutral-100`
-      : `${base} bg-neutral-100 text-neutral-900`;
+      ? `${base} bg-foreground text-background`
+      : `${base} bg-muted text-foreground`;
   });
 
   protected readonly heading = computed(() =>
@@ -84,10 +88,12 @@ export class DropzoneComponent {
     return match(this.dragState())
       .with(
         'invalid',
-        () => `${baseContainer} border-2 border-destructive bg-destructive/5`
+        () =>
+          `${baseContainer} border border-destructive ring-1 ring-inset ring-destructive bg-destructive/5`
       )
       .otherwise(
-        () => `${baseContainer} border-2 border-neutral-900 bg-neutral-100`
+        () =>
+          `${baseContainer} border border-foreground ring-1 ring-inset ring-foreground bg-muted`
       );
   }
 
