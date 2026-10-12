@@ -1,8 +1,11 @@
 import { ChangeDetectionStrategy, Component } from '@angular/core';
+import { DropzoneComponent } from '../../shared/components/dropzone/dropzone.component';
 
 @Component({
   selector: 'app-send',
+  imports: [DropzoneComponent],
+  host: { class: 'block' },
   changeDetection: ChangeDetectionStrategy.OnPush,
-  template: '<p class="p-6 text-foreground">Send works!</p>'
+  templateUrl: './send.html'
 })
 export class SendFeature {}

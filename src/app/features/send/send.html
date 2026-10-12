@@ -1,0 +1,51 @@
+<section
+  class="mx-auto flex w-full max-w-2xl flex-col items-center gap-10 px-4 py-12 sm:px-6 sm:py-16"
+>
+  <header class="flex flex-col items-center gap-2 text-center">
+    <h1 class="text-3xl font-semibold tracking-tight text-foreground">
+      Send a file
+    </h1>
+    <p class="max-w-md text-balance text-muted-foreground">
+      It goes straight to the other device. Nothing is uploaded or stored on a
+      server.
+    </p>
+  </header>
+
+  <app-dropzone class="w-full" />
+
+  <ol class="grid w-full list-none gap-6 sm:grid-cols-3">
+    <li class="flex items-start gap-3">
+      <span
+        class="flex size-6 shrink-0 items-center justify-center rounded-full border border-border text-xs text-muted-foreground"
+      >
+        1
+      </span>
+      <p class="text-sm text-muted-foreground">
+        <strong class="font-medium text-foreground">Choose a file.</strong>
+        You get a one-time code.
+      </p>
+    </li>
+    <li class="flex items-start gap-3">
+      <span
+        class="flex size-6 shrink-0 items-center justify-center rounded-full border border-border text-xs text-muted-foreground"
+      >
+        2
+      </span>
+      <p class="text-sm text-muted-foreground">
+        <strong class="font-medium text-foreground">Share the code.</strong>
+        Tell the receiver however you like.
+      </p>
+    </li>
+    <li class="flex items-start gap-3">
+      <span
+        class="flex size-6 shrink-0 items-center justify-center rounded-full border border-border text-xs text-muted-foreground"
+      >
+        3
+      </span>
+      <p class="text-sm text-muted-foreground">
+        <strong class="font-medium text-foreground">They accept.</strong>
+        The file transfers directly, encrypted. That's it.
+      </p>
+    </li>
+  </ol>
+</section>
