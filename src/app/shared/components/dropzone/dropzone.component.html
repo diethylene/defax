@@ -1,4 +1,23 @@
 <div [class]="containerClasses()">
+  <div
+    #dropsLayer
+    class="drops"
+    aria-hidden="true"
+    [class.drops-active]="isDragging()"
+    [style.--drop-color]="dropColor()"
+  >
+    @for (drop of drops(); track $index) {
+      <span
+        class="drop"
+        [style.left.px]="drop.x"
+        [style.top.px]="drop.y"
+        [style.--dx]="drop.dx"
+        [style.--dy]="drop.dy"
+        [style.--delay]="drop.delay"
+      ></span>
+    }
+  </div>
+
   <div [class]="iconBoxClasses()">
     <ng-icon name="lucideUpload" size="20" />
   </div>
