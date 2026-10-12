@@ -6,18 +6,27 @@ import {
   ElementRef,
   effect,
   forwardRef,
-  HostListener,
   inject,
   input,
   output,
   signal
 } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import {
   NG_VALIDATORS,
   NG_VALUE_ACCESSOR,
   type ValidationErrors,
   type Validator
 } from '@angular/forms';
+import {
+  distinctUntilChanged,
+  filter,
+  fromEvent,
+  map,
+  merge,
+  scan
+} from 'rxjs';
+import { match } from 'ts-pattern';
 import { AbstractControlValueAccessor } from '../../abstractions/control-value-accessor';
 import { matchesMimeType } from './dropzone.accept';
 import { parseDropzoneConfig } from './dropzone.config';
@@ -33,6 +42,55 @@ import { evaluateFiles } from './dropzone.validate';
 interface ExtractedDrop {
   files: File[];
   directories: File[];
+}
+
+type DragDelta = { kind: 'enter' } | { kind: 'leave' } | { kind: 'reset' };
+
+const EMPTY_DROP: ExtractedDrop = { files: [], directories: [] };
+
+function classifyDropItem(item: DataTransferItem): ExtractedDrop {
+  const entry = item.webkitGetAsEntry();
+  if (entry?.isDirectory) {
+    return { files: [], directories: [new File([], entry.name, { type: '' })] };
+  }
+  const file = item.getAsFile();
+  return file ? { files: [file], directories: [] } : EMPTY_DROP;
+}
+
+function extractDrop(dataTransfer: DataTransfer | null): ExtractedDrop {
+  const items = dataTransfer?.items ? Array.from(dataTransfer.items) : [];
+  if (items.length === 0) {
+    return { files: Array.from(dataTransfer?.files ?? []), directories: [] };
+  }
+  const classified = items.map(classifyDropItem);
+  return {
+    files: classified.flatMap((part) => part.files),
+    directories: classified.flatMap((part) => part.directories)
+  };
+}
+
+function reduceDepth(depth: number, delta: DragDelta): number {
+  return match(delta.kind)
+    .with('enter', () => depth + 1)
+    .with('leave', () => Math.max(0, depth - 1))
+    .with('reset', () => 0)
+    .exhaustive();
+}
+
+function dragStateFor(
+  transfer: DataTransfer | null,
+  accept: string[]
+): DragState {
+  const types = transfer ? Array.from(transfer.types) : [];
+  if (!types.includes('Files')) return 'invalid';
+  if (accept.length === 0) return 'valid';
+  const known = Array.from(transfer?.items ?? [])
+    .map((item) => item.type)
+    .filter((type) => type.length > 0);
+  if (known.length === 0) return 'unknown';
+  if (known.every((type) => matchesMimeType(type, accept))) return 'valid';
+  if (known.some((type) => !matchesMimeType(type, accept))) return 'invalid';
+  return 'unknown';
 }
 
 @Directive({
@@ -85,7 +143,6 @@ export class DropzoneDirective
 
   private readonly formDisabled = signal(false);
   private readonly fileInput: HTMLInputElement;
-  private dragDepth = 0;
   private onValidatorChange: (() => void) | null = null;
 
   private readonly config = computed(() =>
@@ -109,10 +166,7 @@ export class DropzoneDirective
     this.fileInput = this.document.createElement('input');
     this.fileInput.type = 'file';
     this.fileInput.hidden = true;
-    this.fileInput.addEventListener('change', this.onPickerChange);
-    this.fileInput.addEventListener('cancel', this.onPickerCancel);
     this.elementRef.nativeElement.appendChild(this.fileInput);
-
     this.elementRef.nativeElement.setAttribute('role', 'button');
 
     effect(() =>
@@ -120,19 +174,18 @@ export class DropzoneDirective
     );
     effect(() => this.syncAccessibility());
 
-    const win = this.document.defaultView;
-    win?.addEventListener('focus', this.onWindowFocus);
-    this.destroyRef.onDestroy(() => {
-      win?.removeEventListener('focus', this.onWindowFocus);
-      this.fileInput.removeEventListener('change', this.onPickerChange);
-      this.fileInput.removeEventListener('cancel', this.onPickerCancel);
-      this.fileInput.remove();
-    });
+    this.bindDragEvents();
+    this.bindActivationEvents();
+    this.bindPickerEvents();
+
+    this.destroyRef.onDestroy(() => this.fileInput.remove());
   }
 
   override writeValue(value: File[] | null): void {
     super.writeValue(value);
     this.store.setFiles(value ?? []);
+    this.store.clearError();
+    this.onValidatorChange?.();
   }
 
   override setDisabledState(isDisabled: boolean): void {
@@ -156,59 +209,6 @@ export class DropzoneDirective
     this.onValidatorChange = fn;
   }
 
-  @HostListener('click')
-  onClick(): void {
-    if (this.isDisabled() || this.config().noClick) return;
-    this.openPicker();
-  }
-
-  @HostListener('keydown', ['$event'])
-  onKeydown(event: KeyboardEvent): void {
-    if (this.isDisabled() || this.config().noKeyboard) return;
-    if (event.key === 'Enter' || event.key === ' ') {
-      event.preventDefault();
-      this.openPicker();
-    }
-  }
-
-  @HostListener('dragenter', ['$event'])
-  onDragEnter(event: DragEvent): void {
-    if (this.isDisabled()) return;
-    event.preventDefault();
-    event.stopPropagation();
-    this.dragDepth += 1;
-    this.store.setInteraction('drag-over');
-    this.updateDragState(event);
-  }
-
-  @HostListener('dragover', ['$event'])
-  onDragOver(event: DragEvent): void {
-    if (this.isDisabled()) return;
-    event.preventDefault();
-    event.stopPropagation();
-    this.updateDragState(event);
-  }
-
-  @HostListener('dragleave', ['$event'])
-  onDragLeave(event: DragEvent): void {
-    if (this.isDisabled()) return;
-    event.preventDefault();
-    event.stopPropagation();
-    this.dragDepth = Math.max(0, this.dragDepth - 1);
-    if (this.dragDepth === 0) this.leaveDrag();
-  }
-
-  @HostListener('drop', ['$event'])
-  onDrop(event: DragEvent): void {
-    if (this.isDisabled()) return;
-    event.preventDefault();
-    event.stopPropagation();
-    this.dragDepth = 0;
-    this.leaveDrag();
-    const { files, directories } = this.extractDrop(event.dataTransfer);
-    this.process(files, directories);
-  }
-
   openPicker(): void {
     if (this.isDisabled()) return;
     const config = this.config();
@@ -220,55 +220,101 @@ export class DropzoneDirective
     this.pickerStateChange.emit(true);
   }
 
-  private readonly onPickerChange = (): void => {
-    const files = Array.from(this.fileInput.files ?? []);
-    this.closePicker();
-    this.process(files, []);
-  };
+  private bindDragEvents(): void {
+    const element = this.elementRef.nativeElement;
+    const enter$ = fromEvent<DragEvent>(element, 'dragenter');
+    const over$ = fromEvent<DragEvent>(element, 'dragover');
+    const leave$ = fromEvent<DragEvent>(element, 'dragleave');
+    const drop$ = fromEvent<DragEvent>(element, 'drop');
 
-  private readonly onPickerCancel = (): void => {
-    this.closePicker();
-  };
+    const depth$ = merge(
+      enter$.pipe(map(() => ({ kind: 'enter' }) as const)),
+      leave$.pipe(map(() => ({ kind: 'leave' }) as const)),
+      drop$.pipe(map(() => ({ kind: 'reset' }) as const))
+    ).pipe(scan(reduceDepth, 0));
 
-  private readonly onWindowFocus = (): void => {
-    if (this.store.interaction() === 'picker-open') this.closePicker();
-  };
+    depth$
+      .pipe(
+        map((depth) => depth > 0),
+        distinctUntilChanged(),
+        takeUntilDestroyed(this.destroyRef)
+      )
+      .subscribe((active) => this.onDragActive(active));
 
-  private closePicker(): void {
-    this.store.setInteraction('idle');
-    this.pickerStateChange.emit(false);
+    merge(enter$, over$)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe((event) => {
+        event.preventDefault();
+        event.stopPropagation();
+        if (!this.isDisabled()) this.updateDragState(event);
+      });
+
+    drop$.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((event) => {
+      event.preventDefault();
+      event.stopPropagation();
+      if (this.isDisabled()) return;
+      const { files, directories } = extractDrop(event.dataTransfer);
+      this.process(files, directories);
+    });
   }
 
-  private leaveDrag(): void {
-    this.store.setInteraction('idle');
-    this.setDragState(null);
+  private bindActivationEvents(): void {
+    const element = this.elementRef.nativeElement;
+    const click$ = fromEvent<MouseEvent>(element, 'click');
+    const keydown$ = fromEvent<KeyboardEvent>(element, 'keydown');
+
+    click$
+      .pipe(
+        filter((event) => event.target !== this.fileInput),
+        filter(() => !this.isDisabled() && !this.config().noClick),
+        takeUntilDestroyed(this.destroyRef)
+      )
+      .subscribe(() => this.openPicker());
+
+    keydown$
+      .pipe(
+        filter((event) => event.key === 'Enter' || event.key === ' '),
+        filter(() => !this.isDisabled() && !this.config().noKeyboard),
+        takeUntilDestroyed(this.destroyRef)
+      )
+      .subscribe((event) => {
+        event.preventDefault();
+        this.openPicker();
+      });
+  }
+
+  private bindPickerEvents(): void {
+    fromEvent(this.fileInput, 'change')
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe(() => {
+        const files = Array.from(this.fileInput.files ?? []);
+        this.closePicker();
+        this.process(files, []);
+      });
+
+    fromEvent(this.fileInput, 'cancel')
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe(() => this.closePicker());
+
+    const win = this.document.defaultView;
+    if (win) {
+      fromEvent(win, 'focus')
+        .pipe(
+          filter(() => this.store.interaction() === 'picker-open'),
+          takeUntilDestroyed(this.destroyRef)
+        )
+        .subscribe(() => this.closePicker());
+    }
+  }
+
+  private onDragActive(active: boolean): void {
+    if (this.isDisabled()) return;
+    this.store.setInteraction(active ? 'drag-over' : 'idle');
+    if (!active) this.setDragState(null);
   }
 
   private updateDragState(event: DragEvent): void {
-    const transfer = event.dataTransfer;
-    if (!transfer || !Array.from(transfer.types).includes('Files')) {
-      this.setDragState('invalid');
-      return;
-    }
-    const accept = this.config().accept;
-    if (accept.length === 0) {
-      this.setDragState('valid');
-      return;
-    }
-    const itemTypes = Array.from(transfer.items ?? []).map((item) => item.type);
-    const known = itemTypes.filter((type) => type.length > 0);
-    if (
-      known.length > 0 &&
-      known.every((type) => matchesMimeType(type, accept))
-    ) {
-      this.setDragState('valid');
-      return;
-    }
-    if (known.some((type) => !matchesMimeType(type, accept))) {
-      this.setDragState('invalid');
-      return;
-    }
-    this.setDragState('unknown');
+    this.setDragState(dragStateFor(event.dataTransfer, this.config().accept));
   }
 
   private setDragState(state: DragState): void {
@@ -276,23 +322,9 @@ export class DropzoneDirective
     this.dragStateChange.emit(state);
   }
 
-  private extractDrop(dataTransfer: DataTransfer | null): ExtractedDrop {
-    const files: File[] = [];
-    const directories: File[] = [];
-    if (dataTransfer?.items) {
-      for (const item of Array.from(dataTransfer.items)) {
-        const entry = item.webkitGetAsEntry();
-        if (entry?.isDirectory) {
-          directories.push(new File([], entry.name, { type: '' }));
-        } else {
-          const file = item.getAsFile();
-          if (file) files.push(file);
-        }
-      }
-    } else if (dataTransfer?.files) {
-      files.push(...Array.from(dataTransfer.files));
-    }
-    return { files, directories };
+  private closePicker(): void {
+    this.store.setInteraction('idle');
+    this.pickerStateChange.emit(false);
   }
 
   private process(files: File[], directories: File[]): void {
