@@ -1,7 +1,6 @@
 import { DOCUMENT } from '@angular/common';
 import {
   computed,
-  DestroyRef,
   Directive,
   ElementRef,
   effect,
@@ -11,7 +10,6 @@ import {
   output,
   signal
 } from '@angular/core';
-import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import {
   NG_VALIDATORS,
   NG_VALUE_ACCESSOR,
@@ -24,7 +22,9 @@ import {
   fromEvent,
   map,
   merge,
-  scan
+  Subject,
+  scan,
+  takeUntil
 } from 'rxjs';
 import { match } from 'ts-pattern';
 import { AbstractControlValueAccessor } from '../../abstractions/control-value-accessor';
@@ -116,8 +116,8 @@ export class DropzoneDirective
 {
   readonly store = inject(DropzoneStore);
   private readonly elementRef = inject(ElementRef<HTMLElement>);
-  private readonly destroyRef = inject(DestroyRef);
   private readonly document = inject(DOCUMENT);
+  private readonly destroy$ = new Subject<void>();
 
   readonly accept = input<string | string[]>([]);
   readonly multiple = input(false);
@@ -177,8 +177,12 @@ export class DropzoneDirective
     this.bindDragEvents();
     this.bindActivationEvents();
     this.bindPickerEvents();
+  }
 
-    this.destroyRef.onDestroy(() => this.fileInput.remove());
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
+    this.fileInput.remove();
   }
 
   override writeValue(value: File[] | null): void {
@@ -237,19 +241,19 @@ export class DropzoneDirective
       .pipe(
         map((depth) => depth > 0),
         distinctUntilChanged(),
-        takeUntilDestroyed(this.destroyRef)
+        takeUntil(this.destroy$)
       )
       .subscribe((active) => this.onDragActive(active));
 
     merge(enter$, over$)
-      .pipe(takeUntilDestroyed(this.destroyRef))
+      .pipe(takeUntil(this.destroy$))
       .subscribe((event) => {
         event.preventDefault();
         event.stopPropagation();
         if (!this.isDisabled()) this.updateDragState(event);
       });
 
-    drop$.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((event) => {
+    drop$.pipe(takeUntil(this.destroy$)).subscribe((event) => {
       event.preventDefault();
       event.stopPropagation();
       if (this.isDisabled()) return;
@@ -267,7 +271,7 @@ export class DropzoneDirective
       .pipe(
         filter((event) => event.target !== this.fileInput),
         filter(() => !this.isDisabled() && !this.config().noClick),
-        takeUntilDestroyed(this.destroyRef)
+        takeUntil(this.destroy$)
       )
       .subscribe(() => this.openPicker());
 
@@ -275,7 +279,7 @@ export class DropzoneDirective
       .pipe(
         filter((event) => event.key === 'Enter' || event.key === ' '),
         filter(() => !this.isDisabled() && !this.config().noKeyboard),
-        takeUntilDestroyed(this.destroyRef)
+        takeUntil(this.destroy$)
       )
       .subscribe((event) => {
         event.preventDefault();
@@ -285,7 +289,7 @@ export class DropzoneDirective
 
   private bindPickerEvents(): void {
     fromEvent(this.fileInput, 'change')
-      .pipe(takeUntilDestroyed(this.destroyRef))
+      .pipe(takeUntil(this.destroy$))
       .subscribe(() => {
         const files = Array.from(this.fileInput.files ?? []);
         this.closePicker();
@@ -293,7 +297,7 @@ export class DropzoneDirective
       });
 
     fromEvent(this.fileInput, 'cancel')
-      .pipe(takeUntilDestroyed(this.destroyRef))
+      .pipe(takeUntil(this.destroy$))
       .subscribe(() => this.closePicker());
 
     const win = this.document.defaultView;
@@ -301,7 +305,7 @@ export class DropzoneDirective
       fromEvent(win, 'focus')
         .pipe(
           filter(() => this.store.interaction() === 'picker-open'),
-          takeUntilDestroyed(this.destroyRef)
+          takeUntil(this.destroy$)
         )
         .subscribe(() => this.closePicker());
     }
