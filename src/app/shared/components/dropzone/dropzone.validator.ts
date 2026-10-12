@@ -1,5 +1,4 @@
 import { match } from 'ts-pattern';
-import { matchesAccept } from './dropzone.accept';
 import type { DropzoneConfig } from './dropzone.config';
 import type {
   DropzoneReason,
@@ -7,6 +6,7 @@ import type {
   DropzoneValidator,
   RejectedFile
 } from './dropzone.model';
+import { matchesAccept } from './dropzone-accept';
 
 function perFileReasons(file: File, config: DropzoneConfig): DropzoneReason[] {
   const reasons: DropzoneReason[] = [];

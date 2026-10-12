@@ -1,6 +1,6 @@
 import { z } from 'zod';
-import { normalizeAccept } from './dropzone.accept';
 import type { DropzoneValidator } from './dropzone.model';
+import { normalizeAccept } from './dropzone-accept';
 
 const acceptSchema = z
   .union([z.string(), z.array(z.string())])

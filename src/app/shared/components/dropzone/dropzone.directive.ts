@@ -28,7 +28,6 @@ import {
 } from 'rxjs';
 import { match } from 'ts-pattern';
 import { AbstractControlValueAccessor } from '../../abstractions/control-value-accessor';
-import { matchesMimeType } from './dropzone.accept';
 import { parseDropzoneConfig } from './dropzone.config';
 import type {
   DragState,
@@ -37,7 +36,8 @@ import type {
   DropzoneValidator
 } from './dropzone.model';
 import { DropzoneStore } from './dropzone.store';
-import { evaluateFiles } from './dropzone.validate';
+import { evaluateFiles } from './dropzone.validator';
+import { matchesMimeType } from './dropzone-accept';
 
 interface ExtractedDrop {
   files: File[];
