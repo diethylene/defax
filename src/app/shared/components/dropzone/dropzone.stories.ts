@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/angular-vite';
-import { DropzoneComponent } from './dropzone';
+import { DropzoneComponent } from './dropzone.component';
 
 const meta: Meta<DropzoneComponent> = {
   title: 'Shared/Dropzone',

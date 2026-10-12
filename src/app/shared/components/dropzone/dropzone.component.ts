@@ -38,7 +38,7 @@ const baseContainer =
     }
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
-  templateUrl: './dropzone.html'
+  templateUrl: './dropzone.component.html'
 })
 export class DropzoneComponent {
   readonly dropzone = inject(DropzoneDirective, { host: true });
