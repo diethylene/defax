@@ -1,3 +1,4 @@
+import { Directionality } from '@angular/cdk/bidi';
 import {
   APP_INITIALIZER,
   type ApplicationConfig,
@@ -34,6 +35,7 @@ export const appConfig: ApplicationConfig = {
     provideRouter(routes, withViewTransitions()),
     provideRouterStore(),
     provideSpartanHlm(),
+    { provide: Directionality, useClass: Directionality },
     {
       provide: APP_INITIALIZER,
       useFactory:
