@@ -19,7 +19,6 @@
   margin: -1.5px 0 0 -1.5px;
   border-radius: 50%;
   background: var(--drop-color);
-  will-change: transform, opacity;
   animation: fall 2.4s linear var(--delay) infinite;
 }
 

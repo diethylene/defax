@@ -6,15 +6,17 @@
     [class.drops-active]="isDragging()"
     [style.--drop-color]="dropColor()"
   >
-    @for (drop of drops(); track $index) {
-      <span
-        class="drop"
-        [style.left.px]="drop.x"
-        [style.top.px]="drop.y"
-        [style.--dx]="drop.dx"
-        [style.--dy]="drop.dy"
-        [style.--delay]="drop.delay"
-      ></span>
+    @if (isDragging()) {
+      @for (drop of drops(); track $index) {
+        <span
+          class="drop"
+          [style.left.px]="drop.x"
+          [style.top.px]="drop.y"
+          [style.--dx]="drop.dx"
+          [style.--dy]="drop.dy"
+          [style.--delay]="drop.delay"
+        ></span>
+      }
     }
   </div>
 
