@@ -3,7 +3,7 @@ import { Observable } from 'rxjs';
 import type {
   FileHashEvent,
   FileHashWorkerMessage
-} from '../utilities/hash-file';
+} from '../utilities/hash-protocol';
 
 @Injectable({ providedIn: 'root' })
 export class HashService {

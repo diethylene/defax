@@ -1,27 +1,36 @@
 /// <reference lib="webworker" />
-import { type FileHashWorkerMessage, hashFile } from './hash-file';
-
-interface FileHashRequest {
-  file: File;
-}
+import { sha256 } from '@noble/hashes/sha2.js';
+import { bytesToHex } from '@noble/hashes/utils.js';
+import type { FileHashRequest, FileHashWorkerMessage } from './hash-protocol';
 
 function toErrorMessage(error: unknown): string {
   return error instanceof Error ? error.message : 'File hashing failed';
 }
 
-async function run(file: File): Promise<void> {
+function post(message: FileHashWorkerMessage): void {
+  postMessage(message);
+}
+
+async function hashFile(file: File): Promise<void> {
+  const hasher = sha256.create();
+  const reader = file.stream().getReader();
+  const total = file.size;
+  let processed = 0;
+
   try {
-    for await (const message of hashFile(file)) {
-      postMessage(message);
+    while (true) {
+      const result = await reader.read();
+      if (result.done) break;
+      hasher.update(result.value);
+      processed += result.value.byteLength;
+      post({ type: 'progress', processed, total });
     }
+    post({ type: 'complete', digest: bytesToHex(hasher.digest()) });
   } catch (error) {
-    postMessage({
-      type: 'error',
-      message: toErrorMessage(error)
-    } satisfies FileHashWorkerMessage);
+    post({ type: 'error', message: toErrorMessage(error) });
   }
 }
 
 addEventListener('message', (event: MessageEvent<FileHashRequest>) => {
-  void run(event.data.file);
+  void hashFile(event.data.file);
 });
