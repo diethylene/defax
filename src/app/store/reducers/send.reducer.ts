@@ -14,24 +14,32 @@ export const SEND_FEATURE_KEY = 'send';
 
 export type HashStatus = 'idle' | 'hashing' | 'complete' | 'failed';
 
+export interface HashState {
+  status: HashStatus;
+  progress: number;
+  digest: string | null;
+  error: string | null;
+}
+
 export interface SendState {
   phase: SendPhase;
   file: File | null;
   metadata: FileMetadata | null;
-  hashStatus: HashStatus;
-  hashProgress: number;
-  hashDigest: string | null;
-  hashError: string | null;
+  hash: HashState;
 }
+
+const initialHashState: HashState = {
+  status: 'idle',
+  progress: 0,
+  digest: null,
+  error: null
+};
 
 export const initialSendState: SendState = {
   phase: 'idle',
   file: null,
   metadata: null,
-  hashStatus: 'idle',
-  hashProgress: 0,
-  hashDigest: null,
-  hashError: null
+  hash: initialHashState
 };
 
 export const sendReducer = createReducer(
@@ -42,45 +50,35 @@ export const sendReducer = createReducer(
       phase: 'awaitingPeer',
       file,
       metadata,
-      hashStatus: 'idle',
-      hashProgress: 0,
-      hashDigest: null,
-      hashError: null
+      hash: initialHashState
     })
   ),
   on(
     sendHashStarted,
     (state): SendState => ({
       ...state,
-      hashStatus: 'hashing',
-      hashProgress: 0,
-      hashDigest: null,
-      hashError: null
+      hash: { status: 'hashing', progress: 0, digest: null, error: null }
     })
   ),
   on(
     sendHashProgress,
     (state, { processed }): SendState => ({
       ...state,
-      hashStatus: 'hashing',
-      hashProgress: processed,
-      hashError: null
+      hash: { ...state.hash, status: 'hashing', progress: processed }
     })
   ),
   on(
     sendHashComplete,
     (state, { digest }): SendState => ({
       ...state,
-      hashStatus: 'complete',
-      hashDigest: digest
+      hash: { ...state.hash, status: 'complete', digest }
     })
   ),
   on(
     sendHashFailed,
     (state, { error }): SendState => ({
       ...state,
-      hashStatus: 'failed',
-      hashError: error
+      hash: { ...state.hash, status: 'failed', error }
     })
   ),
   on(sendReset, () => initialSendState)

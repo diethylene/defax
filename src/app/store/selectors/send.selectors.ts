@@ -19,22 +19,27 @@ export const selectSendMetadata = createSelector(
   (state) => state.metadata
 );
 
-export const selectHashStatus = createSelector(
+export const selectSendHash = createSelector(
   selectSendState,
-  (state) => state.hashStatus
+  (state) => state.hash
 );
 
-export const selectHashProgress = createSelector(
-  selectSendState,
-  (state) => state.hashProgress
+export const selectSendHashStatus = createSelector(
+  selectSendHash,
+  (hash) => hash.status
 );
 
-export const selectHashDigest = createSelector(
-  selectSendState,
-  (state) => state.hashDigest
+export const selectSendHashProgress = createSelector(
+  selectSendHash,
+  (hash) => hash.progress
 );
 
-export const selectHashError = createSelector(
-  selectSendState,
-  (state) => state.hashError
+export const selectSendHashDigest = createSelector(
+  selectSendHash,
+  (hash) => hash.digest
+);
+
+export const selectSendHashError = createSelector(
+  selectSendHash,
+  (hash) => hash.error
 );
