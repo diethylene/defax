@@ -16,16 +16,19 @@ import {
 } from './core/services/theme-preference';
 import { setMode } from './store/actions/application-config.actions';
 import { ApplicationConfigEffects } from './store/effects/application-config.effects';
+import { SendEffects } from './store/effects/send.effects';
 import { applicationConfigReducer } from './store/reducers/application-config.reducer';
+import { sendReducer } from './store/reducers/send.reducer';
 
 export const appConfig: ApplicationConfig = {
   providers: [
     provideBrowserGlobalErrorListeners(),
     provideStore({
       applicationConfig: applicationConfigReducer,
+      send: sendReducer,
       router: routerReducer
     }),
-    provideEffects(ApplicationConfigEffects),
+    provideEffects(ApplicationConfigEffects, SendEffects),
     provideRouter(routes),
     provideRouterStore(),
     provideSpartanHlm(),
