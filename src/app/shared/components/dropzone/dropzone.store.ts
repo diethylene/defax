@@ -59,6 +59,9 @@ export const DropzoneStore = signalStore(
     clearError(): void {
       patchState(store, { error: null });
     },
+    clearFiles(): void {
+      patchState(store, { files: [], error: null, interaction: 'idle' });
+    },
     reset(): void {
       patchState(store, initialState);
     }

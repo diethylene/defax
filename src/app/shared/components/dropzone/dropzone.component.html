@@ -19,21 +19,65 @@
   </div>
 
   <div [class]="iconBoxClasses()">
-    <ng-icon name="lucideUpload" size="20" />
+    @if (showCheckIcon()) {
+      <ng-icon name="lucideCircleCheck" size="20" class="success-icon" />
+    } @else {
+      <ng-icon name="lucideUpload" size="20" />
+    }
   </div>
 
-  <div class="flex flex-col items-center gap-1">
-    <p class="text-lg font-medium tracking-tight text-foreground">
-      {{ heading() }}
-    </p>
-    <p class="max-w-md text-sm text-muted-foreground">{{ subtitle() }}</p>
+  <div class="content-stack">
+    <div
+      class="content-layer content-base"
+      [class.content-hidden]="isSelectedView()"
+      [attr.aria-hidden]="isSelectedView()"
+    >
+      <p class="text-lg font-medium tracking-tight text-foreground">
+        {{ heading() }}
+      </p>
+      <p class="max-w-md text-sm text-muted-foreground">{{ subtitle() }}</p>
+    </div>
+    <div
+      class="content-layer content-selected"
+      [class.content-visible]="isSelectedView()"
+      [attr.aria-hidden]="!isSelectedView()"
+    >
+      <p class="text-lg font-medium tracking-tight text-foreground">
+        {{ selectedLabel() }}
+      </p>
+      <p class="max-w-md text-sm text-muted-foreground">{{ selectedFiles() }}</p>
+    </div>
   </div>
 
-  @if (showButton()) {
-    <button type="button" hlmBtn tabindex="-1">
-      {{ buttonLabel() }}
-    </button>
-  }
+  <div class="button-stack">
+    @if (showChooseButton()) {
+      <div
+        class="button-layer"
+        [class.button-hidden]="isSelectedView()"
+        [attr.aria-hidden]="isSelectedView()"
+      >
+        <button type="button" hlmBtn tabindex="-1">
+          {{ buttonLabel() }}
+        </button>
+      </div>
+    }
+    <div
+      class="button-layer button-clear"
+      [class.button-visible]="isSelectedView()"
+      [inert]="!isSelectedView()"
+    >
+      <button
+        type="button"
+        hlmBtn
+        variant="ghost"
+        size="sm"
+        (click)="clear($event)"
+      >
+        <ng-icon name="lucideX" size="16" />
+        Clear
+      </button>
+    </div>
+  </div>
 </div>
 
 @if (error(); as rejections) {

@@ -6,6 +6,10 @@
 @import "@spartan-ng/brain/hlm-tailwind-preset.css";
 /* You can add global styles to this file, and also import other style files */
 
+@theme inline {
+  --color-success: var(--success);
+  --color-success-foreground: var(--success-foreground);
+}
 
 :root {
 color-scheme: light;
@@ -33,6 +37,8 @@ color-scheme: light;
 --accent: oklch(0.97 0 0);
 --accent-foreground: oklch(0.205 0 0);
 --destructive: oklch(0.577 0.245 27.325);
+--success: oklch(0.627 0.194 149.214);
+--success-foreground: oklch(0.985 0 0);
 --border: oklch(0.922 0 0);
 --input: oklch(0.922 0 0);
 --ring: oklch(0.708 0 0);
@@ -69,6 +75,8 @@ color-scheme: dark;
 --accent: oklch(0.269 0 0);
 --accent-foreground: oklch(0.985 0 0);
 --destructive: oklch(0.704 0.191 22.216);
+--success: oklch(0.723 0.219 149.579);
+--success-foreground: oklch(0.145 0 0);
 --border: oklch(1 0 0 / 10%);
 --input: oklch(1 0 0 / 15%);
 --ring: oklch(0.556 0 0);

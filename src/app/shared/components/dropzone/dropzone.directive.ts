@@ -224,6 +224,13 @@ export class DropzoneDirective
     this.pickerStateChange.emit(true);
   }
 
+  clear(): void {
+    this.store.clearFiles();
+    this.commit([]);
+    this.filesChange.emit({ accepted: [], rejected: [] });
+    this.onValidatorChange?.();
+  }
+
   private bindDragEvents(): void {
     const element = this.elementRef.nativeElement;
     const enter$ = fromEvent<DragEvent>(element, 'dragenter');
