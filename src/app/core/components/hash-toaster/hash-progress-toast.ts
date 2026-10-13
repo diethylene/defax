@@ -17,7 +17,10 @@ import {
   selector: 'app-hash-progress-toast',
   imports: [HlmProgressImports],
   changeDetection: ChangeDetectionStrategy.OnPush,
-  host: { class: 'block w-full' },
+  host: {
+    class:
+      'block w-full rounded-xl border border-border bg-popover p-4 text-popover-foreground shadow-md'
+  },
   template: `
     <div class="mb-2 flex items-center justify-between gap-3">
       <span class="text-sm font-medium">Calculating SHA-256 checksum</span>

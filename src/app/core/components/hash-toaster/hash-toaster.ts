@@ -43,6 +43,15 @@ export class HashToasterComponent {
 
         toast.dismiss(HASH_PROGRESS_TOAST_ID);
 
+        if (hash.status === 'complete') {
+          toast.success('SHA-256 checksum complete', {
+            description: hash.digest ?? undefined,
+            duration: Infinity,
+            closeButton: true
+          });
+          return;
+        }
+
         if (hash.status === 'failed') {
           toast.error(hash.error ?? 'File hashing failed', {
             duration: Infinity,
