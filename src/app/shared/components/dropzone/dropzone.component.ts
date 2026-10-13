@@ -17,8 +17,6 @@ import { match } from 'ts-pattern';
 import { DropzoneDirective } from './dropzone.directive';
 import { computeDrops } from './dropzone-drops';
 
-type SuccessStage = 'none' | 'check' | 'selected';
-
 const baseContainer =
   'relative flex w-full flex-col items-center justify-center gap-4 rounded-xl border p-6 text-center outline-none transition-[background-color,border-color,box-shadow] duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] sm:p-8';
 
@@ -65,9 +63,6 @@ export class DropzoneComponent {
   protected readonly files = this.dropzone.files;
   protected readonly error = this.dropzone.error;
 
-  private readonly successStage = signal<SuccessStage>('none');
-  private successTimer: ReturnType<typeof setTimeout> | null = null;
-
   private readonly rejectionFlash = signal(false);
 
   private readonly dropsLayer =
@@ -98,11 +93,11 @@ export class DropzoneComponent {
   });
 
   protected readonly isSelectedView = computed(
-    () => this.successStage() === 'selected' && this.phase() === 'idle'
+    () => this.files().length > 0 && this.phase() === 'idle'
   );
 
   protected readonly showCheckIcon = computed(
-    () => this.successStage() !== 'none' && this.phase() !== 'drag-over'
+    () => this.files().length > 0 && this.phase() !== 'drag-over'
   );
 
   protected readonly iconBoxClasses = computed(() => {
@@ -143,18 +138,6 @@ export class DropzoneComponent {
   );
 
   constructor() {
-    let previousCount = 0;
-    effect(() => {
-      const count = this.files().length;
-      if (count === 0) {
-        this.successStage.set('none');
-        this.cancelSuccessTimer();
-      } else if (previousCount === 0) {
-        this.playSuccess();
-      }
-      previousCount = count;
-    });
-
     let previousRejectedCount = 0;
     effect(() => {
       const rejected = this.error()?.length ?? 0;
@@ -163,8 +146,6 @@ export class DropzoneComponent {
       }
       previousRejectedCount = rejected;
     });
-
-    this.destroyRef.onDestroy(() => this.cancelSuccessTimer());
   }
 
   ngAfterViewInit(): void {
@@ -190,7 +171,7 @@ export class DropzoneComponent {
 
   private idleClasses(): string {
     return this.isSelectedView()
-      ? `${baseContainer} border border-success bg-success/15 ring-1 ring-inset ring-success`
+      ? `${baseContainer} border border-success bg-success/15 ring-1 ring-inset ring-success delay-[320ms]`
       : `${baseContainer} border border-dashed border-neutral-300`;
   }
 
@@ -202,22 +183,6 @@ export class DropzoneComponent {
   protected onRejectionFlashEnd(event: AnimationEvent): void {
     if (event.pseudoElement === '::before') {
       this.rejectionFlash.set(false);
-    }
-  }
-
-  private playSuccess(): void {
-    this.cancelSuccessTimer();
-    this.successStage.set('check');
-    this.successTimer = setTimeout(() => {
-      this.successStage.set('selected');
-      this.successTimer = null;
-    }, 360);
-  }
-
-  private cancelSuccessTimer(): void {
-    if (this.successTimer !== null) {
-      clearTimeout(this.successTimer);
-      this.successTimer = null;
     }
   }
 

@@ -81,6 +81,7 @@
   opacity: 0;
   transform: translateY(-8px);
   pointer-events: none;
+  transition-delay: 320ms;
 }
 
 .content-selected {
@@ -93,6 +94,7 @@
   opacity: 1;
   transform: translateY(0);
   pointer-events: auto;
+  transition-delay: 320ms;
 }
 
 .button-stack {
@@ -110,6 +112,7 @@
   opacity: 0;
   transform: translateY(-6px);
   pointer-events: none;
+  transition-delay: 380ms;
 }
 
 .button-clear {
@@ -122,6 +125,7 @@
   opacity: 1;
   transform: translateY(0);
   pointer-events: auto;
+  transition-delay: 380ms;
 }
 
 .invalid-strobe::after {
