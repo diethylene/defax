@@ -30,6 +30,12 @@
       ],
       "@spartan-ng/helm/badge": [
         "./libs/ui/badge/src/index.ts"
+      ],
+      "@spartan-ng/helm/sonner": [
+        "./libs/ui/sonner/src/index.ts"
+      ],
+      "@spartan-ng/helm/progress": [
+        "./libs/ui/progress/src/index.ts"
       ]
     }
   },
