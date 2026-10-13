@@ -73,15 +73,12 @@
   align-items: center;
   justify-content: center;
   gap: 0.25rem;
-  transition: opacity 280ms cubic-bezier(0.22, 1, 0.36, 1),
-    transform 280ms cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 .content-base.content-hidden {
   opacity: 0;
   transform: translateY(-8px);
   pointer-events: none;
-  transition-delay: 320ms;
 }
 
 .content-selected {
@@ -94,7 +91,6 @@
   opacity: 1;
   transform: translateY(0);
   pointer-events: auto;
-  transition-delay: 320ms;
 }
 
 .button-stack {
@@ -104,15 +100,12 @@
 
 .button-layer {
   grid-area: 1 / 1;
-  transition: opacity 280ms cubic-bezier(0.22, 1, 0.36, 1),
-    transform 280ms cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 .button-hidden {
   opacity: 0;
   transform: translateY(-6px);
   pointer-events: none;
-  transition-delay: 380ms;
 }
 
 .button-clear {
@@ -125,7 +118,6 @@
   opacity: 1;
   transform: translateY(0);
   pointer-events: auto;
-  transition-delay: 380ms;
 }
 
 .invalid-strobe::after {
@@ -199,11 +191,6 @@
 
   .success-icon {
     animation: none;
-  }
-
-  .content-layer,
-  .button-layer {
-    transition: none;
   }
 
   .invalid-strobe::after,

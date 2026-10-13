@@ -1,4 +1,14 @@
 import {
+  animate,
+  group,
+  type AnimationEvent as NgAnimationEvent,
+  query,
+  sequence,
+  style,
+  transition,
+  trigger
+} from '@angular/animations';
+import {
   ChangeDetectionStrategy,
   Component,
   computed,
@@ -19,16 +29,101 @@ import { DropzoneDirective } from './dropzone.directive';
 import { computeDrops } from './dropzone-drops';
 
 const baseContainer =
-  'relative flex w-full flex-col items-center justify-center gap-4 rounded-xl border p-6 text-center outline-none transition-[background-color,border-color,box-shadow] duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] sm:p-8';
+  'relative flex w-full flex-col items-center justify-center gap-4 rounded-xl border p-6 text-center outline-none sm:p-8';
 
-// Covers the success-state container transition (320ms delay + 500ms duration)
-// so a consuming flow does not navigate before it settles.
-const SETTLE_DURATION_MS = 850;
+const EASE_OUT = 'cubic-bezier(0.22, 1, 0.36, 1)';
+
+const selectAnimation = trigger('selectAnim', [
+  transition('idle => selected', [
+    group([
+      sequence([
+        style({
+          borderColor: 'var(--foreground)',
+          backgroundColor: 'var(--muted)',
+          boxShadow: 'none'
+        }),
+        animate(
+          `500ms 320ms ${EASE_OUT}`,
+          style({ borderColor: '*', backgroundColor: '*', boxShadow: '*' })
+        )
+      ]),
+      query('.content-base', [
+        style({ opacity: 1, transform: 'translateY(0)' }),
+        animate(
+          `280ms 320ms ${EASE_OUT}`,
+          style({ opacity: 0, transform: 'translateY(-8px)' })
+        )
+      ]),
+      query('.content-selected', [
+        style({ opacity: 0, transform: 'translateY(8px)' }),
+        animate(
+          `280ms 320ms ${EASE_OUT}`,
+          style({ opacity: 1, transform: 'translateY(0)' })
+        )
+      ]),
+      query(
+        '.button-choose',
+        [
+          style({ opacity: 1, transform: 'translateY(0)' }),
+          animate(
+            `280ms 380ms ${EASE_OUT}`,
+            style({ opacity: 0, transform: 'translateY(-6px)' })
+          )
+        ],
+        { optional: true }
+      ),
+      query('.button-clear', [
+        style({ opacity: 0, transform: 'translateY(6px)' }),
+        animate(
+          `280ms 380ms ${EASE_OUT}`,
+          style({ opacity: 1, transform: 'translateY(0)' })
+        )
+      ])
+    ])
+  ]),
+  transition('selected => idle', [
+    group([
+      query('.content-base', [
+        style({ opacity: 0, transform: 'translateY(-8px)' }),
+        animate(
+          `280ms ${EASE_OUT}`,
+          style({ opacity: 1, transform: 'translateY(0)' })
+        )
+      ]),
+      query('.content-selected', [
+        style({ opacity: 1, transform: 'translateY(0)' }),
+        animate(
+          `280ms ${EASE_OUT}`,
+          style({ opacity: 0, transform: 'translateY(8px)' })
+        )
+      ]),
+      query(
+        '.button-choose',
+        [
+          style({ opacity: 0, transform: 'translateY(-6px)' }),
+          animate(
+            `280ms ${EASE_OUT}`,
+            style({ opacity: 1, transform: 'translateY(0)' })
+          )
+        ],
+        { optional: true }
+      ),
+      query('.button-clear', [
+        style({ opacity: 1, transform: 'translateY(0)' }),
+        animate(
+          `280ms ${EASE_OUT}`,
+          style({ opacity: 0, transform: 'translateY(6px)' })
+        )
+      ])
+    ])
+  ])
+]);
 
 @Component({
   selector: 'app-dropzone',
   imports: [NgIcon, HlmButton],
   providers: [provideIcons({ lucideCircleCheck, lucideUpload, lucideX })],
+  animations: [selectAnimation],
   hostDirectives: [
     {
       directive: DropzoneDirective,
@@ -70,12 +165,18 @@ export class DropzoneComponent {
   protected readonly files = this.dropzone.files;
   protected readonly error = this.dropzone.error;
 
+  protected readonly reduceMotion = signal(
+    window.matchMedia('(prefers-reduced-motion: reduce)').matches
+  );
   private readonly rejectionFlash = signal(false);
-  private settleTimer: ReturnType<typeof setTimeout> | null = null;
 
   private readonly dropsLayer =
     viewChild<ElementRef<HTMLElement>>('dropsLayer');
   private readonly layerSize = signal({ width: 0, height: 0, radius: 0 });
+
+  protected readonly animState = computed(() =>
+    this.isSelectedView() ? 'selected' : 'idle'
+  );
 
   protected readonly drops = computed(() => {
     const { width, height, radius } = this.layerSize();
@@ -156,18 +257,10 @@ export class DropzoneComponent {
     });
 
     effect(() => {
-      if (this.isSelectedView()) {
-        this.clearSettleTimer();
-        this.settleTimer = setTimeout(
-          () => this.settled.emit(),
-          SETTLE_DURATION_MS
-        );
-      } else {
-        this.clearSettleTimer();
+      if (this.reduceMotion() && this.isSelectedView()) {
+        this.settled.emit();
       }
     });
-
-    this.destroyRef.onDestroy(() => this.clearSettleTimer());
   }
 
   ngAfterViewInit(): void {
@@ -193,7 +286,7 @@ export class DropzoneComponent {
 
   private idleClasses(): string {
     return this.isSelectedView()
-      ? `${baseContainer} border border-success bg-success/15 ring-1 ring-inset ring-success delay-[320ms]`
+      ? `${baseContainer} border border-success bg-success/15 ring-1 ring-inset ring-success`
       : `${baseContainer} border border-dashed border-neutral-300`;
   }
 
@@ -202,10 +295,9 @@ export class DropzoneComponent {
     this.dropzone.clear();
   }
 
-  private clearSettleTimer(): void {
-    if (this.settleTimer !== null) {
-      clearTimeout(this.settleTimer);
-      this.settleTimer = null;
+  protected onSelectAnimDone(event: NgAnimationEvent): void {
+    if (event.toState === 'selected') {
+      this.settled.emit();
     }
   }
 

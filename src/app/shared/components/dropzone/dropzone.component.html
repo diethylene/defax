@@ -1,4 +1,9 @@
-<div [class]="containerClasses()" (animationend)="onRejectionFlashEnd($event)">
+<div
+  [class]="containerClasses()"
+  [@selectAnim]="reduceMotion() ? null : animState()"
+  (@selectAnim.done)="onSelectAnimDone($event)"
+  (animationend)="onRejectionFlashEnd($event)"
+>
   <div
     #dropsLayer
     class="drops"
@@ -54,7 +59,7 @@
   <div class="button-stack">
     @if (showChooseButton()) {
       <div
-        class="button-layer"
+        class="button-layer button-choose"
         [class.button-hidden]="isSelectedView()"
         [attr.aria-hidden]="isSelectedView()"
       >
