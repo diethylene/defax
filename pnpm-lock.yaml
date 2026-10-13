@@ -211,6 +211,9 @@ importers:
       '@noble/curves':
         specifier: ^2.4.0
         version: 2.4.0
+      '@noble/hashes':
+        specifier: 2.4.0
+        version: 2.4.0
       '@spartan-ng/brain':
         specifier: ^1.6.3
         version: 1.6.3(a38588d0797179e285b7dfc3ef0b15bb)
