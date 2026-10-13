@@ -135,7 +135,7 @@ export class DropzoneComponent {
       this.layerSize.set({
         width: layer.clientWidth,
         height: layer.clientHeight,
-        radius: 10
+        radius: 8
       });
     };
 

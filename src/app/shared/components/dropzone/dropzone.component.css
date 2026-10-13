@@ -1,7 +1,7 @@
 .drops {
   position: absolute;
-  inset: 0;
-  border-radius: 10px;
+  inset: 3px;
+  border-radius: 8px;
   overflow: hidden;
   pointer-events: none;
   opacity: 0;
