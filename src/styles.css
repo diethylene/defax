@@ -98,3 +98,25 @@ body {
 @apply bg-background text-foreground;
 }
 }
+
+@keyframes view-fade-out {
+  to {
+    opacity: 0;
+  }
+}
+
+@keyframes view-fade-in {
+  from {
+    opacity: 0;
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  ::view-transition-old(root) {
+    animation: 160ms ease both view-fade-out;
+  }
+
+  ::view-transition-new(root) {
+    animation: 160ms ease both view-fade-in;
+  }
+}

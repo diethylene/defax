@@ -4,7 +4,7 @@ import {
   inject,
   provideBrowserGlobalErrorListeners
 } from '@angular/core';
-import { provideRouter } from '@angular/router';
+import { provideRouter, withViewTransitions } from '@angular/router';
 import { provideEffects } from '@ngrx/effects';
 import { provideRouterStore, routerReducer } from '@ngrx/router-store';
 import { provideStore, Store } from '@ngrx/store';
@@ -29,7 +29,7 @@ export const appConfig: ApplicationConfig = {
       router: routerReducer
     }),
     provideEffects(ApplicationConfigEffects, SendEffects),
-    provideRouter(routes),
+    provideRouter(routes, withViewTransitions()),
     provideRouterStore(),
     provideSpartanHlm(),
     {
