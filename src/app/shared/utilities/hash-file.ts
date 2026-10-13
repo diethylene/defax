@@ -14,6 +14,13 @@ export interface FileHashComplete {
 
 export type FileHashEvent = FileHashProgress | FileHashComplete;
 
+export interface FileHashFailure {
+  type: 'error';
+  message: string;
+}
+
+export type FileHashWorkerMessage = FileHashEvent | FileHashFailure;
+
 export async function* hashFile(file: File): AsyncGenerator<FileHashEvent> {
   const hasher = sha256.create();
   const reader = file.stream().getReader();
