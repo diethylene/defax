@@ -19,7 +19,7 @@ import {
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: {
     class:
-      'block w-full rounded-xl border border-border bg-popover p-4 text-popover-foreground shadow-md'
+      'block w-[var(--width)] max-w-full rounded-xl border border-border bg-popover p-4 text-popover-foreground shadow-md'
   },
   template: `
     <div class="mb-2 flex items-center justify-between gap-3">

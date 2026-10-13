@@ -45,9 +45,7 @@ export class HashToasterComponent {
 
         if (hash.status === 'complete') {
           toast.success('SHA-256 checksum complete', {
-            description: hash.digest ?? undefined,
-            duration: Infinity,
-            closeButton: true
+            description: hash.digest ?? undefined
           });
           return;
         }
