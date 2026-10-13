@@ -4,6 +4,7 @@ import {
   inject,
   provideBrowserGlobalErrorListeners
 } from '@angular/core';
+import { provideAnimationsAsync } from '@angular/platform-browser/animations/async';
 import { provideRouter, withViewTransitions } from '@angular/router';
 import { provideEffects } from '@ngrx/effects';
 import { provideRouterStore, routerReducer } from '@ngrx/router-store';
@@ -23,6 +24,7 @@ import { sendReducer } from './store/reducers/send.reducer';
 export const appConfig: ApplicationConfig = {
   providers: [
     provideBrowserGlobalErrorListeners(),
+    provideAnimationsAsync(),
     provideStore({
       applicationConfig: applicationConfigReducer,
       send: sendReducer,
