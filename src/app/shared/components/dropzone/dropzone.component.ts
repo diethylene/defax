@@ -68,6 +68,8 @@ export class DropzoneComponent {
   private readonly successStage = signal<SuccessStage>('none');
   private successTimer: ReturnType<typeof setTimeout> | null = null;
 
+  private readonly rejectionFlash = signal(false);
+
   private readonly dropsLayer =
     viewChild<ElementRef<HTMLElement>>('dropsLayer');
   private readonly layerSize = signal({ width: 0, height: 0, radius: 0 });
@@ -81,8 +83,8 @@ export class DropzoneComponent {
     this.dragState() === 'invalid' ? 'var(--destructive)' : 'var(--foreground)'
   );
 
-  protected readonly containerClasses = computed(() =>
-    match(this.phase())
+  protected readonly containerClasses = computed(() => {
+    const classes = match(this.phase())
       .with('disabled', () => `${baseContainer} pointer-events-none opacity-50`)
       .with('drag-over', () => this.dragOverClasses())
       .with(
@@ -91,8 +93,9 @@ export class DropzoneComponent {
           `${baseContainer} border border-primary ring-1 ring-inset ring-primary`
       )
       .with('idle', () => this.idleClasses())
-      .exhaustive()
-  );
+      .exhaustive();
+    return this.rejectionFlash() ? `${classes} rejection-flash` : classes;
+  });
 
   protected readonly isSelectedView = computed(
     () => this.successStage() === 'selected' && this.phase() === 'idle'
@@ -135,6 +138,10 @@ export class DropzoneComponent {
 
   protected readonly isDragging = computed(() => this.phase() === 'drag-over');
 
+  protected readonly showDrops = computed(
+    () => this.isDragging() && this.dragState() !== 'invalid'
+  );
+
   constructor() {
     let previousCount = 0;
     effect(() => {
@@ -147,6 +154,16 @@ export class DropzoneComponent {
       }
       previousCount = count;
     });
+
+    let previousRejectedCount = 0;
+    effect(() => {
+      const rejected = this.error()?.length ?? 0;
+      if (rejected > previousRejectedCount) {
+        this.rejectionFlash.set(true);
+      }
+      previousRejectedCount = rejected;
+    });
+
     this.destroyRef.onDestroy(() => this.cancelSuccessTimer());
   }
 
@@ -159,7 +176,7 @@ export class DropzoneComponent {
       .with(
         'invalid',
         () =>
-          `${baseContainer} border border-destructive ring-1 ring-inset ring-destructive bg-destructive/5`
+          `${baseContainer} border border-destructive ring-1 ring-inset ring-destructive bg-destructive/5 invalid-strobe`
       )
       .otherwise(
         () =>
@@ -180,6 +197,12 @@ export class DropzoneComponent {
   protected clear(event: Event): void {
     event.stopPropagation();
     this.dropzone.clear();
+  }
+
+  protected onRejectionFlashEnd(event: AnimationEvent): void {
+    if (event.pseudoElement === '::before') {
+      this.rejectionFlash.set(false);
+    }
   }
 
   private playSuccess(): void {

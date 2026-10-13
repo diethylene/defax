@@ -1,4 +1,4 @@
-<div [class]="containerClasses()">
+<div [class]="containerClasses()" (animationend)="onRejectionFlashEnd($event)">
   <div
     #dropsLayer
     class="drops"
@@ -6,7 +6,7 @@
     [class.drops-active]="isDragging()"
     [style.--drop-color]="dropColor()"
   >
-    @if (isDragging()) {
+    @if (showDrops()) {
       @for (drop of drops(); track $index) {
         <span
           class="drop"

@@ -124,6 +124,70 @@
   pointer-events: auto;
 }
 
+.invalid-strobe::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  animation: invalid-strobe 4.8s ease-in-out infinite;
+}
+
+@keyframes invalid-strobe {
+  0%,
+  100% {
+    box-shadow: 0 0 0 0 transparent;
+  }
+
+  25% {
+    box-shadow: 0 0 12px 1px
+      color-mix(in oklab, var(--destructive) 55%, transparent);
+  }
+
+  50% {
+    box-shadow: 0 0 0 0 transparent;
+  }
+
+  75% {
+    box-shadow: 0 0 12px 1px
+      color-mix(in oklab, var(--destructive) 55%, transparent);
+  }
+}
+
+.rejection-flash::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  animation: rejection-flash 640ms ease-out;
+}
+
+@keyframes rejection-flash {
+  0%,
+  100% {
+    box-shadow: 0 0 0 0 transparent;
+  }
+
+  20% {
+    box-shadow: 0 0 0 2px var(--destructive),
+      0 0 12px 1px color-mix(in oklab, var(--destructive) 55%, transparent);
+  }
+
+  40% {
+    box-shadow: 0 0 0 0 transparent;
+  }
+
+  60% {
+    box-shadow: 0 0 0 2px var(--destructive),
+      0 0 12px 1px color-mix(in oklab, var(--destructive) 55%, transparent);
+  }
+
+  80% {
+    box-shadow: 0 0 0 0 transparent;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .drop {
     animation-play-state: paused;
@@ -136,5 +200,10 @@
   .content-layer,
   .button-layer {
     transition: none;
+  }
+
+  .invalid-strobe::after,
+  .rejection-flash::before {
+    animation: none;
   }
 }
