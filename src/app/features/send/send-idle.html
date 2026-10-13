@@ -11,7 +11,11 @@
     </p>
   </header>
 
-  <app-dropzone class="w-full" (filesChange)="onFilesChange($event)" />
+  <app-dropzone
+    class="w-full"
+    (filesChange)="onFilesChange($event)"
+    (settled)="onSettled()"
+  />
 
   <ol class="grid w-full list-none gap-6 sm:grid-cols-3">
     <li class="flex items-start gap-3">

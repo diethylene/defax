@@ -14,10 +14,16 @@ import { toFileMetadata } from './file-metadata';
 })
 export class SendIdleComponent {
   private readonly store = inject(Store);
+  private pendingFile: File | null = null;
 
   onFilesChange(result: DropzoneResult): void {
-    const file = result.accepted[0];
+    this.pendingFile = result.accepted[0] ?? null;
+  }
+
+  onSettled(): void {
+    const file = this.pendingFile;
     if (!file) return;
+    this.pendingFile = null;
     this.store.dispatch(
       sendFileSelected({ file, metadata: toFileMetadata(file) })
     );

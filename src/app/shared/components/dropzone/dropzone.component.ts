@@ -7,6 +7,7 @@ import {
   effect,
   inject,
   input,
+  output,
   signal,
   viewChild
 } from '@angular/core';
@@ -19,6 +20,10 @@ import { computeDrops } from './dropzone-drops';
 
 const baseContainer =
   'relative flex w-full flex-col items-center justify-center gap-4 rounded-xl border p-6 text-center outline-none transition-[background-color,border-color,box-shadow] duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] sm:p-8';
+
+// Covers the success-state container transition (320ms delay + 500ms duration)
+// so a consuming flow does not navigate before it settles.
+const SETTLE_DURATION_MS = 850;
 
 @Component({
   selector: 'app-dropzone',
@@ -51,6 +56,8 @@ export class DropzoneComponent {
   readonly dropzone = inject(DropzoneDirective, { host: true });
   private readonly destroyRef = inject(DestroyRef);
 
+  readonly settled = output<void>();
+
   readonly title = input('Drag and drop a file here');
   readonly subtitle = input(
     'One file at a time. It stays on this device until the receiver accepts it.'
@@ -64,6 +71,7 @@ export class DropzoneComponent {
   protected readonly error = this.dropzone.error;
 
   private readonly rejectionFlash = signal(false);
+  private settleTimer: ReturnType<typeof setTimeout> | null = null;
 
   private readonly dropsLayer =
     viewChild<ElementRef<HTMLElement>>('dropsLayer');
@@ -146,6 +154,20 @@ export class DropzoneComponent {
       }
       previousRejectedCount = rejected;
     });
+
+    effect(() => {
+      if (this.isSelectedView()) {
+        this.clearSettleTimer();
+        this.settleTimer = setTimeout(
+          () => this.settled.emit(),
+          SETTLE_DURATION_MS
+        );
+      } else {
+        this.clearSettleTimer();
+      }
+    });
+
+    this.destroyRef.onDestroy(() => this.clearSettleTimer());
   }
 
   ngAfterViewInit(): void {
@@ -178,6 +200,13 @@ export class DropzoneComponent {
   protected clear(event: Event): void {
     event.stopPropagation();
     this.dropzone.clear();
+  }
+
+  private clearSettleTimer(): void {
+    if (this.settleTimer !== null) {
+      clearTimeout(this.settleTimer);
+      this.settleTimer = null;
+    }
   }
 
   protected onRejectionFlashEnd(event: AnimationEvent): void {
