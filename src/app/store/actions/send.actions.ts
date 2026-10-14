@@ -6,6 +6,11 @@ export const sendFileSelected = createAction(
   props<{ file: File; metadata: FileMetadata }>()
 );
 
+export const sendPasswordGenerated = createAction(
+  '[Send] Password Generated',
+  props<{ password: string }>()
+);
+
 export const sendHashStarted = createAction('[Send] Hash Started');
 
 export const sendHashProgress = createAction(

@@ -1,6 +1,6 @@
 import { Injectable, inject } from '@angular/core';
 import { Router } from '@angular/router';
-import { createEffect } from '@ngrx/effects';
+import { Actions, createEffect, ofType } from '@ngrx/effects';
 import { Store } from '@ngrx/store';
 import {
   catchError,
@@ -17,11 +17,14 @@ import {
 } from 'rxjs';
 import { routeForPhase } from '../../features/send/send-phase';
 import { HashService } from '../../shared/services/hash.service';
+import { generatePassword } from '../../shared/utils/password';
 import {
+  sendFileSelected,
   sendHashComplete,
   sendHashFailed,
   sendHashProgress,
-  sendHashStarted
+  sendHashStarted,
+  sendPasswordGenerated
 } from '../actions/send.actions';
 import { selectSendFile, selectSendPhase } from '../selectors/send.selectors';
 
@@ -34,6 +37,7 @@ export class SendEffects {
   private readonly store = inject(Store);
   private readonly router = inject(Router);
   private readonly hashService = inject(HashService);
+  private readonly actions$ = inject(Actions);
 
   readonly routeToPhase$ = createEffect(
     () =>
@@ -48,6 +52,13 @@ export class SendEffects {
         })
       ),
     { dispatch: false }
+  );
+
+  readonly generatePassword$ = createEffect(() =>
+    this.actions$.pipe(
+      ofType(sendFileSelected),
+      map(() => sendPasswordGenerated({ password: generatePassword() }))
+    )
   );
 
   readonly hashFile$ = createEffect(() =>

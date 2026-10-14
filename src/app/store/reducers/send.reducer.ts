@@ -7,6 +7,7 @@ import {
   sendHashFailed,
   sendHashProgress,
   sendHashStarted,
+  sendPasswordGenerated,
   sendReset
 } from '../actions/send.actions';
 
@@ -25,6 +26,7 @@ export interface SendState {
   phase: SendPhase;
   file: File | null;
   metadata: FileMetadata | null;
+  password: string | null;
   hash: HashState;
 }
 
@@ -39,6 +41,7 @@ export const initialSendState: SendState = {
   phase: 'idle',
   file: null,
   metadata: null,
+  password: null,
   hash: initialHashState
 };
 
@@ -50,8 +53,13 @@ export const sendReducer = createReducer(
       phase: 'awaitingPeer',
       file,
       metadata,
+      password: null,
       hash: initialHashState
     })
+  ),
+  on(
+    sendPasswordGenerated,
+    (state, { password }): SendState => ({ ...state, password })
   ),
   on(
     sendHashStarted,

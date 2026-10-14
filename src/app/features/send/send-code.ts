@@ -16,7 +16,8 @@ import { FileTypePipe } from '../../shared/pipes/file-type.pipe';
 import { sendReset } from '../../store/actions/send.actions';
 import {
   selectSendHashDigest,
-  selectSendMetadata
+  selectSendMetadata,
+  selectSendPassword
 } from '../../store/selectors/send.selectors';
 import { SendCodeFieldComponent } from './send-code-field';
 
@@ -44,7 +45,12 @@ export class SendCodeComponent {
   private readonly store = inject(Store);
   private readonly router = inject(Router);
 
-  protected readonly passcode = '7-orbit-maple-lantern';
+  protected readonly passcode = toSignal(
+    this.store.select(selectSendPassword),
+    {
+      initialValue: null
+    }
+  );
 
   protected readonly metadata = toSignal(
     this.store.select(selectSendMetadata),

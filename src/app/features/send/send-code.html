@@ -13,7 +13,7 @@
 
   <section hlmCard class="w-full">
     <div hlmCardContent class="flex flex-col gap-4">
-      <app-send-code-field [code]="passcode" />
+      <app-send-code-field [code]="passcode() ?? ''" />
 
       <hlm-separator />
 

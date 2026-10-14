@@ -19,6 +19,11 @@ export const selectSendMetadata = createSelector(
   (state) => state.metadata
 );
 
+export const selectSendPassword = createSelector(
+  selectSendState,
+  (state) => state.password
+);
+
 export const selectSendHash = createSelector(
   selectSendState,
   (state) => state.hash
