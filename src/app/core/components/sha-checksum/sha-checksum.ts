@@ -4,18 +4,15 @@ import {
   computed,
   input
 } from '@angular/core';
-import { NgIcon, provideIcons } from '@ng-icons/core';
-import { lucideCopy } from '@ng-icons/lucide';
-import { HlmButton } from '@spartan-ng/helm/button';
 import { HlmSkeleton } from '@spartan-ng/helm/skeleton';
+import { CopyButtonComponent } from '../../../shared/components/copy-button/copy-button';
 
 const GROUP_SIZE = 4;
 const GROUP_COUNT = 16;
 
 @Component({
   selector: 'app-sha-checksum',
-  imports: [NgIcon, HlmButton, HlmSkeleton],
-  providers: [provideIcons({ lucideCopy })],
+  imports: [CopyButtonComponent, HlmSkeleton],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <div class="flex items-start gap-6">
@@ -39,16 +36,14 @@ const GROUP_COUNT = 16;
         }
       </div>
 
-      <button
-        type="button"
-        hlmBtn
+      <app-copy-button
+        [value]="checksum() ?? ''"
         variant="ghost"
-        size="icon"
-        aria-label="Copy checksum"
+        label=""
+        ariaLabel="Copy checksum"
+        [disabled]="!checksum()"
         class="shrink-0"
-      >
-        <ng-icon name="lucideCopy" size="16" />
-      </button>
+      />
     </div>
   `
 })

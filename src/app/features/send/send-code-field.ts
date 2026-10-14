@@ -1,9 +1,9 @@
 import { ChangeDetectionStrategy, Component, input } from '@angular/core';
-import { CopyCodeButtonComponent } from '../../shared/components/copy-code-button/copy-code-button';
+import { CopyButtonComponent } from '../../shared/components/copy-button/copy-button';
 
 @Component({
   selector: 'app-send-code-field',
-  imports: [CopyCodeButtonComponent],
+  imports: [CopyButtonComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <div
@@ -12,7 +12,7 @@ import { CopyCodeButtonComponent } from '../../shared/components/copy-code-butto
       <span class="font-mono text-base tracking-widest text-foreground">{{
         code()
       }}</span>
-      <app-copy-code-button [value]="code()" />
+      <app-copy-button [value]="code()" />
     </div>
   `
 })
