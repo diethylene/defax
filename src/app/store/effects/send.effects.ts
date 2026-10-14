@@ -16,6 +16,7 @@ import {
   withLatestFrom
 } from 'rxjs';
 import { routeForPhase } from '../../features/send/send-phase';
+import { SignalTransport } from '../../shared/interfaces/signal-transport';
 import { HashService } from '../../shared/services/hash.service';
 import { generatePassword } from '../../shared/utils/password';
 import {
@@ -24,7 +25,9 @@ import {
   sendHashFailed,
   sendHashProgress,
   sendHashStarted,
-  sendPasswordGenerated
+  sendPasswordGenerated,
+  sendReset,
+  sendRoomCreated
 } from '../actions/send.actions';
 import { selectSendFile, selectSendPhase } from '../selectors/send.selectors';
 
@@ -37,6 +40,7 @@ export class SendEffects {
   private readonly store = inject(Store);
   private readonly router = inject(Router);
   private readonly hashService = inject(HashService);
+  private readonly signalTransport = inject(SignalTransport);
   private readonly actions$ = inject(Actions);
 
   readonly routeToPhase$ = createEffect(
@@ -54,11 +58,30 @@ export class SendEffects {
     { dispatch: false }
   );
 
+  readonly createRoom$ = createEffect(() =>
+    this.actions$.pipe(
+      ofType(sendFileSelected),
+      map(() => {
+        const { roomId, sid } = this.signalTransport.createRoom();
+        return sendRoomCreated({ roomId, sid });
+      })
+    )
+  );
+
   readonly generatePassword$ = createEffect(() =>
     this.actions$.pipe(
       ofType(sendFileSelected),
       map(() => sendPasswordGenerated({ password: generatePassword() }))
     )
+  );
+
+  readonly closeRoom$ = createEffect(
+    () =>
+      this.actions$.pipe(
+        ofType(sendReset),
+        tap(() => this.signalTransport.close())
+      ),
+    { dispatch: false }
   );
 
   readonly hashFile$ = createEffect(() =>

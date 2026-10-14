@@ -24,6 +24,11 @@ export const selectSendPassword = createSelector(
   (state) => state.password
 );
 
+export const selectSendRoomId = createSelector(
+  selectSendState,
+  (state) => state.roomId
+);
+
 export const selectSendHash = createSelector(
   selectSendState,
   (state) => state.hash

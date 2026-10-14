@@ -1,5 +1,10 @@
 import { DatePipe } from '@angular/common';
-import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  computed,
+  inject
+} from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { Router } from '@angular/router';
 import { NgIcon, provideIcons } from '@ng-icons/core';
@@ -17,7 +22,8 @@ import { sendReset } from '../../store/actions/send.actions';
 import {
   selectSendHashDigest,
   selectSendMetadata,
-  selectSendPassword
+  selectSendPassword,
+  selectSendRoomId
 } from '../../store/selectors/send.selectors';
 import { SendCodeFieldComponent } from './send-code-field';
 
@@ -45,12 +51,22 @@ export class SendCodeComponent {
   private readonly store = inject(Store);
   private readonly router = inject(Router);
 
-  protected readonly passcode = toSignal(
+  protected readonly roomId = toSignal(this.store.select(selectSendRoomId), {
+    initialValue: null
+  });
+
+  protected readonly password = toSignal(
     this.store.select(selectSendPassword),
     {
       initialValue: null
     }
   );
+
+  protected readonly passcode = computed(() => {
+    const roomId = this.roomId();
+    const password = this.password();
+    return roomId && password ? `${roomId}-${password}` : '';
+  });
 
   protected readonly metadata = toSignal(
     this.store.select(selectSendMetadata),

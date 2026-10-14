@@ -1,6 +1,7 @@
 import { createReducer, on } from '@ngrx/store';
 import type { FileMetadata } from '../../features/send/file-metadata';
 import type { SendPhase } from '../../features/send/send-phase';
+import type { RoomId, Sid } from '../../shared/interfaces/signal-session';
 import {
   sendFileSelected,
   sendHashComplete,
@@ -8,7 +9,8 @@ import {
   sendHashProgress,
   sendHashStarted,
   sendPasswordGenerated,
-  sendReset
+  sendReset,
+  sendRoomCreated
 } from '../actions/send.actions';
 
 export const SEND_FEATURE_KEY = 'send';
@@ -26,6 +28,8 @@ export interface SendState {
   phase: SendPhase;
   file: File | null;
   metadata: FileMetadata | null;
+  roomId: RoomId | null;
+  sid: Sid | null;
   password: string | null;
   hash: HashState;
 }
@@ -41,6 +45,8 @@ export const initialSendState: SendState = {
   phase: 'idle',
   file: null,
   metadata: null,
+  roomId: null,
+  sid: null,
   password: null,
   hash: initialHashState
 };
@@ -53,9 +59,15 @@ export const sendReducer = createReducer(
       phase: 'awaitingPeer',
       file,
       metadata,
+      roomId: null,
+      sid: null,
       password: null,
       hash: initialHashState
     })
+  ),
+  on(
+    sendRoomCreated,
+    (state, { roomId, sid }): SendState => ({ ...state, roomId, sid })
   ),
   on(
     sendPasswordGenerated,
