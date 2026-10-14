@@ -4,6 +4,7 @@ import { toSignal } from '@angular/core/rxjs-interop';
 import { NgIcon, provideIcons } from '@ng-icons/core';
 import { lucideFile } from '@ng-icons/lucide';
 import { Store } from '@ngrx/store';
+import { HlmButton } from '@spartan-ng/helm/button';
 import { HlmCard, HlmCardContent } from '@spartan-ng/helm/card';
 import { HlmSeparator } from '@spartan-ng/helm/separator';
 import { HlmSkeleton } from '@spartan-ng/helm/skeleton';
@@ -26,6 +27,7 @@ import { SendCodeFieldComponent } from './send-code-field';
     NgIcon,
     SendCodeFieldComponent,
     ShaChecksumComponent,
+    HlmButton,
     HlmCard,
     HlmCardContent,
     HlmSeparator,
