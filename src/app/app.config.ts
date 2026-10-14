@@ -3,6 +3,7 @@ import {
   APP_INITIALIZER,
   type ApplicationConfig,
   inject,
+  isDevMode,
   provideBrowserGlobalErrorListeners
 } from '@angular/core';
 import { provideAnimationsAsync } from '@angular/platform-browser/animations/async';
@@ -16,6 +17,9 @@ import {
   applyMode,
   resolveInitialMode
 } from './core/services/theme-preference';
+import { SignalTransport } from './shared/interfaces/signal-transport';
+import { BroadcastChannelTransport } from './shared/services/broadcast-channel-transport';
+import { ServerTransport } from './shared/services/server-transport';
 import { setMode } from './store/actions/application-config.actions';
 import { ApplicationConfigEffects } from './store/effects/application-config.effects';
 import { SendEffects } from './store/effects/send.effects';
@@ -35,6 +39,10 @@ export const appConfig: ApplicationConfig = {
     provideRouter(routes, withViewTransitions()),
     provideRouterStore(),
     provideSpartanHlm(),
+    {
+      provide: SignalTransport,
+      useClass: isDevMode() ? BroadcastChannelTransport : ServerTransport
+    },
     { provide: Directionality, useClass: Directionality },
     {
       provide: APP_INITIALIZER,
