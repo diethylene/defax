@@ -18,35 +18,37 @@ const GROUP_COUNT = 16;
   providers: [provideIcons({ lucideCopy })],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <div class="flex flex-col gap-2">
-      <div class="flex items-center justify-between gap-3">
+    <div class="flex items-start gap-6">
+      <div class="flex min-w-0 flex-1 flex-col gap-2">
         <span class="text-sm text-muted-foreground">SHA-256 checksum</span>
-        <button
-          type="button"
-          hlmBtn
-          variant="ghost"
-          size="icon"
-          aria-label="Copy checksum"
-        >
-          <ng-icon name="lucideCopy" size="16" />
-        </button>
+
+        @if (checksum()) {
+          <div
+            class="flex flex-wrap gap-x-2 gap-y-1 font-mono text-sm text-foreground"
+          >
+            @for (group of groups(); track $index) {
+              <span>{{ group }}</span>
+            }
+          </div>
+        } @else {
+          <div class="flex flex-wrap gap-2">
+            @for (group of skeletonGroups; track $index) {
+              <hlm-skeleton class="h-5 w-8" />
+            }
+          </div>
+        }
       </div>
 
-      @if (checksum()) {
-        <div
-          class="flex flex-wrap gap-x-2 gap-y-1 font-mono text-sm text-foreground"
-        >
-          @for (group of groups(); track $index) {
-            <span>{{ group }}</span>
-          }
-        </div>
-      } @else {
-        <div class="flex flex-wrap gap-2">
-          @for (group of skeletonGroups; track $index) {
-            <hlm-skeleton class="h-5 w-8" />
-          }
-        </div>
-      }
+      <button
+        type="button"
+        hlmBtn
+        variant="ghost"
+        size="icon"
+        aria-label="Copy checksum"
+        class="shrink-0"
+      >
+        <ng-icon name="lucideCopy" size="16" />
+      </button>
     </div>
   `
 })
