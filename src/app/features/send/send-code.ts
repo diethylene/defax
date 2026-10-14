@@ -1,6 +1,7 @@
 import { DatePipe } from '@angular/common';
 import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
+import { Router } from '@angular/router';
 import { NgIcon, provideIcons } from '@ng-icons/core';
 import { lucideFile } from '@ng-icons/lucide';
 import { Store } from '@ngrx/store';
@@ -12,6 +13,7 @@ import { HlmSpinner } from '@spartan-ng/helm/spinner';
 import { ShaChecksumComponent } from '../../core/components/sha-checksum/sha-checksum';
 import { FileSizePipe } from '../../shared/pipes/file-size.pipe';
 import { FileTypePipe } from '../../shared/pipes/file-type.pipe';
+import { sendReset } from '../../store/actions/send.actions';
 import {
   selectSendHashDigest,
   selectSendMetadata
@@ -40,6 +42,7 @@ import { SendCodeFieldComponent } from './send-code-field';
 })
 export class SendCodeComponent {
   private readonly store = inject(Store);
+  private readonly router = inject(Router);
 
   protected readonly passcode = '7-orbit-maple-lantern';
 
@@ -56,4 +59,9 @@ export class SendCodeComponent {
       initialValue: null
     }
   );
+
+  protected cancel(): void {
+    this.store.dispatch(sendReset());
+    this.router.navigate(['/send']);
+  }
 }
