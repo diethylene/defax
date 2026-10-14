@@ -1,0 +1,33 @@
+<section
+  class="mx-auto flex w-full max-w-2xl flex-col items-center gap-10 px-4 py-12 sm:px-6 sm:py-16"
+>
+  <header class="flex flex-col items-center gap-2 text-center">
+    <h1 class="text-3xl font-semibold tracking-tight text-foreground">
+      Share this code
+    </h1>
+    <p class="max-w-md text-balance text-muted-foreground">
+      The receiver enters it on the Receive page. It works for one connection
+      only.
+    </p>
+  </header>
+
+  <section hlmCard class="w-full">
+    <div hlmCardContent class="flex flex-col gap-4">
+      <app-send-code-field [code]="passcode" />
+
+      <hlm-separator />
+
+      <div class="flex items-center gap-3">
+        <hlm-spinner class="text-xl" />
+        <div class="flex flex-col gap-1">
+          <p class="text-sm font-medium text-foreground">
+            Waiting for the receiver to connect...
+          </p>
+          <p class="text-sm text-muted-foreground">
+            Keep this tab open. Closing it cancels the transfer.
+          </p>
+        </div>
+      </div>
+    </div>
+  </section>
+</section>
