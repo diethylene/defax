@@ -10,6 +10,7 @@ import {
 } from '@ng-icons/lucide';
 import { getRouterSelectors } from '@ngrx/router-store';
 import { Store } from '@ngrx/store';
+import { HlmSeparator } from '@spartan-ng/helm/separator';
 import { map } from 'rxjs';
 import { NavComponent } from '../../../shared/components/nav/nav';
 import type { NavItem } from '../../../shared/components/nav/nav-item';
@@ -19,7 +20,7 @@ const { selectUrl } = getRouterSelectors();
 
 @Component({
   selector: 'app-navbar',
-  imports: [RouterLink, NgIcon, NavComponent, ThemeToggle],
+  imports: [RouterLink, NgIcon, NavComponent, ThemeToggle, HlmSeparator],
   providers: [
     provideIcons({
       lucideArrowLeftRight,
