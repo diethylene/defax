@@ -1,3 +1,4 @@
+import { Injectable } from '@angular/core';
 import { Subject } from 'rxjs';
 import type { SignalMessage } from '../interfaces/signal-message';
 import type { RoomCreated, RoomId, Sid } from '../interfaces/signal-session';
@@ -7,6 +8,7 @@ import { parseSignalMessage } from '../utils/signal-message';
 
 type Mode = 'host' | 'guest';
 
+@Injectable()
 export class BroadcastChannelTransport extends SignalTransport {
   private readonly messages = new Subject<SignalMessage>();
   override readonly messages$ = this.messages.asObservable();
