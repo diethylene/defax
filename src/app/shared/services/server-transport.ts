@@ -1,0 +1,24 @@
+import { EMPTY, type Observable } from 'rxjs';
+import type { SignalMessage } from '../interfaces/signal-message';
+import type { RoomCreated, RoomId, Sid } from '../interfaces/signal-session';
+import { SignalTransport } from '../interfaces/signal-transport';
+
+export class ServerTransport extends SignalTransport {
+  override readonly messages$: Observable<SignalMessage> = EMPTY;
+
+  override createRoom(): RoomCreated {
+    throw new Error('ServerTransport.createRoom is not implemented');
+  }
+
+  override joinRoom(_roomId: RoomId): Promise<Sid> {
+    throw new Error('ServerTransport.joinRoom is not implemented');
+  }
+
+  override send(_message: SignalMessage): void {
+    throw new Error('ServerTransport.send is not implemented');
+  }
+
+  override close(): void {
+    throw new Error('ServerTransport.close is not implemented');
+  }
+}
