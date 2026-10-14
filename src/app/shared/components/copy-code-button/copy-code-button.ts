@@ -9,7 +9,7 @@ import { HlmButton } from '@spartan-ng/helm/button';
   providers: [provideIcons({ lucideCopy })],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <button type="button" hlmBtn class="cursor-pointer">
+    <button type="button" hlmBtn>
       <ng-icon name="lucideCopy" size="16" />
       Copy code
     </button>
