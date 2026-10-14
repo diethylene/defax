@@ -42,6 +42,9 @@
       ],
       "@spartan-ng/helm/separator": [
         "./libs/ui/separator/src/index.ts"
+      ],
+      "@spartan-ng/helm/skeleton": [
+        "./libs/ui/skeleton/src/index.ts"
       ]
     }
   },
