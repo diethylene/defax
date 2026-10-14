@@ -17,11 +17,11 @@
       </span>
       <span class="hidden text-sm font-semibold sm:inline">defax</span>
     </a>
-    <hlm-separator
+    <span
       nav-leading
-      orientation="vertical"
-      class="hidden h-5 sm:block"
-    />
+      class="hidden h-5 w-px bg-border sm:block"
+      aria-hidden="true"
+    ></span>
   </app-nav>
 
   <app-nav
@@ -29,11 +29,11 @@
     [activeRoute]="activeRoute()"
     ariaLabel="Secondary"
   >
-    <hlm-separator
+    <span
       nav-trailing
-      orientation="vertical"
-      class="mx-2 hidden h-5 sm:block"
-    />
+      class="mx-2 hidden h-5 w-px bg-border sm:block"
+      aria-hidden="true"
+    ></span>
     <app-theme-toggle nav-trailing />
   </app-nav>
 </header>
