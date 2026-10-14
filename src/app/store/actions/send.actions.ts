@@ -1,6 +1,6 @@
 import { createAction, props } from '@ngrx/store';
 import type { FileMetadata } from '../../features/send/file-metadata';
-import type { RoomId, Sid } from '../../shared/interfaces/signal-session';
+import type { RoomId } from '../../shared/interfaces/signal-session';
 
 export const sendFileSelected = createAction(
   '[Send] File Selected',
@@ -9,7 +9,7 @@ export const sendFileSelected = createAction(
 
 export const sendRoomCreated = createAction(
   '[Send] Room Created',
-  props<{ roomId: RoomId; sid: Sid }>()
+  props<{ roomId: RoomId }>()
 );
 
 export const sendPasswordGenerated = createAction(

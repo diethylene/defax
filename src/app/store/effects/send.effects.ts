@@ -62,8 +62,8 @@ export class SendEffects {
     this.actions$.pipe(
       ofType(sendFileSelected),
       map(() => {
-        const { roomId, sid } = this.signalTransport.createRoom();
-        return sendRoomCreated({ roomId, sid });
+        const { roomId } = this.signalTransport.createRoom();
+        return sendRoomCreated({ roomId });
       })
     )
   );

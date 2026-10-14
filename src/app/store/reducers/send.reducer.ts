@@ -1,7 +1,7 @@
 import { createReducer, on } from '@ngrx/store';
 import type { FileMetadata } from '../../features/send/file-metadata';
 import type { SendPhase } from '../../features/send/send-phase';
-import type { RoomId, Sid } from '../../shared/interfaces/signal-session';
+import type { RoomId } from '../../shared/interfaces/signal-session';
 import {
   sendFileSelected,
   sendHashComplete,
@@ -29,7 +29,6 @@ export interface SendState {
   file: File | null;
   metadata: FileMetadata | null;
   roomId: RoomId | null;
-  sid: Sid | null;
   password: string | null;
   hash: HashState;
 }
@@ -46,7 +45,6 @@ export const initialSendState: SendState = {
   file: null,
   metadata: null,
   roomId: null,
-  sid: null,
   password: null,
   hash: initialHashState
 };
@@ -60,15 +58,11 @@ export const sendReducer = createReducer(
       file,
       metadata,
       roomId: null,
-      sid: null,
       password: null,
       hash: initialHashState
     })
   ),
-  on(
-    sendRoomCreated,
-    (state, { roomId, sid }): SendState => ({ ...state, roomId, sid })
-  ),
+  on(sendRoomCreated, (state, { roomId }): SendState => ({ ...state, roomId })),
   on(
     sendPasswordGenerated,
     (state, { password }): SendState => ({ ...state, password })
