@@ -13,7 +13,7 @@ import { HlmButton } from '@spartan-ng/helm/button';
 import { CopyDirective } from '../../directives/copy.directive';
 
 const COPIED_CLASSES =
-  'bg-success text-success-foreground hover:bg-success hover:text-success-foreground';
+  'bg-success text-success-foreground hover:bg-success hover:text-success-foreground dark:hover:bg-success dark:hover:text-success-foreground';
 
 @Component({
   selector: 'app-copy-button',
