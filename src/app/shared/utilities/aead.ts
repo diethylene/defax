@@ -4,19 +4,25 @@ import { lvCat } from './lv-cat';
 
 export type SignalRole = 'initiator' | 'responder';
 
-function buildAad(roomId: string, role: SignalRole): Uint8Array<ArrayBuffer> {
-  return lvCat(utf8ToBytes(roomId), utf8ToBytes(role));
+const NONCE_LENGTH = 12;
+const MIN_SEALED_LENGTH = NONCE_LENGTH + 16; // nonce + GCM tag
+
+function buildAad(
+  roomId: string,
+  sealedBy: SignalRole
+): Uint8Array<ArrayBuffer> {
+  return lvCat(utf8ToBytes(roomId), utf8ToBytes(sealedBy));
 }
 
 export async function seal(
   key: CryptoKey,
   plaintext: Uint8Array<ArrayBuffer>,
   roomId: string,
-  role: SignalRole
+  sealedBy: SignalRole
 ): Promise<Uint8Array<ArrayBuffer>> {
-  const nonce = crypto.getRandomValues(new Uint8Array(12));
+  const nonce = crypto.getRandomValues(new Uint8Array(NONCE_LENGTH));
   const ciphertext = await crypto.subtle.encrypt(
-    { name: 'AES-GCM', iv: nonce, additionalData: buildAad(roomId, role) },
+    { name: 'AES-GCM', iv: nonce, additionalData: buildAad(roomId, sealedBy) },
     key,
     plaintext
   );
@@ -27,12 +33,15 @@ export async function open(
   key: CryptoKey,
   sealed: Uint8Array<ArrayBuffer>,
   roomId: string,
-  role: SignalRole
+  sealedBy: SignalRole
 ): Promise<Uint8Array<ArrayBuffer>> {
-  const nonce = sealed.subarray(0, 12);
-  const ciphertext = sealed.subarray(12);
+  if (sealed.length < MIN_SEALED_LENGTH) {
+    throw new Error('sealed message is too short');
+  }
+  const nonce = sealed.subarray(0, NONCE_LENGTH);
+  const ciphertext = sealed.subarray(NONCE_LENGTH);
   const plaintext = await crypto.subtle.decrypt(
-    { name: 'AES-GCM', iv: nonce, additionalData: buildAad(roomId, role) },
+    { name: 'AES-GCM', iv: nonce, additionalData: buildAad(roomId, sealedBy) },
     key,
     ciphertext
   );

@@ -68,4 +68,11 @@ describe('aead', () => {
     sealed[sealed.length - 1] ^= 0xff;
     await expect(open(key, sealed, '482913', 'initiator')).rejects.toThrow();
   });
+
+  it('rejects a sealed message that is too short', async () => {
+    const key = await testKey();
+    await expect(
+      open(key, new Uint8Array(27), '482913', 'initiator')
+    ).rejects.toThrow('too short');
+  });
 });
