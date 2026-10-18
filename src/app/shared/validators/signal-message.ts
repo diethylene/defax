@@ -1,8 +1,22 @@
 import { z } from 'zod';
+import { base64UrlBytesSchema } from './base64url';
 import { sidSchema } from './sid';
 
+const pakeKeySchema = base64UrlBytesSchema(32, 'pake y');
+
 export const signalMessageSchema = z.discriminatedUnion('type', [
-  z.object({ type: z.literal('join') }),
+  z.object({ type: z.literal('join'), protocol: z.number() }),
   z.object({ type: z.literal('joined'), sid: sidSchema }),
-  z.object({ type: z.literal('full') })
+  z.object({ type: z.literal('peer-joined') }),
+  z.object({ type: z.literal('pake'), y: pakeKeySchema }),
+  z.object({ type: z.literal('sealed'), ct: z.string() }),
+  z.object({
+    type: z.literal('error'),
+    code: z.enum([
+      'room-full',
+      'room-expired',
+      'protocol-mismatch',
+      'peer-failed'
+    ])
+  })
 ]);

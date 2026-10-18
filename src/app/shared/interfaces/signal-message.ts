@@ -1,4 +1,10 @@
 export type SignalMessage =
-  | { type: 'join' }
+  | { type: 'join'; protocol: number }
   | { type: 'joined'; sid: string } // base64url wire form
-  | { type: 'full' };
+  | { type: 'peer-joined' }
+  | { type: 'pake'; y: string } // base64url, 32 bytes
+  | { type: 'sealed'; ct: string } // base64url: nonce || ciphertext
+  | {
+      type: 'error';
+      code: 'room-full' | 'room-expired' | 'protocol-mismatch' | 'peer-failed';
+    };

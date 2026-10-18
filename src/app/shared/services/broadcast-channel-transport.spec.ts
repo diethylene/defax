@@ -1,7 +1,10 @@
 import type { SignalMessage } from '../interfaces/signal-message';
+import { encodeBase64Url } from '../utilities/base64url';
 import { BroadcastChannelTransport } from './broadcast-channel-transport';
 
-describe('BroadcastChannelTransport', () => {
+const pakeY = encodeBase64Url(new Uint8Array(32).fill(1));
+
+describe('BroadcastChannelTransport room lifecycle', () => {
   it('creates a room with a room id and a 16-byte sid', () => {
     const host = new BroadcastChannelTransport();
     const room = host.createRoom();
@@ -11,38 +14,63 @@ describe('BroadcastChannelTransport', () => {
     host.close();
   });
 
-  it('resolves the host sid and delivers queued messages on join', async () => {
+  it('notifies the host, delivers queued messages, and returns the sid on join', async () => {
     const host = new BroadcastChannelTransport();
     const guest = new BroadcastChannelTransport();
-    const received: SignalMessage[] = [];
-    guest.messages$.subscribe((message) => received.push(message));
+    const guestReceived: SignalMessage[] = [];
+    guest.messages$.subscribe((message) => guestReceived.push(message));
+    const hostReceived: SignalMessage[] = [];
+    host.messages$.subscribe((message) => hostReceived.push(message));
 
     const room = host.createRoom();
-    // Stand-in payload; real signaling messages replace this later.
-    host.send({ type: 'join' });
+    host.send({ type: 'pake', y: pakeY });
 
     const sid = await guest.joinRoom(room.roomId);
 
     expect(sid).toEqual(room.sid);
-    expect(received[0]).toEqual({ type: 'join' });
-    expect(received[1]?.type).toBe('joined');
+    expect(guestReceived[0]).toEqual({ type: 'pake', y: pakeY });
+    expect(guestReceived[1]?.type).toBe('joined');
+    expect(hostReceived.some((message) => message.type === 'peer-joined')).toBe(
+      true
+    );
 
     host.close();
     guest.close();
   });
+});
 
-  it('rejects a second join', async () => {
+describe('BroadcastChannelTransport join rejection', () => {
+  it('rejects a second join as room-full', async () => {
     const host = new BroadcastChannelTransport();
     const first = new BroadcastChannelTransport();
     const second = new BroadcastChannelTransport();
 
     const room = host.createRoom();
     await first.joinRoom(room.roomId);
-    await expect(second.joinRoom(room.roomId)).rejects.toThrow('full');
+    await expect(second.joinRoom(room.roomId)).rejects.toThrow('room-full');
 
     host.close();
     first.close();
     second.close();
+  });
+
+  it('rejects a join that speaks an unknown protocol', async () => {
+    const host = new BroadcastChannelTransport();
+    const room = host.createRoom();
+
+    const rogue = new BroadcastChannel(`room-${room.roomId}`);
+    const received: SignalMessage[] = [];
+    rogue.addEventListener('message', (event: MessageEvent) => {
+      received.push(event.data as SignalMessage);
+    });
+
+    rogue.postMessage({ type: 'join', protocol: 999 });
+
+    await new Promise((resolve) => setTimeout(resolve, 20));
+    expect(received).toEqual([{ type: 'error', code: 'protocol-mismatch' }]);
+
+    rogue.close();
+    host.close();
   });
 
   it('stops delivery after close', async () => {
@@ -56,7 +84,7 @@ describe('BroadcastChannelTransport', () => {
     guest.messages$.subscribe((message) => received.push(message));
 
     guest.close();
-    host.send({ type: 'join' });
+    host.send({ type: 'pake', y: pakeY });
     await new Promise((resolve) => setTimeout(resolve, 20));
 
     expect(received).toHaveLength(0);

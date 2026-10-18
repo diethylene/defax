@@ -1,5 +1,6 @@
 import { Injectable } from '@angular/core';
 import { Subject } from 'rxjs';
+import { SIGNALING_PROTOCOL } from '../constants/protocol-version';
 import type { SignalMessage } from '../interfaces/signal-message';
 import type { RoomCreated, RoomId, Sid } from '../interfaces/signal-session';
 import { SignalTransport } from '../interfaces/signal-transport';
@@ -45,7 +46,7 @@ export class BroadcastChannelTransport extends SignalTransport {
     return new Promise<Sid>((resolve, reject) => {
       this.joinResolve = resolve;
       this.joinReject = reject;
-      this.post({ type: 'join' });
+      this.post({ type: 'join', protocol: SIGNALING_PROTOCOL });
     });
   }
 
@@ -81,7 +82,7 @@ export class BroadcastChannelTransport extends SignalTransport {
 
   private handleInbound(message: SignalMessage): void {
     if (this.mode === 'host' && message.type === 'join') {
-      this.acceptJoin();
+      this.handleJoin(message);
       return;
     }
     if (this.mode !== 'guest') return;
@@ -89,17 +90,26 @@ export class BroadcastChannelTransport extends SignalTransport {
       this.resolveJoin(decodeSid(message.sid));
       return;
     }
-    if (message.type === 'full') {
-      this.rejectJoin(new Error('Room is full'));
+    if (message.type === 'error') {
+      this.rejectJoin(new Error(message.code));
     }
+  }
+
+  private handleJoin(message: Extract<SignalMessage, { type: 'join' }>): void {
+    if (message.protocol !== SIGNALING_PROTOCOL) {
+      this.post({ type: 'error', code: 'protocol-mismatch' });
+      return;
+    }
+    this.acceptJoin();
   }
 
   private acceptJoin(): void {
     if (this.joined) {
-      this.post({ type: 'full' });
+      this.post({ type: 'error', code: 'room-full' });
       return;
     }
     this.joined = true;
+    this.messages.next({ type: 'peer-joined' });
     for (const message of this.outgoing) {
       this.post(message);
     }

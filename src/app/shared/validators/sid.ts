@@ -1,14 +1,3 @@
-import { z } from 'zod';
-import { decodeSid } from '../utilities/sid';
+import { base64UrlBytesSchema } from './base64url';
 
-export const sidSchema = z.string().refine(
-  (value) => {
-    try {
-      decodeSid(value);
-      return true;
-    } catch {
-      return false;
-    }
-  },
-  { message: 'sid must be 16 bytes as base64url' }
-);
+export const sidSchema = base64UrlBytesSchema(16, 'sid');
