@@ -1,39 +1,10 @@
 import { ristretto255, ristretto255_hasher } from '@noble/curves/ed25519.js';
-import {
-  bytesToNumberLE,
-  concatBytes,
-  equalBytes
-} from '@noble/curves/utils.js';
+import { bytesToNumberLE, equalBytes } from '@noble/curves/utils.js';
 import { sha512 } from '@noble/hashes/sha2.js';
-import { utf8ToBytes } from '@noble/hashes/utils.js';
-import { PROTOCOL_VERSION } from '../constants/protocol-version';
-
-// G_Ristretto255.DSI per draft-irtf-cfrg-cpace section 7.3.
-const DSI = utf8ToBytes('CPaceRistretto255');
-// Channel identifier binds the key to the protocol version.
-const CI = utf8ToBytes(`defax-${PROTOCOL_VERSION}`);
-const SHA512_BLOCK_SIZE = 128;
+import { CPACE_CI, CPACE_DSI, SHA512_BLOCK_SIZE } from '../constants/cpace';
+import { lvCat, prependLen } from './lv-cat';
 
 type GroupElement = InstanceType<typeof ristretto255.Point>;
-
-function encodeLeb128(value: number): Uint8Array {
-  const out: number[] = [];
-  let remaining = value;
-  while (remaining >= 128) {
-    out.push((remaining & 0x7f) | 0x80);
-    remaining = Math.floor(remaining / 128);
-  }
-  out.push(remaining);
-  return new Uint8Array(out);
-}
-
-function prependLen(data: Uint8Array): Uint8Array {
-  return concatBytes(encodeLeb128(data.length), data);
-}
-
-function lvCat(...parts: Uint8Array[]): Uint8Array {
-  return concatBytes(...parts.map(prependLen));
-}
 
 export function deriveGeneratorString(
   sid: Uint8Array,
@@ -44,7 +15,11 @@ export function deriveGeneratorString(
     sInBytes?: number;
   } = {}
 ): Uint8Array {
-  const { dsi = DSI, ci = CI, sInBytes = SHA512_BLOCK_SIZE } = options;
+  const {
+    dsi = CPACE_DSI,
+    ci = CPACE_CI,
+    sInBytes = SHA512_BLOCK_SIZE
+  } = options;
   const zpad = Math.max(
     0,
     sInBytes - 1 - prependLen(password).length - prependLen(dsi).length
