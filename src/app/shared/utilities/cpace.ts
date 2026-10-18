@@ -63,7 +63,11 @@ export function secretFromBytes(bytes: Uint8Array): bigint {
   }
   const scalarBytes = new Uint8Array(bytes);
   scalarBytes[31] &= 0x0f; // clear bits above the 252-bit group size
-  return bytesToNumberLE(scalarBytes);
+  const scalar = bytesToNumberLE(scalarBytes);
+  if (scalar === 0n) {
+    throw new Error('secret must not be zero');
+  }
+  return scalar;
 }
 
 export function derivePublicKey(

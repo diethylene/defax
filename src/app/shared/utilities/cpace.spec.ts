@@ -93,4 +93,8 @@ describe('cpace validation', () => {
   it('rejects secrets from bytes of the wrong length', () => {
     expect(() => secretFromBytes(new Uint8Array(16))).toThrow('32 bytes');
   });
+
+  it('rejects a zero scalar', () => {
+    expect(() => secretFromBytes(new Uint8Array(32))).toThrow('zero');
+  });
 });
