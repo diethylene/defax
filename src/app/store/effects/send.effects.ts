@@ -8,6 +8,7 @@ import {
   distinctUntilChanged,
   EMPTY,
   filter,
+  from,
   map,
   of,
   skip,
@@ -17,22 +18,28 @@ import {
 } from 'rxjs';
 import { routeForPhase } from '../../features/send/send-phase';
 import { SignalTransport } from '../../shared/interfaces/signal-transport';
+import {
+  HandshakeAbortError,
+  HandshakeService
+} from '../../shared/services/handshake.service';
 import { HashService } from '../../shared/services/hash.service';
 import { generatePassword } from '../../shared/utilities/password';
 import {
   sendFileSelected,
+  sendHandshakeFailed,
   sendHashComplete,
   sendHashFailed,
   sendHashProgress,
   sendHashStarted,
   sendPasswordGenerated,
   sendReset,
-  sendRoomCreated
+  sendRoomCreated,
+  sendSasComputed
 } from '../actions/send.actions';
 import { selectSendFile, selectSendPhase } from '../selectors/send.selectors';
 
-function toErrorMessage(error: unknown): string {
-  return error instanceof Error ? error.message : 'File hashing failed';
+function toErrorMessage(error: unknown, fallback: string): string {
+  return error instanceof Error ? error.message : fallback;
 }
 
 @Injectable()
@@ -42,6 +49,7 @@ export class SendEffects {
   private readonly hashService = inject(HashService);
   private readonly signalTransport = inject(SignalTransport);
   private readonly actions$ = inject(Actions);
+  private handshake: HandshakeService | null = null;
 
   readonly routeToPhase$ = createEffect(
     () =>
@@ -58,20 +66,37 @@ export class SendEffects {
     { dispatch: false }
   );
 
-  readonly createRoom$ = createEffect(() =>
+  readonly startSession$ = createEffect(() =>
     this.actions$.pipe(
       ofType(sendFileSelected),
-      map(() => {
-        const { roomId } = this.signalTransport.createRoom();
-        return sendRoomCreated({ roomId });
+      switchMap(() => {
+        this.handshake?.destroy();
+        const { roomId, sid } = this.signalTransport.createRoom();
+        const password = generatePassword();
+        const handshake = new HandshakeService();
+        this.handshake = handshake;
+        return concat(
+          of(sendRoomCreated({ roomId }), sendPasswordGenerated({ password })),
+          from(
+            handshake.runAsInitiator(this.signalTransport, {
+              roomId,
+              sid,
+              password
+            })
+          ).pipe(
+            map(({ sas }) => sendSasComputed({ sas })),
+            catchError((error) =>
+              error instanceof HandshakeAbortError
+                ? EMPTY
+                : of(
+                    sendHandshakeFailed({
+                      error: toErrorMessage(error, 'Handshake failed')
+                    })
+                  )
+            )
+          )
+        );
       })
-    )
-  );
-
-  readonly generatePassword$ = createEffect(() =>
-    this.actions$.pipe(
-      ofType(sendFileSelected),
-      map(() => sendPasswordGenerated({ password: generatePassword() }))
     )
   );
 
@@ -79,7 +104,10 @@ export class SendEffects {
     () =>
       this.actions$.pipe(
         ofType(sendReset),
-        tap(() => this.signalTransport.close())
+        tap(() => {
+          this.handshake?.destroy();
+          this.handshake = null;
+        })
       ),
     { dispatch: false }
   );
@@ -100,7 +128,11 @@ export class SendEffects {
                 : sendHashComplete({ digest: event.digest })
             ),
             catchError((error: unknown) =>
-              of(sendHashFailed({ error: toErrorMessage(error) }))
+              of(
+                sendHashFailed({
+                  error: toErrorMessage(error, 'File hashing failed')
+                })
+              )
             )
           )
         );

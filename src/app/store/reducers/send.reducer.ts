@@ -4,13 +4,15 @@ import type { SendPhase } from '../../features/send/send-phase';
 import type { RoomId } from '../../shared/interfaces/signal-session';
 import {
   sendFileSelected,
+  sendHandshakeFailed,
   sendHashComplete,
   sendHashFailed,
   sendHashProgress,
   sendHashStarted,
   sendPasswordGenerated,
   sendReset,
-  sendRoomCreated
+  sendRoomCreated,
+  sendSasComputed
 } from '../actions/send.actions';
 
 export const SEND_FEATURE_KEY = 'send';
@@ -30,6 +32,8 @@ export interface SendState {
   metadata: FileMetadata | null;
   roomId: RoomId | null;
   password: string | null;
+  sas: string | null;
+  error: string | null;
   hash: HashState;
 }
 
@@ -46,6 +50,8 @@ export const initialSendState: SendState = {
   metadata: null,
   roomId: null,
   password: null,
+  sas: null,
+  error: null,
   hash: initialHashState
 };
 
@@ -59,6 +65,8 @@ export const sendReducer = createReducer(
       metadata,
       roomId: null,
       password: null,
+      sas: null,
+      error: null,
       hash: initialHashState
     })
   ),
@@ -66,6 +74,14 @@ export const sendReducer = createReducer(
   on(
     sendPasswordGenerated,
     (state, { password }): SendState => ({ ...state, password })
+  ),
+  on(
+    sendSasComputed,
+    (state, { sas }): SendState => ({ ...state, sas, phase: 'sasConfirm' })
+  ),
+  on(
+    sendHandshakeFailed,
+    (state, { error }): SendState => ({ ...state, error, phase: 'failed' })
   ),
   on(
     sendHashStarted,

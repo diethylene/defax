@@ -17,6 +17,16 @@ export const sendPasswordGenerated = createAction(
   props<{ password: string }>()
 );
 
+export const sendSasComputed = createAction(
+  '[Send] SAS Computed',
+  props<{ sas: string }>()
+);
+
+export const sendHandshakeFailed = createAction(
+  '[Send] Handshake Failed',
+  props<{ error: string }>()
+);
+
 export const sendHashStarted = createAction('[Send] Hash Started');
 
 export const sendHashProgress = createAction(
