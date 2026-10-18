@@ -1,10 +1,17 @@
 import { ristretto255, ristretto255_hasher } from '@noble/curves/ed25519.js';
-import { bytesToNumberLE, concatBytes } from '@noble/curves/utils.js';
+import {
+  bytesToNumberLE,
+  concatBytes,
+  equalBytes
+} from '@noble/curves/utils.js';
 import { sha512 } from '@noble/hashes/sha2.js';
 import { utf8ToBytes } from '@noble/hashes/utils.js';
+import { PROTOCOL_VERSION } from '../constants/protocol-version';
 
-// G_Ristretto255.DSI from draft-irtf-cfrg-cpace section 7.3.
-const DSI = 'CPaceRistretto255';
+// G_Ristretto255.DSI per draft-irtf-cfrg-cpace section 7.3.
+const DSI = utf8ToBytes('CPaceRistretto255');
+// Channel identifier binds the key to the protocol version.
+const CI = utf8ToBytes(`defax-${PROTOCOL_VERSION}`);
 const SHA512_BLOCK_SIZE = 128;
 
 type GroupElement = InstanceType<typeof ristretto255.Point>;
@@ -30,15 +37,13 @@ function lvCat(...parts: Uint8Array[]): Uint8Array {
 
 export function deriveGeneratorString(
   sid: Uint8Array,
-  password: string
+  password: Uint8Array
 ): Uint8Array {
-  const dsi = utf8ToBytes(DSI);
-  const prs = utf8ToBytes(password);
   const zpad = Math.max(
     0,
-    SHA512_BLOCK_SIZE - 1 - prependLen(prs).length - prependLen(dsi).length
+    SHA512_BLOCK_SIZE - 1 - prependLen(password).length - prependLen(DSI).length
   );
-  return lvCat(dsi, prs, new Uint8Array(zpad), new Uint8Array(0), sid);
+  return lvCat(DSI, password, new Uint8Array(zpad), CI, sid);
 }
 
 export function mapToGroup(genStr: Uint8Array): GroupElement {
@@ -49,14 +54,13 @@ export function mapToGroup(genStr: Uint8Array): GroupElement {
   return derive(sha512(genStr));
 }
 
-export function generateSecret(): bigint {
-  let scalar: bigint;
-  do {
-    const bytes = crypto.getRandomValues(new Uint8Array(32));
-    bytes[31] &= 0x0f; // keep the low 252 bits, per CPace sample_scalar
-    scalar = bytesToNumberLE(bytes);
-  } while (scalar === 0n);
-  return scalar;
+export function secretFromBytes(bytes: Uint8Array): bigint {
+  if (bytes.length !== 32) {
+    throw new Error('secret requires exactly 32 bytes');
+  }
+  const scalarBytes = new Uint8Array(bytes);
+  scalarBytes[31] &= 0x0f; // clear bits above the 252-bit group size
+  return bytesToNumberLE(scalarBytes);
 }
 
 export function derivePublicKey(
@@ -76,11 +80,19 @@ export function isValidPublicKey(bytes: Uint8Array): boolean {
 
 export function deriveSharedSecret(
   secret: bigint,
-  peerPublicKey: Uint8Array
+  peerPublicKey: Uint8Array,
+  ownPublicKey: Uint8Array
 ): Uint8Array {
+  if (equalBytes(peerPublicKey, ownPublicKey)) {
+    throw new Error('peer public key is reflected');
+  }
   const point = ristretto255.Point.fromBytes(peerPublicKey);
   if (point.is0()) {
     throw new Error('peer public key must not be the identity');
   }
-  return point.multiply(secret).toBytes();
+  const shared = point.multiply(secret);
+  if (shared.is0()) {
+    throw new Error('shared secret must not be the identity');
+  }
+  return shared.toBytes();
 }
