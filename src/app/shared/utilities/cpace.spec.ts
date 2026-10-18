@@ -1,3 +1,4 @@
+import { bytesToNumberLE } from '@noble/curves/utils.js';
 import {
   deriveGeneratorString,
   derivePublicKey,
@@ -11,7 +12,7 @@ const encoder = new TextEncoder();
 const sid = new Uint8Array(16);
 const password = (value: string): Uint8Array => encoder.encode(value);
 const secret = (seed: number): bigint =>
-  secretFromBytes(new Uint8Array(32).fill(seed));
+  bytesToNumberLE(new Uint8Array(32).fill(seed));
 
 describe('deriveGeneratorString', () => {
   it('derives a deterministic generator string', () => {
@@ -27,13 +28,11 @@ describe('deriveGeneratorString', () => {
   });
 
   it('accepts custom dsi, ci, and block size', () => {
-    const custom = deriveGeneratorString(
-      sid,
-      password('apple-bird'),
-      encoder.encode('CUSTOM_DSI'),
-      encoder.encode('CUSTOM_CI'),
-      64
-    );
+    const custom = deriveGeneratorString(sid, password('apple-bird'), {
+      dsi: encoder.encode('CUSTOM_DSI'),
+      ci: encoder.encode('CUSTOM_CI'),
+      sInBytes: 64
+    });
     expect(custom).not.toEqual(
       deriveGeneratorString(sid, password('apple-bird'))
     );
@@ -87,7 +86,7 @@ describe('cpace validation', () => {
   });
 
   it('derives a non-zero scalar from 32 random bytes', () => {
-    expect(secret(7)).toBeGreaterThan(0n);
+    expect(secretFromBytes(new Uint8Array(32).fill(7))).toBeGreaterThan(0n);
   });
 
   it('rejects secrets from bytes of the wrong length', () => {

@@ -38,10 +38,13 @@ function lvCat(...parts: Uint8Array[]): Uint8Array {
 export function deriveGeneratorString(
   sid: Uint8Array,
   password: Uint8Array,
-  dsi: Uint8Array = DSI,
-  ci: Uint8Array = CI,
-  sInBytes: number = SHA512_BLOCK_SIZE
+  options: {
+    dsi?: Uint8Array;
+    ci?: Uint8Array;
+    sInBytes?: number;
+  } = {}
 ): Uint8Array {
+  const { dsi = DSI, ci = CI, sInBytes = SHA512_BLOCK_SIZE } = options;
   const zpad = Math.max(
     0,
     sInBytes - 1 - prependLen(password).length - prependLen(dsi).length
