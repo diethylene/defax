@@ -1,6 +1,6 @@
 import { concatBytes } from '@noble/curves/utils.js';
 
-function encodeLeb128(value: number): Uint8Array {
+function encodeLeb128(value: number): Uint8Array<ArrayBuffer> {
   const out: number[] = [];
   let remaining = value;
   while (remaining >= 128) {
@@ -11,10 +11,10 @@ function encodeLeb128(value: number): Uint8Array {
   return new Uint8Array(out);
 }
 
-export function prependLen(data: Uint8Array): Uint8Array {
+export function prependLen(data: Uint8Array): Uint8Array<ArrayBuffer> {
   return concatBytes(encodeLeb128(data.length), data);
 }
 
-export function lvCat(...parts: Uint8Array[]): Uint8Array {
+export function lvCat(...parts: Uint8Array[]): Uint8Array<ArrayBuffer> {
   return concatBytes(...parts.map(prependLen));
 }
