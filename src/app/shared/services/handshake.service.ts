@@ -1,6 +1,19 @@
 import { Injectable } from '@angular/core';
 import { utf8ToBytes } from '@noble/hashes/utils.js';
-import { Subject, takeUntil } from 'rxjs';
+import {
+  combineLatest,
+  defer,
+  filter,
+  from,
+  map,
+  type Observable,
+  Subject,
+  switchMap,
+  take,
+  takeUntil,
+  tap
+} from 'rxjs';
+import type { SignalMessage } from '../interfaces/signal-message';
 import type { RoomId, Sid } from '../interfaces/signal-session';
 import type { SignalTransport } from '../interfaces/signal-transport';
 import { decodeBase64Url, encodeBase64Url } from '../utilities/base64url';
@@ -29,46 +42,59 @@ export interface InitiatorSession {
   password: string;
 }
 
-export class HandshakeAbortError extends Error {
-  constructor() {
-    super('handshake aborted');
-    this.name = 'HandshakeAbortError';
-  }
-}
+type PakeMessage = Extract<SignalMessage, { type: 'pake' }>;
+type PeerJoinedMessage = Extract<SignalMessage, { type: 'peer-joined' }>;
 
 @Injectable()
 export class HandshakeService {
   private readonly destroy$ = new Subject<void>();
   private transport: SignalTransport | null = null;
 
-  async runAsInitiator(
+  runAsInitiator(
     transport: SignalTransport,
     session: InitiatorSession
-  ): Promise<HandshakeResult> {
+  ): Observable<HandshakeResult> {
     this.transport = transport;
     const { roomId, sid, password } = session;
     const { secret, publicKey } = this.deriveKeyPair(sid, password);
 
-    const peerPublicKey = await this.exchangeAsInitiator(transport, publicKey);
-    return this.complete(secret, publicKey, peerPublicKey, sid, roomId, true);
+    return this.peerJoined(transport).pipe(
+      tap(() =>
+        transport.send({ type: 'pake', y: encodeBase64Url(publicKey) })
+      ),
+      switchMap(() => this.peerKey(transport)),
+      switchMap((peerPublicKey) =>
+        this.finish(secret, publicKey, peerPublicKey, sid, roomId, true)
+      ),
+      takeUntil(this.destroy$)
+    );
   }
 
-  async runAsResponder(
+  runAsResponder(
     transport: SignalTransport,
     code: string
-  ): Promise<HandshakeResult> {
+  ): Observable<HandshakeResult> {
     this.transport = transport;
     const { roomId, password } = parsePasscode(code);
 
-    const peerKey = this.waitForPeerKey(transport);
-    const [sid, peerPublicKey] = await Promise.all([
-      transport.joinRoom(roomId),
-      peerKey
-    ]);
-
-    const { secret, publicKey } = this.deriveKeyPair(sid, password);
-    transport.send({ type: 'pake', y: encodeBase64Url(publicKey) });
-    return this.complete(secret, publicKey, peerPublicKey, sid, roomId, false);
+    return combineLatest([
+      this.peerKey(transport),
+      defer(() => from(transport.joinRoom(roomId)))
+    ]).pipe(
+      switchMap(([peerPublicKey, sid]) => {
+        const { secret, publicKey } = this.deriveKeyPair(sid, password);
+        transport.send({ type: 'pake', y: encodeBase64Url(publicKey) });
+        return this.finish(
+          secret,
+          publicKey,
+          peerPublicKey,
+          sid,
+          roomId,
+          false
+        );
+      }),
+      takeUntil(this.destroy$)
+    );
   }
 
   destroy(): void {
@@ -98,51 +124,24 @@ export class HandshakeService {
     }
   }
 
-  private exchangeAsInitiator(
-    transport: SignalTransport,
-    ownPublicKey: Uint8Array
-  ): Promise<Uint8Array> {
-    return new Promise((resolve, reject) => {
-      let sent = false;
-      const subscription = transport.messages$
-        .pipe(takeUntil(this.destroy$))
-        .subscribe({
-          next: (message) => {
-            if (message.type === 'peer-joined' && !sent) {
-              sent = true;
-              transport.send({
-                type: 'pake',
-                y: encodeBase64Url(ownPublicKey)
-              });
-              return;
-            }
-            if (message.type === 'pake') {
-              const peerKey = this.decodePeerKey(message.y);
-              subscription.unsubscribe();
-              resolve(peerKey);
-            }
-          },
-          error: reject,
-          complete: () => reject(new HandshakeAbortError())
-        });
-    });
+  private peerJoined(
+    transport: SignalTransport
+  ): Observable<PeerJoinedMessage> {
+    return transport.messages$.pipe(
+      filter(
+        (message): message is PeerJoinedMessage =>
+          message.type === 'peer-joined'
+      ),
+      take(1)
+    );
   }
 
-  private waitForPeerKey(transport: SignalTransport): Promise<Uint8Array> {
-    return new Promise((resolve, reject) => {
-      const subscription = transport.messages$
-        .pipe(takeUntil(this.destroy$))
-        .subscribe({
-          next: (message) => {
-            if (message.type !== 'pake') return;
-            const peerKey = this.decodePeerKey(message.y);
-            subscription.unsubscribe();
-            resolve(peerKey);
-          },
-          error: reject,
-          complete: () => reject(new HandshakeAbortError())
-        });
-    });
+  private peerKey(transport: SignalTransport): Observable<Uint8Array> {
+    return transport.messages$.pipe(
+      filter((message): message is PakeMessage => message.type === 'pake'),
+      map((message) => this.decodePeerKey(message.y)),
+      take(1)
+    );
   }
 
   private decodePeerKey(value: string): Uint8Array {
@@ -153,14 +152,14 @@ export class HandshakeService {
     return key;
   }
 
-  private async complete(
+  private finish(
     secret: bigint,
     ownPublicKey: Uint8Array,
     peerPublicKey: Uint8Array,
     sid: Sid,
     roomId: RoomId,
     ownIsInitiator: boolean
-  ): Promise<HandshakeResult> {
+  ): Observable<HandshakeResult> {
     const sharedSecret = deriveSharedSecret(
       secret,
       peerPublicKey,
@@ -172,10 +171,11 @@ export class HandshakeService {
     sharedSecret.fill(0);
 
     // Noble types widen to ArrayBufferLike; WebCrypto requires ArrayBuffer.
-    const { signalingKey, sas } = await deriveSessionKeys(
-      isk as Uint8Array<ArrayBuffer>,
-      sid as Uint8Array<ArrayBuffer>
-    );
-    return { signalingKey, sas, roomId };
+    return from(
+      deriveSessionKeys(
+        isk as Uint8Array<ArrayBuffer>,
+        sid as Uint8Array<ArrayBuffer>
+      )
+    ).pipe(map(({ signalingKey, sas }) => ({ signalingKey, sas, roomId })));
   }
 }

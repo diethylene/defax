@@ -8,7 +8,6 @@ import {
   distinctUntilChanged,
   EMPTY,
   filter,
-  from,
   map,
   of,
   skip,
@@ -18,10 +17,7 @@ import {
 } from 'rxjs';
 import { routeForPhase } from '../../features/send/send-phase';
 import { SignalTransport } from '../../shared/interfaces/signal-transport';
-import {
-  HandshakeAbortError,
-  HandshakeService
-} from '../../shared/services/handshake.service';
+import { HandshakeService } from '../../shared/services/handshake.service';
 import { HashService } from '../../shared/services/hash.service';
 import { generatePassword } from '../../shared/utilities/password';
 import {
@@ -77,24 +73,22 @@ export class SendEffects {
         this.handshake = handshake;
         return concat(
           of(sendRoomCreated({ roomId }), sendPasswordGenerated({ password })),
-          from(
-            handshake.runAsInitiator(this.signalTransport, {
+          handshake
+            .runAsInitiator(this.signalTransport, {
               roomId,
               sid,
               password
             })
-          ).pipe(
-            map(({ sas }) => sendSasComputed({ sas })),
-            catchError((error) =>
-              error instanceof HandshakeAbortError
-                ? EMPTY
-                : of(
-                    sendHandshakeFailed({
-                      error: toErrorMessage(error, 'Handshake failed')
-                    })
-                  )
+            .pipe(
+              map(({ sas }) => sendSasComputed({ sas })),
+              catchError((error) =>
+                of(
+                  sendHandshakeFailed({
+                    error: toErrorMessage(error, 'Handshake failed')
+                  })
+                )
+              )
             )
-          )
         );
       })
     )

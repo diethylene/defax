@@ -1,3 +1,4 @@
+import { firstValueFrom } from 'rxjs';
 import { open, seal } from '../utilities/aead';
 import { BroadcastChannelTransport } from './broadcast-channel-transport';
 import { type HandshakeResult, HandshakeService } from './handshake.service';
@@ -18,14 +19,18 @@ async function runHandshakePair(
 
   const { roomId, sid } = initiatorTransport.createRoom();
   const [initiatorResult, responderResult] = await Promise.all([
-    initiator.runAsInitiator(initiatorTransport, {
-      roomId,
-      sid,
-      password: initiatorPassword
-    }),
-    responder.runAsResponder(
-      responderTransport,
-      `${roomId}-${responderPassword}`
+    firstValueFrom(
+      initiator.runAsInitiator(initiatorTransport, {
+        roomId,
+        sid,
+        password: initiatorPassword
+      })
+    ),
+    firstValueFrom(
+      responder.runAsResponder(
+        responderTransport,
+        `${roomId}-${responderPassword}`
+      )
     )
   ]);
 
@@ -82,11 +87,13 @@ describe('HandshakeService teardown', () => {
     const service = new HandshakeService();
     const { roomId, sid } = transport.createRoom();
 
-    const pending = service.runAsInitiator(transport, {
-      roomId,
-      sid,
-      password: 'apple-bird'
-    });
+    const pending = firstValueFrom(
+      service.runAsInitiator(transport, {
+        roomId,
+        sid,
+        password: 'apple-bird'
+      })
+    );
     service.destroy();
 
     await expect(pending).rejects.toThrow();
