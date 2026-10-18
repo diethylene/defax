@@ -37,13 +37,16 @@ function lvCat(...parts: Uint8Array[]): Uint8Array {
 
 export function deriveGeneratorString(
   sid: Uint8Array,
-  password: Uint8Array
+  password: Uint8Array,
+  dsi: Uint8Array = DSI,
+  ci: Uint8Array = CI,
+  sInBytes: number = SHA512_BLOCK_SIZE
 ): Uint8Array {
   const zpad = Math.max(
     0,
-    SHA512_BLOCK_SIZE - 1 - prependLen(password).length - prependLen(DSI).length
+    sInBytes - 1 - prependLen(password).length - prependLen(dsi).length
   );
-  return lvCat(DSI, password, new Uint8Array(zpad), CI, sid);
+  return lvCat(dsi, password, new Uint8Array(zpad), ci, sid);
 }
 
 export function mapToGroup(genStr: Uint8Array): GroupElement {
