@@ -1,5 +1,5 @@
+import { PGP_WORDS } from '../constants/pgp-wordlist';
 import { generatePassword } from './password';
-import { PGP_WORDS } from './pgp-wordlist';
 
 describe('generatePassword', () => {
   it('holds 256 unique words', () => {

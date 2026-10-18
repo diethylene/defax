@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { decodeSid } from '../utils/sid';
+import { decodeSid } from '../utilities/sid';
 
 export const sidSchema = z.string().refine(
   (value) => {

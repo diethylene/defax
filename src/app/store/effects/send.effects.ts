@@ -18,7 +18,7 @@ import {
 import { routeForPhase } from '../../features/send/send-phase';
 import { SignalTransport } from '../../shared/interfaces/signal-transport';
 import { HashService } from '../../shared/services/hash.service';
-import { generatePassword } from '../../shared/utils/password';
+import { generatePassword } from '../../shared/utilities/password';
 import {
   sendFileSelected,
   sendHashComplete,

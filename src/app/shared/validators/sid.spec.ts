@@ -1,4 +1,4 @@
-import { createSid, encodeSid } from '../utils/sid';
+import { createSid, encodeSid } from '../utilities/sid';
 import { sidSchema } from './sid';
 
 describe('sidSchema', () => {

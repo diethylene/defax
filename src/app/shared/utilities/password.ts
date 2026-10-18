@@ -1,4 +1,4 @@
-import { PGP_WORDS } from './pgp-wordlist';
+import { PGP_WORDS } from '../constants/pgp-wordlist';
 
 export function generatePassword(): string {
   const bytes = crypto.getRandomValues(new Uint8Array(2));

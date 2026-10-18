@@ -3,8 +3,8 @@ import { Subject } from 'rxjs';
 import type { SignalMessage } from '../interfaces/signal-message';
 import type { RoomCreated, RoomId, Sid } from '../interfaces/signal-session';
 import { SignalTransport } from '../interfaces/signal-transport';
-import { createSid, decodeSid, encodeSid } from '../utils/sid';
-import { parseSignalMessage } from '../utils/signal-message';
+import { createSid, decodeSid, encodeSid } from '../utilities/sid';
+import { parseSignalMessage } from '../utilities/signal-message';
 
 type Mode = 'host' | 'guest';
 
