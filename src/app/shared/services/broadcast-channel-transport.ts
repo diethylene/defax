@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { Subject } from 'rxjs';
-import { SIGNALING_PROTOCOL } from '../constants/protocol-version';
+import { PROTOCOL_VERSION } from '../constants/protocol-version';
 import type { SignalMessage } from '../interfaces/signal-message';
 import type { RoomCreated, RoomId, Sid } from '../interfaces/signal-session';
 import { SignalTransport } from '../interfaces/signal-transport';
@@ -46,7 +46,7 @@ export class BroadcastChannelTransport extends SignalTransport {
     return new Promise<Sid>((resolve, reject) => {
       this.joinResolve = resolve;
       this.joinReject = reject;
-      this.post({ type: 'join', protocol: SIGNALING_PROTOCOL });
+      this.post({ type: 'join', protocol: PROTOCOL_VERSION });
     });
   }
 
@@ -96,7 +96,7 @@ export class BroadcastChannelTransport extends SignalTransport {
   }
 
   private handleJoin(message: Extract<SignalMessage, { type: 'join' }>): void {
-    if (message.protocol !== SIGNALING_PROTOCOL) {
+    if (message.protocol !== PROTOCOL_VERSION) {
       this.post({ type: 'error', code: 'protocol-mismatch' });
       return;
     }
