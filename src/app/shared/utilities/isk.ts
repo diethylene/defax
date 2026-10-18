@@ -9,18 +9,18 @@ const EMPTY = new Uint8Array(0);
 export function deriveIsk(
   sid: Uint8Array,
   k: Uint8Array,
-  ya: Uint8Array,
-  yb: Uint8Array,
+  yInitiator: Uint8Array,
+  yResponder: Uint8Array,
   options: {
-    adA?: Uint8Array;
-    adB?: Uint8Array;
+    adInitiator?: Uint8Array;
+    adResponder?: Uint8Array;
   } = {}
 ): Uint8Array {
-  const { adA = EMPTY, adB = EMPTY } = options;
+  const { adInitiator = EMPTY, adResponder = EMPTY } = options;
   return sha512(
     concatBytes(
       lvCat(concatBytes(CPACE_DSI, utf8ToBytes('_ISK')), sid, k),
-      lvCat(ya, adA, yb, adB)
+      lvCat(yInitiator, adInitiator, yResponder, adResponder)
     )
   );
 }

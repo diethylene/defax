@@ -8,16 +8,16 @@ describe('deriveIsk', () => {
     const k = hexToBytes(
       'fa1d0318864e2cacb26875f1b791c9ae83204fe8359addb53e95a2e98893853f'
     );
-    const ya = hexToBytes(
+    const yInitiator = hexToBytes(
       '383a85dd236978f17f8c8545b50dabc52a39fcdab2cf8bc531ce040ff77ca82d'
     );
-    const yb = hexToBytes(
+    const yResponder = hexToBytes(
       'a6206309c0e8e5f579295e35997ac4300ab3fecec3c17f7b604f3e698fa1383c'
     );
     expect(
-      deriveIsk(sid, k, ya, yb, {
-        adA: utf8ToBytes('ADa'),
-        adB: utf8ToBytes('ADb')
+      deriveIsk(sid, k, yInitiator, yResponder, {
+        adInitiator: utf8ToBytes('ADa'),
+        adResponder: utf8ToBytes('ADb')
       })
     ).toEqual(
       hexToBytes(
