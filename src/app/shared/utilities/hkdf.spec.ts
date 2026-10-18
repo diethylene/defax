@@ -3,11 +3,10 @@ import { deriveSessionKeys, formatSas } from './hkdf';
 const encoder = new TextEncoder();
 
 describe('formatSas', () => {
-  it('formats 32 bits as a decimal string', () => {
-    expect(formatSas(new Uint8Array([0x00, 0x00, 0x00, 0x2a]))).toBe('42');
-    expect(formatSas(new Uint8Array([0xff, 0xff, 0xff, 0xff]))).toBe(
-      '4294967295'
-    );
+  it('formats 32 bits as a zero-padded 6-digit number', () => {
+    expect(formatSas(new Uint8Array([0x00, 0x00, 0x00, 0x2a]))).toBe('000042');
+    expect(formatSas(new Uint8Array([0xff, 0xff, 0xff, 0xff]))).toBe('967295');
+    expect(formatSas(new Uint8Array([0x00, 0x0f, 0x42, 0x40]))).toBe('000000');
   });
 });
 

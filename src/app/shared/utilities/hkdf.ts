@@ -6,7 +6,7 @@ const label = (value: string): Uint8Array<ArrayBuffer> =>
   utf8ToBytes(`defax-${PROTOCOL_VERSION} ${value}`);
 
 export function formatSas(bits: Uint8Array): string {
-  return bytesToNumberBE(bits).toString(10);
+  return (bytesToNumberBE(bits) % 1_000_000n).toString().padStart(6, '0');
 }
 
 export async function deriveSessionKeys(
