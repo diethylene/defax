@@ -19,6 +19,7 @@ import { routeForPhase } from '../../features/send/send-phase';
 import { SignalTransport } from '../../shared/interfaces/signal-transport';
 import { HandshakeService } from '../../shared/services/handshake.service';
 import { HashService } from '../../shared/services/hash.service';
+import { IdentityService } from '../../shared/services/identity.service';
 import { toErrorMessage } from '../../shared/utilities/error-message';
 import { generatePassword } from '../../shared/utilities/password';
 import {
@@ -40,6 +41,7 @@ export class SendEffects {
   private readonly store = inject(Store);
   private readonly router = inject(Router);
   private readonly hashService = inject(HashService);
+  private readonly identityService = inject(IdentityService);
   private readonly signalTransport = inject(SignalTransport);
   private readonly actions$ = inject(Actions);
   private handshake: HandshakeService | null = null;
@@ -62,7 +64,7 @@ export class SendEffects {
   readonly startSession$ = createEffect(() =>
     this.actions$.pipe(
       ofType(sendFileSelected),
-      switchMap(() => {
+      switchMap(({ metadata }) => {
         this.handshake?.destroy();
         const { roomId, sid } = this.signalTransport.createRoom();
         const password = generatePassword();
@@ -74,7 +76,9 @@ export class SendEffects {
             .runAsInitiator(this.signalTransport, {
               roomId,
               sid,
-              password
+              password,
+              identity: this.identityService.detect(),
+              file: metadata
             })
             .pipe(
               map(({ sas }) => sendSasComputed({ sas })),

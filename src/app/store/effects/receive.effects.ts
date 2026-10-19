@@ -15,6 +15,7 @@ import {
 import { routeForPhase } from '../../features/receive/receive-phase';
 import { SignalTransport } from '../../shared/interfaces/signal-transport';
 import { HandshakeService } from '../../shared/services/handshake.service';
+import { IdentityService } from '../../shared/services/identity.service';
 import { toErrorMessage } from '../../shared/utilities/error-message';
 import {
   receiveCodeEntered,
@@ -29,6 +30,7 @@ export class ReceiveEffects {
   private readonly store = inject(Store);
   private readonly router = inject(Router);
   private readonly signalTransport = inject(SignalTransport);
+  private readonly identityService = inject(IdentityService);
   private readonly actions$ = inject(Actions);
   private handshake: HandshakeService | null = null;
 
@@ -55,7 +57,11 @@ export class ReceiveEffects {
         const handshake = new HandshakeService();
         this.handshake = handshake;
         return defer(() =>
-          handshake.runAsResponder(this.signalTransport, code)
+          handshake.runAsResponder(
+            this.signalTransport,
+            code,
+            this.identityService.detect()
+          )
         ).pipe(
           map(({ sas }) => receiveSasComputed({ sas })),
           catchError((error) =>

@@ -3,6 +3,8 @@ import { Router } from '@angular/router';
 import { provideEffects } from '@ngrx/effects';
 import { provideStore, Store } from '@ngrx/store';
 import { filter, firstValueFrom, take } from 'rxjs';
+import type { FileMetadata } from '../../shared/interfaces/file-metadata';
+import type { Identity } from '../../shared/interfaces/identity';
 import { SignalTransport } from '../../shared/interfaces/signal-transport';
 import { BroadcastChannelTransport } from '../../shared/services/broadcast-channel-transport';
 import { HandshakeService } from '../../shared/services/handshake.service';
@@ -14,6 +16,21 @@ import {
 } from '../selectors/receive.selectors';
 import { ReceiveEffects } from './receive.effects';
 
+const senderIdentity: Identity = {
+  browser: 'Chrome 122',
+  os: 'macOS',
+  timeZone: 'Europe/London',
+  language: 'en-GB'
+};
+
+const senderFile: FileMetadata = {
+  name: 'report.pdf',
+  size: 12345,
+  mime: 'application/pdf',
+  extension: 'pdf',
+  lastModified: 0
+};
+
 function openSender(password: string): {
   code: string;
   senderSas: Promise<string>;
@@ -23,7 +40,13 @@ function openSender(password: string): {
   const sender = new HandshakeService();
   const { roomId, sid } = transport.createRoom();
   const senderSas = firstValueFrom(
-    sender.runAsInitiator(transport, { roomId, sid, password })
+    sender.runAsInitiator(transport, {
+      roomId,
+      sid,
+      password,
+      identity: senderIdentity,
+      file: senderFile
+    })
   ).then((result) => result.sas);
   return { code: `${roomId}-${password}`, senderSas, sender };
 }
