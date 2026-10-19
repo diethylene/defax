@@ -47,6 +47,16 @@ const grow = trigger('grow', [
   ])
 ]);
 
+const check = trigger('check', [
+  transition(':enter', [
+    style({ opacity: 0, transform: 'scale(0.5)' }),
+    animate('150ms ease-out', style({ opacity: 1, transform: 'scale(1)' }))
+  ]),
+  transition(':leave', [
+    animate('120ms ease-out', style({ opacity: 0, transform: 'scale(0.5)' }))
+  ])
+]);
+
 @Component({
   selector: 'app-receive-code-form',
   imports: [
@@ -64,7 +74,7 @@ const grow = trigger('grow', [
     provideIcons({ lucideCheck }),
     { provide: ErrorStateMatcher, useClass: NoopErrorStateMatcher }
   ],
-  animations: [grow],
+  animations: [grow, check],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './receive-code-form.html'
 })
