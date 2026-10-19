@@ -5,7 +5,7 @@ export type SignalMessage =
   | { type: 'pake'; y: string } // base64url, 32 bytes
   | {
       type: 'sealed';
-      kind: 'peer-info' | 'file' | 'disconnect';
+      kind: 'peer-info' | 'file' | 'disconnect' | 'file-hash';
       ct: string; // base64url: nonce || ciphertext
     }
   | {

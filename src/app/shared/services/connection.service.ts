@@ -44,7 +44,7 @@ export interface DisconnectNotice {
   cancelledBy: 'sender' | 'receiver';
 }
 
-type SealedKind = 'peer-info' | 'file' | 'disconnect';
+type SealedKind = 'peer-info' | 'file' | 'disconnect' | 'file-hash';
 type SealedMessage = Extract<SignalMessage, { type: 'sealed' }>;
 
 const decoder = new TextDecoder();
@@ -57,29 +57,36 @@ function parseDisconnect(json: string): DisconnectNotice {
   return value;
 }
 
+function parseFileHash(json: string): string {
+  const value = JSON.parse(json) as { digest?: unknown };
+  if (typeof value.digest !== 'string' || value.digest.length === 0) {
+    throw new Error('invalid file hash');
+  }
+  return value.digest;
+}
+
 @Injectable({ providedIn: 'root' })
 export class ConnectionService {
   private readonly transport = inject(SignalTransport);
   private readonly handshake = inject(HandshakeService);
   private readonly close$ = new Subject<void>();
   private readonly disconnect$ = new Subject<DisconnectNotice>();
+  private readonly fileHash$ = new Subject<string>();
 
   readonly peerDisconnected$ = this.disconnect$.asObservable();
+  readonly peerFileHash$ = this.fileHash$.asObservable();
 
   private signalingKey: CryptoKey | null = null;
   private roomId: RoomId | null = null;
   private role: SignalRole | null = null;
 
   constructor() {
-    this.transport.messages$
-      .pipe(
-        filter(
-          (message): message is SealedMessage =>
-            message.type === 'sealed' && message.kind === 'disconnect'
-        ),
-        switchMap((message) => this.openDisconnect(message))
-      )
-      .subscribe((notice) => this.disconnect$.next(notice));
+    this.receiveSealedStream('disconnect', parseDisconnect).subscribe(
+      (notice) => this.disconnect$.next(notice)
+    );
+    this.receiveSealedStream('file-hash', parseFileHash).subscribe((digest) =>
+      this.fileHash$.next(digest)
+    );
   }
 
   createSession(): InitiatorSession {
@@ -206,7 +213,31 @@ export class ConnectionService {
       .subscribe();
   }
 
-  private openDisconnect(message: SealedMessage): Observable<DisconnectNotice> {
+  sendFileHash(digest: string): void {
+    const { signalingKey, roomId, role } = this;
+    if (!signalingKey || !roomId || !role) return;
+    this.sendSealed('file-hash', { digest })
+      .pipe(catchError(() => EMPTY))
+      .subscribe();
+  }
+
+  private receiveSealedStream<T>(
+    kind: SealedKind,
+    parse: (json: string) => T
+  ): Observable<T> {
+    return this.transport.messages$.pipe(
+      filter(
+        (message): message is SealedMessage =>
+          message.type === 'sealed' && message.kind === kind
+      ),
+      switchMap((message) => this.openSealed(message, parse))
+    );
+  }
+
+  private openSealed<T>(
+    message: SealedMessage,
+    parse: (json: string) => T
+  ): Observable<T> {
     const { signalingKey, roomId, role } = this;
     if (!signalingKey || !roomId || !role) return EMPTY;
     const peerRole: SignalRole = match(role)
@@ -221,7 +252,7 @@ export class ConnectionService {
         peerRole
       )
     ).pipe(
-      map((bytes) => parseDisconnect(decoder.decode(bytes))),
+      map((bytes) => parse(decoder.decode(bytes))),
       catchError(() => EMPTY)
     );
   }
