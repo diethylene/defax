@@ -11,7 +11,7 @@ import {
   switchMap,
   tap
 } from 'rxjs';
-import { routeForPhase } from '../../features/receive/receive-phase';
+import { routeForPhase } from '../../features/receive/receive-phase/receive-phase';
 import { ConnectionService } from '../../shared/services/connection.service';
 import { IdentityService } from '../../shared/services/identity.service';
 import { toErrorMessage } from '../../shared/utilities/error-message';

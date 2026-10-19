@@ -10,13 +10,13 @@ import { HlmButton } from '@spartan-ng/helm/button';
 import {
   PageShellComponent,
   type PageStep
-} from '../../core/components/page-shell/page-shell';
+} from '../../../core/components/page-shell/page-shell';
 import {
   receiveCodeEntered,
   receiveReset
-} from '../../store/actions/receive.actions';
-import { selectReceivePhase } from '../../store/selectors/receive.selectors';
-import { ReceiveCodeFormComponent } from './receive-code-form';
+} from '../../../store/actions/receive.actions';
+import { selectReceivePhase } from '../../../store/selectors/receive.selectors';
+import { ReceiveCodeFormComponent } from '../receive-code-form/receive-code-form';
 
 @Component({
   selector: 'app-receive-idle',

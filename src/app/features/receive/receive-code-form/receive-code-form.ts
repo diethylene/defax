@@ -20,8 +20,8 @@ import { HlmCard, HlmCardContent } from '@spartan-ng/helm/card';
 import { HlmInput } from '@spartan-ng/helm/input';
 import { HlmLabel } from '@spartan-ng/helm/label';
 import { HlmSeparator } from '@spartan-ng/helm/separator';
-import { SpinnerComponent } from '../../core/components/spinner/spinner';
-import { parseReceiveCode } from '../../shared/utilities/passcode';
+import { SpinnerComponent } from '../../../core/components/spinner/spinner';
+import { parseReceiveCode } from '../../../shared/utilities/passcode';
 
 const receiveCodeValidator: ValidatorFn = (control) => {
   const value = control.value;

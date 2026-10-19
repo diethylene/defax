@@ -11,18 +11,18 @@ import { HlmCard, HlmCardContent } from '@spartan-ng/helm/card';
 import {
   type FileSummary,
   FingerprintCardComponent
-} from '../../core/components/fingerprint-card/fingerprint-card';
-import { PageShellComponent } from '../../core/components/page-shell/page-shell';
-import { SasNumberComponent } from '../../core/components/sas-number/sas-number';
+} from '../../../core/components/fingerprint-card/fingerprint-card';
+import { PageShellComponent } from '../../../core/components/page-shell/page-shell';
+import { SasNumberComponent } from '../../../core/components/sas-number/sas-number';
 import {
   receiveAccepted,
   receiveReset
-} from '../../store/actions/receive.actions';
+} from '../../../store/actions/receive.actions';
 import {
   selectReceiveFile,
   selectReceivePeerIdentity,
   selectReceiveSas
-} from '../../store/selectors/receive.selectors';
+} from '../../../store/selectors/receive.selectors';
 
 @Component({
   selector: 'app-receive-confirm',

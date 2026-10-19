@@ -1,5 +1,5 @@
 import { createReducer, on } from '@ngrx/store';
-import type { ReceivePhase } from '../../features/receive/receive-phase';
+import type { ReceivePhase } from '../../features/receive/receive-phase/receive-phase';
 import type { FileMetadata } from '../../shared/interfaces/file-metadata';
 import type { Identity } from '../../shared/interfaces/identity';
 import {

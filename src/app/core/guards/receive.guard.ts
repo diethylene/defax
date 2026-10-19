@@ -5,7 +5,7 @@ import {
   Router
 } from '@angular/router';
 import { Store } from '@ngrx/store';
-import { routeForPhase } from '../../features/receive/receive-phase';
+import { routeForPhase } from '../../features/receive/receive-phase/receive-phase';
 import { receiveReset } from '../../store/actions/receive.actions';
 import { selectReceivePhase } from '../../store/selectors/receive.selectors';
 
