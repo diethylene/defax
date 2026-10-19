@@ -12,8 +12,11 @@
 
   <ng-content />
 
-  @if (steps().length > 0) {
-    <ol class="grid w-full list-none gap-6 sm:grid-cols-3">
+  @if (stepsVisible() && steps().length > 0) {
+    <ol
+      @stepsFade
+      class="grid w-full list-none gap-6 sm:grid-cols-3"
+    >
       @for (step of steps(); track $index) {
         <li class="flex items-start gap-3">
           <span

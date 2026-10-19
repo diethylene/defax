@@ -1,5 +1,6 @@
 export type ReceivePhase =
   | 'idle'
+  | 'connecting'
   | 'confirming'
   | 'transferring'
   | 'verifying'
@@ -8,6 +9,7 @@ export type ReceivePhase =
 
 const receivePhaseRoutes: Record<ReceivePhase, string> = {
   idle: '/receive',
+  connecting: '/receive',
   confirming: '/receive/confirm',
   transferring: '/receive/transfer',
   verifying: '/receive/verify',

@@ -1,6 +1,9 @@
+import { animate, style, transition, trigger } from '@angular/animations';
 import {
   ChangeDetectionStrategy,
   Component,
+  effect,
+  input,
   output,
   signal
 } from '@angular/core';
@@ -16,6 +19,8 @@ import { HlmButton } from '@spartan-ng/helm/button';
 import { HlmCard, HlmCardContent } from '@spartan-ng/helm/card';
 import { HlmInput } from '@spartan-ng/helm/input';
 import { HlmLabel } from '@spartan-ng/helm/label';
+import { HlmSeparator } from '@spartan-ng/helm/separator';
+import { SpinnerComponent } from '../../core/components/spinner/spinner';
 import { parseReceiveCode } from '../../shared/utilities/passcode';
 
 const receiveCodeValidator: ValidatorFn = (control) => {
@@ -32,26 +37,40 @@ class NoopErrorStateMatcher extends ErrorStateMatcher {
   }
 }
 
+const grow = trigger('grow', [
+  transition(':enter', [
+    style({ opacity: 0, height: 0 }),
+    animate('200ms ease-out', style({ opacity: 1, height: '*' }))
+  ]),
+  transition(':leave', [
+    animate('200ms ease-out', style({ opacity: 0, height: 0 }))
+  ])
+]);
+
 @Component({
   selector: 'app-receive-code-form',
   imports: [
     NgIcon,
     ReactiveFormsModule,
+    SpinnerComponent,
     HlmButton,
     HlmCard,
     HlmCardContent,
     HlmInput,
-    HlmLabel
+    HlmLabel,
+    HlmSeparator
   ],
   providers: [
     provideIcons({ lucideCheck }),
     { provide: ErrorStateMatcher, useClass: NoopErrorStateMatcher }
   ],
+  animations: [grow],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './receive-code-form.html'
 })
 export class ReceiveCodeFormComponent {
   readonly connect = output<string>();
+  readonly connecting = input(false);
 
   protected readonly code = new FormControl<string>('', {
     nonNullable: true,
@@ -59,6 +78,14 @@ export class ReceiveCodeFormComponent {
   });
 
   protected readonly submitted = signal(false);
+
+  constructor() {
+    effect(() => {
+      if (this.connecting()) return;
+      this.code.reset();
+      this.submitted.set(false);
+    });
+  }
 
   protected submit(event: SubmitEvent): void {
     event.preventDefault();

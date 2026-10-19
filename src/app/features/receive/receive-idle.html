@@ -2,6 +2,24 @@
   heading="Receive a file"
   subheading="Enter the code the sender gave you. You'll see who's sending and what before anything downloads."
   [steps]="steps"
+  [stepsVisible]="!connecting()"
 >
-  <app-receive-code-form class="w-full" (connect)="onConnect($event)" />
+  <app-receive-code-form
+    class="w-full"
+    [connecting]="connecting()"
+    (connect)="onConnect($event)"
+  />
+
+  @if (connecting()) {
+    <button
+      type="button"
+      hlmBtn
+      variant="outline"
+      size="lg"
+      class="self-end"
+      (click)="onCancel()"
+    >
+      Cancel
+    </button>
+  }
 </app-page-shell>

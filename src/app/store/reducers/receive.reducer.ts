@@ -21,7 +21,7 @@ export const receiveReducer = createReducer(
   on(
     receiveCodeEntered,
     (_state, { code }): ReceiveState => ({
-      phase: 'confirming',
+      phase: 'connecting',
       code,
       error: null
     })

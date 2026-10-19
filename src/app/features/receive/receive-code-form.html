@@ -10,6 +10,7 @@
             [formControl]="code"
             id="receive-code"
             class="h-11 pr-9"
+            [disabled]="connecting()"
             [forceInvalid]="submitted() && code.invalid"
             [class.border-success]="code.valid && code.value.trim().length > 0"
             placeholder="123456-apple-orca"
@@ -31,7 +32,7 @@
           hlmBtn
           size="lg"
           class="h-11"
-          [disabled]="code.value.trim().length === 0"
+          [disabled]="connecting() || code.value.trim().length === 0"
         >
           Connect
         </button>
@@ -43,5 +44,15 @@
         </p>
       }
     </form>
+
+    @if (connecting()) {
+      <div @grow class="flex flex-col gap-4 overflow-hidden">
+        <hlm-separator />
+        <app-spinner
+          heading="Connecting securely to the sender..."
+          subheading="Both devices prove they have the same code. The code itself is never sent."
+        />
+      </div>
+    }
   </div>
 </section>
