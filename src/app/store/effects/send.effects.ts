@@ -5,7 +5,6 @@ import { Store } from '@ngrx/store';
 import { toast } from '@spartan-ng/brain/sonner';
 import {
   catchError,
-  combineLatest,
   concat,
   distinctUntilChanged,
   EMPTY,
@@ -14,6 +13,8 @@ import {
   of,
   skip,
   switchMap,
+  take,
+  takeUntil,
   tap,
   withLatestFrom
 } from 'rxjs';
@@ -39,11 +40,7 @@ import {
   sendRoomCreated,
   sendSasComputed
 } from '../actions/send.actions';
-import {
-  selectSendFile,
-  selectSendHashDigest,
-  selectSendPhase
-} from '../selectors/send.selectors';
+import { selectSendFile, selectSendPhase } from '../selectors/send.selectors';
 
 @Injectable()
 export class SendEffects {
@@ -163,17 +160,20 @@ export class SendEffects {
 
   readonly sendFileHash$ = createEffect(
     () =>
-      combineLatest([
-        this.store.select(selectSendHashDigest),
-        this.store.select(selectSendPhase)
-      ]).pipe(
-        filter(
-          (value): value is [string, SendPhase] =>
-            value[0] !== null && isConnectedPhase(value[1])
-        ),
-        map(([digest]) => digest),
-        distinctUntilChanged(),
-        tap((digest) => this.connection.sendFileHash(digest))
+      this.actions$.pipe(
+        ofType(sendHashComplete),
+        switchMap(({ digest }) =>
+          this.store.select(selectSendPhase).pipe(
+            filter(isConnectedPhase),
+            takeUntil(
+              this.actions$.pipe(
+                ofType(sendFileSelected, sendReset, sendDisconnect)
+              )
+            ),
+            take(1),
+            tap(() => this.connection.sendFileHash(digest))
+          )
+        )
       ),
     { dispatch: false }
   );
