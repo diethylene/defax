@@ -10,7 +10,6 @@
             [formControl]="code"
             id="receive-code"
             class="h-11 pr-9"
-            [disabled]="connecting()"
             [forceInvalid]="submitted() && code.invalid"
             [class.border-success]="code.valid && code.value.trim().length > 0"
             placeholder="123456-apple-orca"

@@ -81,7 +81,11 @@ export class ReceiveCodeFormComponent {
 
   constructor() {
     effect(() => {
-      if (this.connecting()) return;
+      if (this.connecting()) {
+        this.code.disable();
+        return;
+      }
+      this.code.enable();
       this.code.reset();
       this.submitted.set(false);
     });
