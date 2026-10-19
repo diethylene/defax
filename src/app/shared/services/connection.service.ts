@@ -1,9 +1,12 @@
 import { Injectable, inject } from '@angular/core';
 import { utf8ToBytes } from '@noble/hashes/utils.js';
 import {
+  catchError,
   combineLatest,
   defer,
+  EMPTY,
   filter,
+  finalize,
   from,
   map,
   type Observable,
@@ -37,20 +40,47 @@ export interface ResponderConnection {
   fileInfo: FileMetadata | null;
 }
 
-type SealedKind = 'peer-info' | 'file';
+export interface DisconnectNotice {
+  cancelledBy: 'sender' | 'receiver';
+}
+
+type SealedKind = 'peer-info' | 'file' | 'disconnect';
 type SealedMessage = Extract<SignalMessage, { type: 'sealed' }>;
 
 const decoder = new TextDecoder();
+
+function parseDisconnect(json: string): DisconnectNotice {
+  const value = JSON.parse(json) as DisconnectNotice;
+  if (value.cancelledBy !== 'sender' && value.cancelledBy !== 'receiver') {
+    throw new Error('invalid disconnect notice');
+  }
+  return value;
+}
 
 @Injectable({ providedIn: 'root' })
 export class ConnectionService {
   private readonly transport = inject(SignalTransport);
   private readonly handshake = inject(HandshakeService);
   private readonly close$ = new Subject<void>();
+  private readonly disconnect$ = new Subject<DisconnectNotice>();
+
+  readonly peerDisconnected$ = this.disconnect$.asObservable();
 
   private signalingKey: CryptoKey | null = null;
   private roomId: RoomId | null = null;
   private role: SignalRole | null = null;
+
+  constructor() {
+    this.transport.messages$
+      .pipe(
+        filter(
+          (message): message is SealedMessage =>
+            message.type === 'sealed' && message.kind === 'disconnect'
+        ),
+        switchMap((message) => this.openDisconnect(message))
+      )
+      .subscribe((notice) => this.disconnect$.next(notice));
+  }
 
   createSession(): InitiatorSession {
     const { roomId, sid } = this.transport.createRoom();
@@ -155,6 +185,45 @@ export class ConnectionService {
     this.signalingKey = null;
     this.roomId = null;
     this.role = null;
+  }
+
+  disconnect(): void {
+    const { signalingKey, roomId, role } = this;
+    if (!signalingKey || !roomId || !role) {
+      this.close();
+      return;
+    }
+    this.sendSealed('disconnect', {
+      cancelledBy: match(role)
+        .with('initiator', () => 'sender' as const)
+        .with('responder', () => 'receiver' as const)
+        .exhaustive()
+    })
+      .pipe(
+        catchError(() => EMPTY),
+        finalize(() => this.close())
+      )
+      .subscribe();
+  }
+
+  private openDisconnect(message: SealedMessage): Observable<DisconnectNotice> {
+    const { signalingKey, roomId, role } = this;
+    if (!signalingKey || !roomId || !role) return EMPTY;
+    const peerRole: SignalRole = match(role)
+      .with('initiator', () => 'responder' as const)
+      .with('responder', () => 'initiator' as const)
+      .exhaustive();
+    return from(
+      open(
+        signalingKey,
+        decodeBase64Url(message.ct) as Uint8Array<ArrayBuffer>,
+        roomId,
+        peerRole
+      )
+    ).pipe(
+      map((bytes) => parseDisconnect(decoder.decode(bytes))),
+      catchError(() => EMPTY)
+    );
   }
 
   private exchangeAsInitiator(
