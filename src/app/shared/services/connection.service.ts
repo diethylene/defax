@@ -13,6 +13,7 @@ import {
   takeUntil,
   tap
 } from 'rxjs';
+import { match } from 'ts-pattern';
 import type { FileMetadata } from '../interfaces/file-metadata';
 import type { Identity } from '../interfaces/identity';
 import type { SignalMessage } from '../interfaces/signal-message';
@@ -124,8 +125,10 @@ export class ConnectionService {
     if (!key || !roomId || !role) {
       throw new Error('connection not established');
     }
-    const peerRole: SignalRole =
-      role === 'initiator' ? 'responder' : 'initiator';
+    const peerRole: SignalRole = match(role)
+      .with('initiator', () => 'responder' as const)
+      .with('responder', () => 'initiator' as const)
+      .exhaustive();
     return this.transport.messages$.pipe(
       filter(
         (message): message is SealedMessage =>

@@ -1,4 +1,5 @@
 import { createReducer, on } from '@ngrx/store';
+import { match } from 'ts-pattern';
 import { setMode, toggleMode } from '../actions/application-config.actions';
 
 export type ThemeMode = 'light' | 'dark';
@@ -18,6 +19,9 @@ export const applicationConfigReducer = createReducer(
   on(setMode, (state, { mode }) => ({ ...state, mode })),
   on(toggleMode, (state) => ({
     ...state,
-    mode: state.mode === 'light' ? 'dark' : 'light'
+    mode: match(state.mode)
+      .with('light', () => 'dark' as const)
+      .with('dark', () => 'light' as const)
+      .exhaustive()
   }))
 );
