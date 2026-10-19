@@ -9,8 +9,6 @@ async function runHandshakePair(
 ): Promise<{
   initiatorResult: HandshakeResult;
   responderResult: HandshakeResult;
-  initiator: HandshakeService;
-  responder: HandshakeService;
 }> {
   const initiatorTransport = new BroadcastChannelTransport();
   const responderTransport = new BroadcastChannelTransport();
@@ -34,7 +32,7 @@ async function runHandshakePair(
     )
   ]);
 
-  return { initiatorResult, responderResult, initiator, responder };
+  return { initiatorResult, responderResult };
 }
 
 describe('HandshakeService', () => {
@@ -43,9 +41,6 @@ describe('HandshakeService', () => {
 
     expect(pair.initiatorResult.sas).toBe(pair.responderResult.sas);
     expect(pair.initiatorResult.roomId).toBe(pair.responderResult.roomId);
-
-    pair.initiator.destroy();
-    pair.responder.destroy();
   });
 
   it('derives a signaling key that round-trips across peers', async () => {
@@ -66,36 +61,11 @@ describe('HandshakeService', () => {
     );
 
     expect(new TextDecoder().decode(opened)).toBe('hello defax');
-
-    pair.initiator.destroy();
-    pair.responder.destroy();
   });
 
   it('derives different sas for mismatched passwords', async () => {
     const pair = await runHandshakePair('apple-bird', 'bird-cat');
 
     expect(pair.initiatorResult.sas).not.toBe(pair.responderResult.sas);
-
-    pair.initiator.destroy();
-    pair.responder.destroy();
-  });
-});
-
-describe('HandshakeService teardown', () => {
-  it('rejects an in-flight handshake on destroy', async () => {
-    const transport = new BroadcastChannelTransport();
-    const service = new HandshakeService();
-    const { roomId, sid } = transport.createRoom();
-
-    const pending = firstValueFrom(
-      service.runAsInitiator(transport, {
-        roomId,
-        sid,
-        password: 'apple-bird'
-      })
-    );
-    service.destroy();
-
-    await expect(pending).rejects.toThrow();
   });
 });

@@ -4,21 +4,16 @@ import { Actions, createEffect, ofType } from '@ngrx/effects';
 import { Store } from '@ngrx/store';
 import {
   catchError,
-  defer,
   distinctUntilChanged,
   map,
   of,
   skip,
   switchMap,
-  takeUntil,
   tap
 } from 'rxjs';
 import { routeForPhase } from '../../features/receive/receive-phase';
-import { SignalTransport } from '../../shared/interfaces/signal-transport';
-import { HandshakeService } from '../../shared/services/handshake.service';
+import { ConnectionService } from '../../shared/services/connection.service';
 import { IdentityService } from '../../shared/services/identity.service';
-import { exchangePeerInfo } from '../../shared/services/peer-exchange';
-import { SealedChannel } from '../../shared/services/sealed-channel';
 import { toErrorMessage } from '../../shared/utilities/error-message';
 import {
   receiveCodeEntered,
@@ -32,10 +27,9 @@ import { selectReceivePhase } from '../selectors/receive.selectors';
 export class ReceiveEffects {
   private readonly store = inject(Store);
   private readonly router = inject(Router);
-  private readonly signalTransport = inject(SignalTransport);
   private readonly identityService = inject(IdentityService);
+  private readonly connection = inject(ConnectionService);
   private readonly actions$ = inject(Actions);
-  private handshake: HandshakeService | null = null;
 
   readonly routeToPhase$ = createEffect(
     () =>
@@ -55,26 +49,13 @@ export class ReceiveEffects {
   readonly connect$ = createEffect(() =>
     this.actions$.pipe(
       ofType(receiveCodeEntered),
-      switchMap(({ code }) => {
-        this.handshake?.destroy();
-        const handshake = new HandshakeService();
-        this.handshake = handshake;
-        const identity = this.identityService.detect();
-        return defer(() => handshake.runAsResponder(this.signalTransport, code))
+      switchMap(({ code }) =>
+        this.connection
+          .connectAsResponder(code, this.identityService.detect())
           .pipe(
-            switchMap(({ signalingKey, sas, roomId }) => {
-              const channel = new SealedChannel(
-                this.signalTransport,
-                signalingKey,
-                roomId,
-                'responder'
-              );
-              return exchangePeerInfo(channel, identity, null).pipe(
-                map(({ peerIdentity, fileInfo }) =>
-                  receiveSasComputed({ sas, peerIdentity, file: fileInfo })
-                )
-              );
-            }),
+            map(({ sas, peerIdentity, fileInfo }) =>
+              receiveSasComputed({ sas, peerIdentity, file: fileInfo })
+            ),
             catchError((error) =>
               of(
                 receiveHandshakeFailed({
@@ -83,8 +64,7 @@ export class ReceiveEffects {
               )
             )
           )
-          .pipe(takeUntil(this.actions$.pipe(ofType(receiveReset))));
-      })
+      )
     )
   );
 
@@ -92,10 +72,7 @@ export class ReceiveEffects {
     () =>
       this.actions$.pipe(
         ofType(receiveReset),
-        tap(() => {
-          this.handshake?.destroy();
-          this.handshake = null;
-        })
+        tap(() => this.connection.close())
       ),
     { dispatch: false }
   );

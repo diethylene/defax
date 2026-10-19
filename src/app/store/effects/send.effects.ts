@@ -12,19 +12,14 @@ import {
   of,
   skip,
   switchMap,
-  takeUntil,
   tap,
   withLatestFrom
 } from 'rxjs';
 import { routeForPhase } from '../../features/send/send-phase';
-import { SignalTransport } from '../../shared/interfaces/signal-transport';
-import { HandshakeService } from '../../shared/services/handshake.service';
+import { ConnectionService } from '../../shared/services/connection.service';
 import { HashService } from '../../shared/services/hash.service';
 import { IdentityService } from '../../shared/services/identity.service';
-import { exchangePeerInfo } from '../../shared/services/peer-exchange';
-import { SealedChannel } from '../../shared/services/sealed-channel';
 import { toErrorMessage } from '../../shared/utilities/error-message';
-import { generatePassword } from '../../shared/utilities/password';
 import {
   sendFileSelected,
   sendHandshakeFailed,
@@ -45,9 +40,8 @@ export class SendEffects {
   private readonly router = inject(Router);
   private readonly hashService = inject(HashService);
   private readonly identityService = inject(IdentityService);
-  private readonly signalTransport = inject(SignalTransport);
+  private readonly connection = inject(ConnectionService);
   private readonly actions$ = inject(Actions);
-  private handshake: HandshakeService | null = null;
 
   readonly routeToPhase$ = createEffect(
     () =>
@@ -68,30 +62,22 @@ export class SendEffects {
     this.actions$.pipe(
       ofType(sendFileSelected),
       switchMap(({ metadata }) => {
-        this.handshake?.destroy();
-        const { roomId, sid } = this.signalTransport.createRoom();
-        const password = generatePassword();
-        const handshake = new HandshakeService();
-        this.handshake = handshake;
-        const identity = this.identityService.detect();
+        const session = this.connection.createSession();
         return concat(
-          of(sendRoomCreated({ roomId }), sendPasswordGenerated({ password })),
-          handshake
-            .runAsInitiator(this.signalTransport, { roomId, sid, password })
+          of(
+            sendRoomCreated({ roomId: session.roomId }),
+            sendPasswordGenerated({ password: session.password })
+          ),
+          this.connection
+            .connectAsInitiator(
+              session,
+              this.identityService.detect(),
+              metadata
+            )
             .pipe(
-              switchMap(({ signalingKey, sas }) => {
-                const channel = new SealedChannel(
-                  this.signalTransport,
-                  signalingKey,
-                  roomId,
-                  'initiator'
-                );
-                return exchangePeerInfo(channel, identity, metadata).pipe(
-                  map(({ peerIdentity }) =>
-                    sendSasComputed({ sas, peerIdentity })
-                  )
-                );
-              }),
+              map(({ sas, peerIdentity }) =>
+                sendSasComputed({ sas, peerIdentity })
+              ),
               catchError((error) =>
                 of(
                   sendHandshakeFailed({
@@ -100,7 +86,7 @@ export class SendEffects {
                 )
               )
             )
-        ).pipe(takeUntil(this.actions$.pipe(ofType(sendReset))));
+        );
       })
     )
   );
@@ -109,10 +95,7 @@ export class SendEffects {
     () =>
       this.actions$.pipe(
         ofType(sendReset),
-        tap(() => {
-          this.handshake?.destroy();
-          this.handshake = null;
-        })
+        tap(() => this.connection.close())
       ),
     { dispatch: false }
   );

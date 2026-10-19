@@ -7,10 +7,8 @@ import {
   from,
   map,
   type Observable,
-  Subject,
   switchMap,
   take,
-  takeUntil,
   tap
 } from 'rxjs';
 import type { SignalMessage } from '../interfaces/signal-message';
@@ -45,16 +43,12 @@ export interface InitiatorSession {
 type PakeMessage = Extract<SignalMessage, { type: 'pake' }>;
 type PeerJoinedMessage = Extract<SignalMessage, { type: 'peer-joined' }>;
 
-@Injectable()
+@Injectable({ providedIn: 'root' })
 export class HandshakeService {
-  private readonly destroy$ = new Subject<void>();
-  private transport: SignalTransport | null = null;
-
   runAsInitiator(
     transport: SignalTransport,
     session: InitiatorSession
   ): Observable<HandshakeResult> {
-    this.transport = transport;
     const { roomId, sid, password } = session;
     const { secret, publicKey } = this.deriveKeyPair(sid, password);
 
@@ -65,8 +59,7 @@ export class HandshakeService {
       switchMap(() => this.peerKey(transport)),
       switchMap((peerPublicKey) =>
         this.finish(secret, publicKey, peerPublicKey, sid, roomId, true)
-      ),
-      takeUntil(this.destroy$)
+      )
     );
   }
 
@@ -74,7 +67,6 @@ export class HandshakeService {
     transport: SignalTransport,
     code: string
   ): Observable<HandshakeResult> {
-    this.transport = transport;
     const { roomId, password } = parsePasscode(code);
 
     return combineLatest([
@@ -92,16 +84,8 @@ export class HandshakeService {
           roomId,
           false
         );
-      }),
-      takeUntil(this.destroy$)
+      })
     );
-  }
-
-  destroy(): void {
-    this.destroy$.next();
-    this.destroy$.complete();
-    this.transport?.close();
-    this.transport = null;
   }
 
   private deriveKeyPair(

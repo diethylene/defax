@@ -1,0 +1,180 @@
+import { Injectable, inject } from '@angular/core';
+import { utf8ToBytes } from '@noble/hashes/utils.js';
+import {
+  combineLatest,
+  defer,
+  filter,
+  from,
+  map,
+  type Observable,
+  Subject,
+  switchMap,
+  take,
+  takeUntil,
+  tap
+} from 'rxjs';
+import type { FileMetadata } from '../interfaces/file-metadata';
+import type { Identity } from '../interfaces/identity';
+import type { SignalMessage } from '../interfaces/signal-message';
+import type { RoomId } from '../interfaces/signal-session';
+import { SignalTransport } from '../interfaces/signal-transport';
+import { open, type SignalRole, seal } from '../utilities/aead';
+import { decodeBase64Url, encodeBase64Url } from '../utilities/base64url';
+import { generatePassword } from '../utilities/password';
+import { parseFileMetadata } from '../validators/file-metadata';
+import { parseIdentity } from '../validators/identity';
+import { HandshakeService, type InitiatorSession } from './handshake.service';
+
+export interface InitiatorConnection {
+  sas: string;
+  peerIdentity: Identity;
+}
+
+export interface ResponderConnection {
+  sas: string;
+  peerIdentity: Identity;
+  fileInfo: FileMetadata | null;
+}
+
+type SealedKind = 'peer-info' | 'file';
+type SealedMessage = Extract<SignalMessage, { type: 'sealed' }>;
+
+const decoder = new TextDecoder();
+
+@Injectable({ providedIn: 'root' })
+export class ConnectionService {
+  private readonly transport = inject(SignalTransport);
+  private readonly handshake = inject(HandshakeService);
+  private readonly close$ = new Subject<void>();
+
+  private signalingKey: CryptoKey | null = null;
+  private roomId: RoomId | null = null;
+  private role: SignalRole | null = null;
+
+  createSession(): InitiatorSession {
+    const { roomId, sid } = this.transport.createRoom();
+    return { roomId, sid, password: generatePassword() };
+  }
+
+  connectAsInitiator(
+    session: InitiatorSession,
+    identity: Identity,
+    file: FileMetadata
+  ): Observable<InitiatorConnection> {
+    this.role = 'initiator';
+    this.roomId = session.roomId;
+    return this.handshake.runAsInitiator(this.transport, session).pipe(
+      switchMap(({ signalingKey, sas }) => {
+        this.signalingKey = signalingKey;
+        return this.exchangeAsInitiator(identity, file).pipe(
+          map((peerIdentity) => ({ sas, peerIdentity }))
+        );
+      }),
+      takeUntil(this.close$)
+    );
+  }
+
+  connectAsResponder(
+    code: string,
+    identity: Identity
+  ): Observable<ResponderConnection> {
+    this.role = 'responder';
+    return defer(() =>
+      this.handshake.runAsResponder(this.transport, code)
+    ).pipe(
+      switchMap(({ signalingKey, sas, roomId }) => {
+        this.signalingKey = signalingKey;
+        this.roomId = roomId;
+        return this.exchangeAsResponder(identity).pipe(
+          map(({ peerIdentity, fileInfo }) => ({ sas, peerIdentity, fileInfo }))
+        );
+      }),
+      takeUntil(this.close$)
+    );
+  }
+
+  sendSealed(kind: SealedKind, payload: unknown): Observable<void> {
+    const key = this.signalingKey;
+    const roomId = this.roomId;
+    const role = this.role;
+    if (!key || !roomId || !role) {
+      throw new Error('connection not established');
+    }
+    return defer(() =>
+      from(seal(key, utf8ToBytes(JSON.stringify(payload)), roomId, role)).pipe(
+        tap((ct) =>
+          this.transport.send({
+            type: 'sealed',
+            kind,
+            ct: encodeBase64Url(ct)
+          })
+        ),
+        map(() => undefined)
+      )
+    );
+  }
+
+  receiveSealed<T>(
+    kind: SealedKind,
+    parse: (json: string) => T
+  ): Observable<T> {
+    const key = this.signalingKey;
+    const roomId = this.roomId;
+    const role = this.role;
+    if (!key || !roomId || !role) {
+      throw new Error('connection not established');
+    }
+    const peerRole: SignalRole =
+      role === 'initiator' ? 'responder' : 'initiator';
+    return this.transport.messages$.pipe(
+      filter(
+        (message): message is SealedMessage =>
+          message.type === 'sealed' && message.kind === kind
+      ),
+      take(1),
+      switchMap((message) =>
+        from(
+          open(
+            key,
+            decodeBase64Url(message.ct) as Uint8Array<ArrayBuffer>,
+            roomId,
+            peerRole
+          )
+        )
+      ),
+      map((bytes) => parse(decoder.decode(bytes)))
+    );
+  }
+
+  close(): void {
+    this.close$.next();
+    this.transport.close();
+    this.signalingKey = null;
+    this.roomId = null;
+    this.role = null;
+  }
+
+  private exchangeAsInitiator(
+    identity: Identity,
+    file: FileMetadata
+  ): Observable<Identity> {
+    return combineLatest([
+      this.sendSealed('peer-info', identity),
+      this.sendSealed('file', file)
+    ]).pipe(switchMap(() => this.receiveSealed('peer-info', parseIdentity)));
+  }
+
+  private exchangeAsResponder(
+    identity: Identity
+  ): Observable<{ peerIdentity: Identity; fileInfo: FileMetadata | null }> {
+    const sendIdentity$ = this.sendSealed('peer-info', identity);
+    return combineLatest([
+      this.receiveSealed('peer-info', parseIdentity),
+      this.receiveSealed('file', parseFileMetadata)
+    ]).pipe(
+      switchMap(([peerIdentity, fileInfo]) =>
+        sendIdentity$.pipe(map(() => ({ peerIdentity, fileInfo })))
+      )
+    );
+  }
+}

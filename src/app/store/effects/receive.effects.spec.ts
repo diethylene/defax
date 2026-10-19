@@ -2,14 +2,10 @@ import { TestBed } from '@angular/core/testing';
 import { Router } from '@angular/router';
 import { provideEffects } from '@ngrx/effects';
 import { provideStore, Store } from '@ngrx/store';
-import { filter, firstValueFrom, map, switchMap, take } from 'rxjs';
+import { filter, firstValueFrom, of, take, throwError } from 'rxjs';
 import type { FileMetadata } from '../../shared/interfaces/file-metadata';
 import type { Identity } from '../../shared/interfaces/identity';
-import { SignalTransport } from '../../shared/interfaces/signal-transport';
-import { BroadcastChannelTransport } from '../../shared/services/broadcast-channel-transport';
-import { HandshakeService } from '../../shared/services/handshake.service';
-import { exchangePeerInfo } from '../../shared/services/peer-exchange';
-import { SealedChannel } from '../../shared/services/sealed-channel';
+import { ConnectionService } from '../../shared/services/connection.service';
 import { receiveCodeEntered } from '../actions/receive.actions';
 import { receiveReducer } from '../reducers/receive.reducer';
 import {
@@ -18,14 +14,14 @@ import {
 } from '../selectors/receive.selectors';
 import { ReceiveEffects } from './receive.effects';
 
-const senderIdentity: Identity = {
+const peerIdentity: Identity = {
   browser: 'Chrome 122',
   os: 'macOS',
   timeZone: 'Europe/London',
   language: 'en-GB'
 };
 
-const senderFile: FileMetadata = {
+const fileInfo: FileMetadata = {
   name: 'report.pdf',
   size: 12345,
   mime: 'application/pdf',
@@ -33,71 +29,50 @@ const senderFile: FileMetadata = {
   lastModified: 0
 };
 
-function openSender(password: string): {
-  code: string;
-  senderSas: Promise<string>;
-  sender: HandshakeService;
-} {
-  const transport = new BroadcastChannelTransport();
-  const sender = new HandshakeService();
-  const { roomId, sid } = transport.createRoom();
-  const senderSas = firstValueFrom(
-    sender.runAsInitiator(transport, { roomId, sid, password }).pipe(
-      switchMap(({ signalingKey, sas }) => {
-        const channel = new SealedChannel(
-          transport,
-          signalingKey,
-          roomId,
-          'initiator'
-        );
-        return exchangePeerInfo(channel, senderIdentity, senderFile).pipe(
-          map(() => sas)
-        );
-      })
-    )
-  );
-  return { code: `${roomId}-${password}`, senderSas, sender };
+function configure(connectAsResponder: () => unknown): void {
+  TestBed.configureTestingModule({
+    providers: [
+      provideStore({ receive: receiveReducer }),
+      provideEffects(ReceiveEffects),
+      {
+        provide: ConnectionService,
+        useValue: {
+          connectAsResponder,
+          close: () => {}
+        } as unknown as ConnectionService
+      },
+      {
+        provide: Router,
+        useValue: { url: '', navigateByUrl: () => Promise.resolve(true) }
+      }
+    ]
+  });
 }
 
 describe('ReceiveEffects', () => {
-  beforeEach(() => {
-    TestBed.configureTestingModule({
-      providers: [
-        provideStore({ receive: receiveReducer }),
-        provideEffects(ReceiveEffects),
-        { provide: SignalTransport, useClass: BroadcastChannelTransport },
-        {
-          provide: Router,
-          useValue: { url: '', navigateByUrl: () => Promise.resolve(true) }
-        }
-      ]
-    });
-  });
-
-  it('derives the sender sas from an entered code', async () => {
-    const { code, senderSas, sender } = openSender('apple-bird');
+  it('dispatches the sas when the connection is established', async () => {
+    configure(() => of({ sas: '654321', peerIdentity, fileInfo }));
     const store = TestBed.inject(Store);
 
-    const guestSas = firstValueFrom(
+    const sas = firstValueFrom(
       store.select(selectReceiveSas).pipe(
-        filter((sas): sas is string => sas !== null),
+        filter((value): value is string => value !== null),
         take(1)
       )
     );
 
-    store.dispatch(receiveCodeEntered({ code }));
+    store.dispatch(receiveCodeEntered({ code: '123456-apple-bird' }));
 
-    expect(await guestSas).toBe(await senderSas);
-
-    sender.destroy();
+    await expect(sas).resolves.toBe('654321');
   });
 
-  it('dispatches handshake failed for a code without a room id', async () => {
+  it('dispatches handshake failed when the connection errors', async () => {
+    configure(() => throwError(() => new Error('invalid code')));
     const store = TestBed.inject(Store);
 
     const phase = firstValueFrom(
       store.select(selectReceivePhase).pipe(
-        filter((p): p is 'failed' => p === 'failed'),
+        filter((value): value is 'failed' => value === 'failed'),
         take(1)
       )
     );
