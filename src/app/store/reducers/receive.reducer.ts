@@ -3,6 +3,7 @@ import type { ReceivePhase } from '../../features/receive/receive-phase';
 import type { FileMetadata } from '../../shared/interfaces/file-metadata';
 import type { Identity } from '../../shared/interfaces/identity';
 import {
+  receiveAccepted,
   receiveCodeEntered,
   receiveHandshakeFailed,
   receiveReset,
@@ -55,6 +56,10 @@ export const receiveReducer = createReducer(
   on(
     receiveHandshakeFailed,
     (state, { error }): ReceiveState => ({ ...state, error, phase: 'failed' })
+  ),
+  on(
+    receiveAccepted,
+    (state): ReceiveState => ({ ...state, phase: 'transferring' })
   ),
   on(receiveReset, () => initialReceiveState)
 );

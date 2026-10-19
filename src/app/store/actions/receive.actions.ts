@@ -17,4 +17,6 @@ export const receiveHandshakeFailed = createAction(
   props<{ error: string }>()
 );
 
+export const receiveAccepted = createAction('[Receive] Accepted');
+
 export const receiveReset = createAction('[Receive] Reset');

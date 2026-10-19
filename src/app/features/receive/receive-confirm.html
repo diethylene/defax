@@ -1,0 +1,56 @@
+<app-page-shell
+  heading="Is this the transfer you expect?"
+  subheading="Only accept files from someone you know. Nothing downloads until you say yes."
+>
+  <section hlmCard class="w-full">
+    <div hlmCardContent class="flex flex-col items-center gap-4 text-center">
+      <div class="flex flex-col gap-1">
+        <h2 class="text-lg font-semibold tracking-tight text-foreground">
+          Verification number
+        </h2>
+        <p class="text-sm text-muted-foreground">
+          The receiver sees the same number. If they read you a different one,
+          cancel.
+        </p>
+      </div>
+
+      @if (sas(); as value) {
+        <app-sas-number [sas]="value" />
+      }
+    </div>
+  </section>
+
+  <section hlmCard class="w-full">
+    <div hlmCardContent>
+      <app-fingerprint-card
+        [identity]="peerIdentity()"
+        [file]="fileSummary()"
+      />
+    </div>
+  </section>
+
+  <div
+    class="flex w-full flex-col gap-4 sm:flex-row sm:items-center sm:justify-between"
+  >
+    <button
+      type="button"
+      hlmBtn
+      variant="outline"
+      size="lg"
+      class="w-full sm:w-auto"
+      (click)="decline()"
+    >
+      No, decline
+    </button>
+
+    <button
+      type="button"
+      hlmBtn
+      size="lg"
+      class="w-full sm:w-auto"
+      (click)="accept()"
+    >
+      Yes, receive file
+    </button>
+  </div>
+</app-page-shell>
