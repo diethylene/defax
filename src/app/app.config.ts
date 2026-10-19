@@ -22,8 +22,10 @@ import { BroadcastChannelTransport } from './shared/services/broadcast-channel-t
 import { ServerTransport } from './shared/services/server-transport';
 import { setMode } from './store/actions/application-config.actions';
 import { ApplicationConfigEffects } from './store/effects/application-config.effects';
+import { ReceiveEffects } from './store/effects/receive.effects';
 import { SendEffects } from './store/effects/send.effects';
 import { applicationConfigReducer } from './store/reducers/application-config.reducer';
+import { receiveReducer } from './store/reducers/receive.reducer';
 import { sendReducer } from './store/reducers/send.reducer';
 
 export const appConfig: ApplicationConfig = {
@@ -33,9 +35,10 @@ export const appConfig: ApplicationConfig = {
     provideStore({
       applicationConfig: applicationConfigReducer,
       send: sendReducer,
+      receive: receiveReducer,
       router: routerReducer
     }),
-    provideEffects(ApplicationConfigEffects, SendEffects),
+    provideEffects(ApplicationConfigEffects, SendEffects, ReceiveEffects),
     provideRouter(routes, withViewTransitions()),
     provideRouterStore(),
     provideSpartanHlm(),

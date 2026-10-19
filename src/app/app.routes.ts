@@ -1,7 +1,17 @@
 import type { Routes } from '@angular/router';
+import {
+  receiveCanActivate,
+  receiveCanDeactivate
+} from './core/guards/receive.guard';
 import { sendCanActivate, sendCanDeactivate } from './core/guards/send.guard';
 import { HelpFeature } from './features/help/help';
-import { ReceiveFeature } from './features/receive/receive';
+import { ReceiveCompleteComponent } from './features/receive/receive-complete';
+import { ReceiveConfirmComponent } from './features/receive/receive-confirm';
+import { ReceiveFailedComponent } from './features/receive/receive-failed';
+import { ReceiveIdleComponent } from './features/receive/receive-idle';
+import { ReceiveLayoutComponent } from './features/receive/receive-layout';
+import { ReceiveTransferComponent } from './features/receive/receive-transfer';
+import { ReceiveVerifyComponent } from './features/receive/receive-verify';
 import { RelayHelpFeature } from './features/relay-help/relay-help';
 import { SendApproveComponent } from './features/send/send-approve';
 import { SendCodeComponent } from './features/send/send-code';
@@ -62,7 +72,48 @@ export const routes: Routes = [
       }
     ]
   },
-  { path: 'receive', component: ReceiveFeature },
+  {
+    path: 'receive',
+    component: ReceiveLayoutComponent,
+    children: [
+      {
+        path: '',
+        component: ReceiveIdleComponent,
+        canActivate: [receiveCanActivate],
+        canDeactivate: [receiveCanDeactivate]
+      },
+      {
+        path: 'confirm',
+        component: ReceiveConfirmComponent,
+        canActivate: [receiveCanActivate],
+        canDeactivate: [receiveCanDeactivate]
+      },
+      {
+        path: 'transfer',
+        component: ReceiveTransferComponent,
+        canActivate: [receiveCanActivate],
+        canDeactivate: [receiveCanDeactivate]
+      },
+      {
+        path: 'verify',
+        component: ReceiveVerifyComponent,
+        canActivate: [receiveCanActivate],
+        canDeactivate: [receiveCanDeactivate]
+      },
+      {
+        path: 'complete',
+        component: ReceiveCompleteComponent,
+        canActivate: [receiveCanActivate],
+        canDeactivate: [receiveCanDeactivate]
+      },
+      {
+        path: 'failed',
+        component: ReceiveFailedComponent,
+        canActivate: [receiveCanActivate],
+        canDeactivate: [receiveCanDeactivate]
+      }
+    ]
+  },
   { path: 'help', component: HelpFeature },
   { path: 'relay-help', component: RelayHelpFeature }
 ];
