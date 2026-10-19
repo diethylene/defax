@@ -1,5 +1,11 @@
 import { Injectable } from '@angular/core';
+import { match } from 'ts-pattern';
 import type { Identity } from '../interfaces/identity';
+
+const EDGE = /Edg\/(\d+)/;
+const CHROME = /Chrome\/(\d+)/;
+const FIREFOX = /Firefox\/(\d+)/;
+const SAFARI = /Version\/(\d+)/;
 
 @Injectable({ providedIn: 'root' })
 export class IdentityService {
@@ -15,22 +21,51 @@ export class IdentityService {
 }
 
 function browserName(userAgent: string): string {
-  const edge = /Edg\/(\d+)/.exec(userAgent);
-  if (edge) return `Edge ${edge[1]}`;
-  const chrome = /Chrome\/(\d+)/.exec(userAgent);
-  if (chrome) return `Chrome ${chrome[1]}`;
-  const firefox = /Firefox\/(\d+)/.exec(userAgent);
-  if (firefox) return `Firefox ${firefox[1]}`;
-  const safari = /Version\/(\d+)/.exec(userAgent);
-  if (safari) return `Safari ${safari[1]}`;
-  return 'Unknown browser';
+  return match(userAgent)
+    .when(
+      (ua) => EDGE.test(ua),
+      (ua) => `Edge ${capture(EDGE, ua)}`
+    )
+    .when(
+      (ua) => CHROME.test(ua),
+      (ua) => `Chrome ${capture(CHROME, ua)}`
+    )
+    .when(
+      (ua) => FIREFOX.test(ua),
+      (ua) => `Firefox ${capture(FIREFOX, ua)}`
+    )
+    .when(
+      (ua) => SAFARI.test(ua),
+      (ua) => `Safari ${capture(SAFARI, ua)}`
+    )
+    .otherwise(() => 'Unknown browser');
 }
 
 function osName(userAgent: string): string {
-  if (userAgent.includes('Windows')) return 'Windows';
-  if (userAgent.includes('Mac OS X')) return 'macOS';
-  if (userAgent.includes('Android')) return 'Android';
-  if (/(iPhone|iPad|iPod)/.test(userAgent)) return 'iOS';
-  if (userAgent.includes('Linux')) return 'Linux';
-  return 'Unknown OS';
+  return match(userAgent)
+    .when(
+      (ua) => ua.includes('Windows'),
+      () => 'Windows'
+    )
+    .when(
+      (ua) => ua.includes('Mac OS X'),
+      () => 'macOS'
+    )
+    .when(
+      (ua) => ua.includes('Android'),
+      () => 'Android'
+    )
+    .when(
+      (ua) => /(iPhone|iPad|iPod)/.test(ua),
+      () => 'iOS'
+    )
+    .when(
+      (ua) => ua.includes('Linux'),
+      () => 'Linux'
+    )
+    .otherwise(() => 'Unknown OS');
+}
+
+function capture(pattern: RegExp, userAgent: string): string {
+  return pattern.exec(userAgent)?.[1] ?? '';
 }
