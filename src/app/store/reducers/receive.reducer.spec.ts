@@ -84,6 +84,7 @@ describe('receiveReducer', () => {
       sas: '654321',
       peerIdentity: null,
       file: null,
+      digest: null,
       error: null
     };
 
