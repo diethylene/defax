@@ -12,6 +12,11 @@ export const receiveSasComputed = createAction(
   props<{ sas: string; peerIdentity: Identity; file: FileMetadata | null }>()
 );
 
+export const receiveDigestReceived = createAction(
+  '[Receive] Digest Received',
+  props<{ digest: string }>()
+);
+
 export const receiveHandshakeFailed = createAction(
   '[Receive] Handshake Failed',
   props<{ error: string }>()

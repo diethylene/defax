@@ -25,6 +25,7 @@
       <app-fingerprint-card
         [identity]="peerIdentity()"
         [file]="fileSummary()"
+        [checksum]="digest()"
       />
     </div>
   </section>
@@ -48,6 +49,7 @@
       hlmBtn
       size="lg"
       class="w-full sm:w-auto"
+      [disabled]="!digest()"
       (click)="accept()"
     >
       Yes, receive file

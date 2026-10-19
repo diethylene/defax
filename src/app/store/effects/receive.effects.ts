@@ -19,6 +19,7 @@ import { IdentityService } from '../../shared/services/identity.service';
 import { toErrorMessage } from '../../shared/utilities/error-message';
 import {
   receiveCodeEntered,
+  receiveDigestReceived,
   receiveDisconnect,
   receiveHandshakeFailed,
   receiveReset,
@@ -94,6 +95,12 @@ export class ReceiveEffects {
       filter((notice) => notice.cancelledBy === 'sender'),
       tap(() => toast.warning('The sender canceled the transfer.')),
       map(() => receiveReset())
+    )
+  );
+
+  readonly fileHash$ = createEffect(() =>
+    this.connection.peerFileHash$.pipe(
+      map((digest) => receiveDigestReceived({ digest }))
     )
   );
 }

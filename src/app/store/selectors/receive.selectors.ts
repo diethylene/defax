@@ -32,6 +32,11 @@ export const selectReceiveFile = createSelector(
   (state) => state.file
 );
 
+export const selectReceiveDigest = createSelector(
+  selectReceiveState,
+  (state) => state.digest
+);
+
 export const selectReceiveError = createSelector(
   selectReceiveState,
   (state) => state.error

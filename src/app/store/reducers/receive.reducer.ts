@@ -5,6 +5,7 @@ import type { Identity } from '../../shared/interfaces/identity';
 import {
   receiveAccepted,
   receiveCodeEntered,
+  receiveDigestReceived,
   receiveDisconnect,
   receiveHandshakeFailed,
   receiveReset,
@@ -19,6 +20,7 @@ export interface ReceiveState {
   sas: string | null;
   peerIdentity: Identity | null;
   file: FileMetadata | null;
+  digest: string | null;
   error: string | null;
 }
 
@@ -28,6 +30,7 @@ export const initialReceiveState: ReceiveState = {
   sas: null,
   peerIdentity: null,
   file: null,
+  digest: null,
   error: null
 };
 
@@ -41,6 +44,7 @@ export const receiveReducer = createReducer(
       sas: null,
       peerIdentity: null,
       file: null,
+      digest: null,
       error: null
     })
   ),
@@ -57,6 +61,10 @@ export const receiveReducer = createReducer(
   on(
     receiveHandshakeFailed,
     (state, { error }): ReceiveState => ({ ...state, error, phase: 'failed' })
+  ),
+  on(
+    receiveDigestReceived,
+    (state, { digest }): ReceiveState => ({ ...state, digest })
   ),
   on(
     receiveAccepted,

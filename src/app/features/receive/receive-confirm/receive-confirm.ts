@@ -19,6 +19,7 @@ import {
   receiveDisconnect
 } from '../../../store/actions/receive.actions';
 import {
+  selectReceiveDigest,
   selectReceiveFile,
   selectReceivePeerIdentity,
   selectReceiveSas
@@ -51,6 +52,10 @@ export class ReceiveConfirmComponent {
   );
 
   protected readonly file = toSignal(this.store.select(selectReceiveFile), {
+    initialValue: null
+  });
+
+  protected readonly digest = toSignal(this.store.select(selectReceiveDigest), {
     initialValue: null
   });
 
