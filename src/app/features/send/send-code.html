@@ -17,17 +17,10 @@
 
       <hlm-separator />
 
-      <div class="flex items-center gap-3">
-        <hlm-spinner class="text-xl" />
-        <div class="flex flex-col gap-1">
-          <p class="text-sm font-medium text-foreground">
-            Waiting for the receiver to connect...
-          </p>
-          <p class="text-sm text-muted-foreground">
-            Keep this tab open. Closing it cancels the transfer.
-          </p>
-        </div>
-      </div>
+      <app-spinner
+        heading="Waiting for the receiver to connect..."
+        subheading="Keep this tab open. Closing it cancels the transfer."
+      />
     </div>
   </section>
 
