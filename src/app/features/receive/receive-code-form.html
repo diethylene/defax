@@ -1,0 +1,42 @@
+<section hlmCard class="w-full">
+  <div hlmCardContent class="flex flex-col gap-3">
+    <form class="flex flex-col gap-2" (submit)="submit($event)">
+      <label hlmLabel for="receive-code">Code from the sender</label>
+
+      <div class="flex items-center gap-2">
+        <div class="relative flex-1">
+          <input
+            hlmInput
+            id="receive-code"
+            class="h-11 pr-9"
+            (input)="onInput($event)"
+            [forceInvalid]="isInvalid()"
+            [class.border-success]="isValid()"
+            placeholder="123456-apple-orca"
+            autocomplete="off"
+            autocapitalize="none"
+            spellcheck="false"
+            [attr.aria-invalid]="isInvalid()"
+          />
+          @if (isValid()) {
+            <ng-icon
+              name="lucideCheck"
+              size="18"
+              class="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-success"
+            />
+          }
+        </div>
+
+        <button type="submit" hlmBtn size="lg" class="h-11" [disabled]="!isValid()">
+          Connect
+        </button>
+      </div>
+
+      @if (isInvalid()) {
+        <p class="text-sm text-destructive" aria-live="polite">
+          That code doesn't look right. Check it and try again.
+        </p>
+      }
+    </form>
+  </div>
+</section>

@@ -1,0 +1,7 @@
+<app-page-shell
+  heading="Receive a file"
+  subheading="Enter the code the sender gave you. You'll see who's sending and what before anything downloads."
+  [steps]="steps"
+>
+  <app-receive-code-form (connect)="onConnect($event)" />
+</app-page-shell>
