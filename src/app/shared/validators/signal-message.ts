@@ -11,7 +11,7 @@ export const signalMessageSchema = z.discriminatedUnion('type', [
   z.object({ type: z.literal('pake'), y: pakeKeySchema }),
   z.object({
     type: z.literal('sealed'),
-    kind: z.enum(['peer-info', 'file']),
+    kind: z.enum(['peer-info', 'file', 'disconnect', 'file-hash']),
     ct: z.string()
   }),
   z.object({
