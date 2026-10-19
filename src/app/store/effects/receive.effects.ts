@@ -63,7 +63,9 @@ export class ReceiveEffects {
             this.identityService.detect()
           )
         ).pipe(
-          map(({ sas }) => receiveSasComputed({ sas })),
+          map(({ sas, peerIdentity, fileInfo }) =>
+            receiveSasComputed({ sas, peerIdentity, file: fileInfo })
+          ),
           catchError((error) =>
             of(
               receiveHandshakeFailed({

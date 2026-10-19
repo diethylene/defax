@@ -29,6 +29,11 @@ export const selectSendSas = createSelector(
   (state) => state.sas
 );
 
+export const selectSendPeerIdentity = createSelector(
+  selectSendState,
+  (state) => state.peerIdentity
+);
+
 export const selectSendError = createSelector(
   selectSendState,
   (state) => state.error

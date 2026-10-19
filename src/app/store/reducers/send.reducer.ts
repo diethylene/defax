@@ -1,6 +1,7 @@
 import { createReducer, on } from '@ngrx/store';
 import type { SendPhase } from '../../features/send/send-phase';
 import type { FileMetadata } from '../../shared/interfaces/file-metadata';
+import type { Identity } from '../../shared/interfaces/identity';
 import type { RoomId } from '../../shared/interfaces/signal-session';
 import {
   sendFileSelected,
@@ -33,6 +34,7 @@ export interface SendState {
   roomId: RoomId | null;
   password: string | null;
   sas: string | null;
+  peerIdentity: Identity | null;
   error: string | null;
   hash: HashState;
 }
@@ -51,6 +53,7 @@ export const initialSendState: SendState = {
   roomId: null,
   password: null,
   sas: null,
+  peerIdentity: null,
   error: null,
   hash: initialHashState
 };
@@ -66,6 +69,7 @@ export const sendReducer = createReducer(
       roomId: null,
       password: null,
       sas: null,
+      peerIdentity: null,
       error: null,
       hash: initialHashState
     })
@@ -77,7 +81,12 @@ export const sendReducer = createReducer(
   ),
   on(
     sendSasComputed,
-    (state, { sas }): SendState => ({ ...state, sas, phase: 'sasConfirm' })
+    (state, { sas, peerIdentity }): SendState => ({
+      ...state,
+      sas,
+      peerIdentity,
+      phase: 'sasConfirm'
+    })
   ),
   on(
     sendHandshakeFailed,

@@ -1,5 +1,7 @@
 import { createReducer, on } from '@ngrx/store';
 import type { ReceivePhase } from '../../features/receive/receive-phase';
+import type { FileMetadata } from '../../shared/interfaces/file-metadata';
+import type { Identity } from '../../shared/interfaces/identity';
 import {
   receiveCodeEntered,
   receiveHandshakeFailed,
@@ -13,6 +15,8 @@ export interface ReceiveState {
   phase: ReceivePhase;
   code: string | null;
   sas: string | null;
+  peerIdentity: Identity | null;
+  file: FileMetadata | null;
   error: string | null;
 }
 
@@ -20,6 +24,8 @@ export const initialReceiveState: ReceiveState = {
   phase: 'idle',
   code: null,
   sas: null,
+  peerIdentity: null,
+  file: null,
   error: null
 };
 
@@ -31,12 +37,20 @@ export const receiveReducer = createReducer(
       phase: 'connecting',
       code,
       sas: null,
+      peerIdentity: null,
+      file: null,
       error: null
     })
   ),
   on(
     receiveSasComputed,
-    (state, { sas }): ReceiveState => ({ ...state, sas, phase: 'confirming' })
+    (state, { sas, peerIdentity, file }): ReceiveState => ({
+      ...state,
+      sas,
+      peerIdentity,
+      file,
+      phase: 'confirming'
+    })
   ),
   on(
     receiveHandshakeFailed,

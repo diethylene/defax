@@ -10,6 +10,21 @@ import {
   receiveReducer
 } from './receive.reducer';
 
+const peerIdentity = {
+  browser: 'Firefox 121',
+  os: 'Windows',
+  timeZone: 'Europe/London',
+  language: 'en-GB'
+};
+
+const file = {
+  name: 'report.pdf',
+  size: 12345,
+  mime: 'application/pdf',
+  extension: 'pdf',
+  lastModified: 1700000000000
+};
+
 describe('receiveReducer', () => {
   it('clears prior sas and error when a code is entered', () => {
     const state: ReceiveState = {
@@ -29,17 +44,22 @@ describe('receiveReducer', () => {
     expect(next.error).toBeNull();
   });
 
-  it('records the sas and moves to confirming when computed', () => {
+  it('records the sas and peer details and moves to confirming', () => {
     const state: ReceiveState = {
       ...initialReceiveState,
       phase: 'connecting',
       code: '123456-apple-bird'
     };
 
-    const next = receiveReducer(state, receiveSasComputed({ sas: '654321' }));
+    const next = receiveReducer(
+      state,
+      receiveSasComputed({ sas: '654321', peerIdentity, file })
+    );
 
     expect(next.phase).toBe('confirming');
     expect(next.sas).toBe('654321');
+    expect(next.peerIdentity?.browser).toBe('Firefox 121');
+    expect(next.file?.name).toBe('report.pdf');
   });
 
   it('records the error and moves to failed when the handshake fails', () => {
@@ -62,6 +82,8 @@ describe('receiveReducer', () => {
       phase: 'confirming',
       code: '123456-apple-bird',
       sas: '654321',
+      peerIdentity: null,
+      file: null,
       error: null
     };
 

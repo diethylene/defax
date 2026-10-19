@@ -22,6 +22,16 @@ export const selectReceiveSas = createSelector(
   (state) => state.sas
 );
 
+export const selectReceivePeerIdentity = createSelector(
+  selectReceiveState,
+  (state) => state.peerIdentity
+);
+
+export const selectReceiveFile = createSelector(
+  selectReceiveState,
+  (state) => state.file
+);
+
 export const selectReceiveError = createSelector(
   selectReceiveState,
   (state) => state.error

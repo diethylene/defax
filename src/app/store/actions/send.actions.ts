@@ -1,5 +1,6 @@
 import { createAction, props } from '@ngrx/store';
 import type { FileMetadata } from '../../shared/interfaces/file-metadata';
+import type { Identity } from '../../shared/interfaces/identity';
 import type { RoomId } from '../../shared/interfaces/signal-session';
 
 export const sendFileSelected = createAction(
@@ -19,7 +20,7 @@ export const sendPasswordGenerated = createAction(
 
 export const sendSasComputed = createAction(
   '[Send] SAS Computed',
-  props<{ sas: string }>()
+  props<{ sas: string; peerIdentity: Identity }>()
 );
 
 export const sendHandshakeFailed = createAction(

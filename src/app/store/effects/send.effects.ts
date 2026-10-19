@@ -81,7 +81,9 @@ export class SendEffects {
               file: metadata
             })
             .pipe(
-              map(({ sas }) => sendSasComputed({ sas })),
+              map(({ sas, peerIdentity }) =>
+                sendSasComputed({ sas, peerIdentity })
+              ),
               catchError((error) =>
                 of(
                   sendHandshakeFailed({

@@ -1,4 +1,6 @@
 import { createAction, props } from '@ngrx/store';
+import type { FileMetadata } from '../../shared/interfaces/file-metadata';
+import type { Identity } from '../../shared/interfaces/identity';
 
 export const receiveCodeEntered = createAction(
   '[Receive] Code Entered',
@@ -7,7 +9,7 @@ export const receiveCodeEntered = createAction(
 
 export const receiveSasComputed = createAction(
   '[Receive] SAS Computed',
-  props<{ sas: string }>()
+  props<{ sas: string; peerIdentity: Identity; file: FileMetadata | null }>()
 );
 
 export const receiveHandshakeFailed = createAction(
