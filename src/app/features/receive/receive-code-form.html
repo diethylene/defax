@@ -7,18 +7,17 @@
         <div class="relative flex-1">
           <input
             hlmInput
+            [formControl]="code"
             id="receive-code"
             class="h-11 pr-9"
-            (input)="onInput($event)"
-            [forceInvalid]="isInvalid()"
-            [class.border-success]="isValid()"
+            [forceInvalid]="submitted() && code.invalid"
+            [class.border-success]="code.valid && code.value.trim().length > 0"
             placeholder="123456-apple-orca"
             autocomplete="off"
             autocapitalize="none"
             spellcheck="false"
-            [attr.aria-invalid]="isInvalid()"
           />
-          @if (isValid()) {
+          @if (code.valid && code.value.trim().length > 0) {
             <ng-icon
               name="lucideCheck"
               size="18"
@@ -27,12 +26,18 @@
           }
         </div>
 
-        <button type="submit" hlmBtn size="lg" class="h-11" [disabled]="isEmpty()">
+        <button
+          type="submit"
+          hlmBtn
+          size="lg"
+          class="h-11"
+          [disabled]="code.value.trim().length === 0"
+        >
           Connect
         </button>
       </div>
 
-      @if (isInvalid()) {
+      @if (submitted() && code.invalid) {
         <p class="text-sm text-destructive" aria-live="polite">
           That code doesn't look right. Check it and try again.
         </p>
