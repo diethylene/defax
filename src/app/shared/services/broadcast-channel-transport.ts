@@ -1,5 +1,6 @@
 import { Injectable } from '@angular/core';
 import { Subject } from 'rxjs';
+import { match } from 'ts-pattern';
 import { PROTOCOL_VERSION } from '../constants/protocol-version';
 import type { SignalMessage } from '../interfaces/signal-message';
 import type { RoomCreated, RoomId, Sid } from '../interfaces/signal-session';
@@ -81,18 +82,15 @@ export class BroadcastChannelTransport extends SignalTransport {
   }
 
   private handleInbound(message: SignalMessage): void {
-    if (this.mode === 'host' && message.type === 'join') {
-      this.handleJoin(message);
-      return;
-    }
-    if (this.mode !== 'guest') return;
-    if (message.type === 'joined') {
-      this.resolveJoin(decodeSid(message.sid));
-      return;
-    }
-    if (message.type === 'error') {
-      this.rejectJoin(new Error(message.code));
-    }
+    match([this.mode, message] as const)
+      .with(['host', { type: 'join' }], ([, join]) => this.handleJoin(join))
+      .with(['guest', { type: 'joined' }], ([, joined]) =>
+        this.resolveJoin(decodeSid(joined.sid))
+      )
+      .with(['guest', { type: 'error' }], ([, error]) =>
+        this.rejectJoin(new Error(error.code))
+      )
+      .otherwise(() => undefined);
   }
 
   private handleJoin(message: Extract<SignalMessage, { type: 'join' }>): void {
