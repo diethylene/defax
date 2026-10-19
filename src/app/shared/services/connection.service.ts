@@ -17,6 +17,7 @@ import {
   tap
 } from 'rxjs';
 import { match } from 'ts-pattern';
+import type { SealedKind } from '../constants/signal-message';
 import type { FileMetadata } from '../interfaces/file-metadata';
 import type { Identity } from '../interfaces/identity';
 import type { SignalMessage } from '../interfaces/signal-message';
@@ -44,7 +45,6 @@ export interface DisconnectNotice {
   cancelledBy: 'sender' | 'receiver';
 }
 
-type SealedKind = 'peer-info' | 'file' | 'disconnect' | 'file-hash';
 type SealedMessage = Extract<SignalMessage, { type: 'sealed' }>;
 
 const decoder = new TextDecoder();

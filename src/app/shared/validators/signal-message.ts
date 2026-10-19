@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { ERROR_CODES, SEALED_KINDS } from '../constants/signal-message';
 import { base64UrlBytesSchema } from './base64url';
 import { sidSchema } from './sid';
 
@@ -11,16 +12,11 @@ export const signalMessageSchema = z.discriminatedUnion('type', [
   z.object({ type: z.literal('pake'), y: pakeKeySchema }),
   z.object({
     type: z.literal('sealed'),
-    kind: z.enum(['peer-info', 'file', 'disconnect', 'file-hash']),
+    kind: z.enum(SEALED_KINDS),
     ct: z.string()
   }),
   z.object({
     type: z.literal('error'),
-    code: z.enum([
-      'room-full',
-      'room-expired',
-      'protocol-mismatch',
-      'peer-failed'
-    ])
+    code: z.enum(ERROR_CODES)
   })
 ]);
