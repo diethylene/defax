@@ -24,10 +24,12 @@ export class ReceiveCodeFormComponent {
   readonly connect = output<string>();
 
   protected readonly value = signal('');
+  protected readonly submitted = signal(false);
   protected readonly parsed = computed(() => parseReceiveCode(this.value()));
   protected readonly isValid = computed(() => this.parsed() !== null);
+  protected readonly isEmpty = computed(() => this.value().length === 0);
   protected readonly isInvalid = computed(
-    () => this.value().length > 0 && !this.isValid()
+    () => this.submitted() && !this.isEmpty() && !this.isValid()
   );
 
   protected onInput(event: Event): void {
@@ -38,7 +40,10 @@ export class ReceiveCodeFormComponent {
   protected submit(event: SubmitEvent): void {
     event.preventDefault();
     const parsed = this.parsed();
-    if (!parsed) return;
+    if (!parsed) {
+      this.submitted.set(true);
+      return;
+    }
     this.connect.emit(`${parsed.roomId}-${parsed.password}`);
   }
 }

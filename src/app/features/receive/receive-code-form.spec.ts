@@ -18,6 +18,12 @@ function setCode(element: HTMLElement, value: string): void {
   input.dispatchEvent(new Event('input'));
 }
 
+function submit(element: HTMLElement): void {
+  element
+    .querySelector('form')
+    ?.dispatchEvent(new Event('submit', { cancelable: true, bubbles: true }));
+}
+
 describe('ReceiveCodeFormComponent', () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
@@ -26,22 +32,36 @@ describe('ReceiveCodeFormComponent', () => {
     }).compileComponents();
   });
 
-  it('disables connect until the code is valid', () => {
+  it('disables connect while the code is empty', () => {
     const { element } = render();
     const button = element.querySelector('button') as HTMLButtonElement;
     expect(button.disabled).toBe(true);
   });
 
-  it('shows an error for a non-empty invalid code', () => {
+  it('does not flag an invalid code while typing', () => {
     const { fixture, element } = render();
     setCode(element, '12345-apple-orca');
+    fixture.detectChanges();
+    expect(element.querySelector('p')).toBeNull();
+    expect(
+      (element.querySelector('button') as HTMLButtonElement).disabled
+    ).toBe(false);
+    expect(
+      (element.querySelector('input') as HTMLInputElement).getAttribute(
+        'aria-invalid'
+      )
+    ).toBeNull();
+  });
+
+  it('shows an error after submitting an invalid code', () => {
+    const { fixture, element } = render();
+    setCode(element, '12345-apple-orca');
+    fixture.detectChanges();
+    submit(element);
     fixture.detectChanges();
     expect(element.querySelector('p')?.textContent).toContain(
       "doesn't look right"
     );
-    expect(
-      (element.querySelector('button') as HTMLButtonElement).disabled
-    ).toBe(true);
     expect(
       (element.querySelector('input') as HTMLInputElement).getAttribute(
         'aria-invalid'
@@ -69,9 +89,7 @@ describe('ReceiveCodeFormComponent', () => {
     fixture.componentInstance.connect.subscribe((code) => (emitted = code));
     setCode(element, ' 123456 Apple ORCA ');
     fixture.detectChanges();
-    element
-      .querySelector('form')
-      ?.dispatchEvent(new Event('submit', { cancelable: true, bubbles: true }));
+    submit(element);
     expect(emitted).toBe('123456-apple-orca');
   });
 });
