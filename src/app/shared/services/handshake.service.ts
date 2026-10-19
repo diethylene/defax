@@ -13,12 +13,13 @@ import {
   takeUntil,
   tap
 } from 'rxjs';
+import { match } from 'ts-pattern';
 import type { FileMetadata } from '../interfaces/file-metadata';
 import type { Identity } from '../interfaces/identity';
 import type { SignalMessage } from '../interfaces/signal-message';
 import type { RoomId, Sid } from '../interfaces/signal-session';
 import type { SignalTransport } from '../interfaces/signal-transport';
-import { open, type SignalRole, seal } from '../utilities/aead';
+import type { SignalRole } from '../utilities/aead';
 import { decodeBase64Url, encodeBase64Url } from '../utilities/base64url';
 import {
   deriveGeneratorString,
@@ -34,6 +35,7 @@ import { parsePasscode } from '../utilities/passcode';
 import { normalizePassword } from '../utilities/password';
 import { parseFileMetadata } from '../validators/file-metadata';
 import { parseIdentity } from '../validators/identity';
+import { SealedChannel } from './sealed-channel';
 
 export interface HandshakeResult {
   signalingKey: CryptoKey;
@@ -53,10 +55,6 @@ export interface InitiatorSession {
 
 type PakeMessage = Extract<SignalMessage, { type: 'pake' }>;
 type PeerJoinedMessage = Extract<SignalMessage, { type: 'peer-joined' }>;
-type SealedMessage = Extract<SignalMessage, { type: 'sealed' }>;
-type SealedKind = 'peer-info' | 'file';
-
-const decoder = new TextDecoder();
 
 @Injectable()
 export class HandshakeService {
@@ -83,7 +81,7 @@ export class HandshakeService {
           peerPublicKey,
           sid,
           roomId,
-          true,
+          'initiator',
           identity,
           file
         )
@@ -113,7 +111,7 @@ export class HandshakeService {
           peerPublicKey,
           sid,
           roomId,
-          false,
+          'responder',
           identity,
           null
         );
@@ -183,10 +181,11 @@ export class HandshakeService {
     peerPublicKey: Uint8Array,
     sid: Sid,
     roomId: RoomId,
-    ownIsInitiator: boolean,
+    role: SignalRole,
     identity: Identity,
     file: FileMetadata | null
   ): Observable<HandshakeResult> {
+    const ownIsInitiator = role === 'initiator';
     const sharedSecret = deriveSharedSecret(
       secret,
       peerPublicKey,
@@ -205,13 +204,7 @@ export class HandshakeService {
       )
     ).pipe(
       switchMap(({ signalingKey, sas }) =>
-        this.exchangePeerInfo(
-          signalingKey,
-          roomId,
-          ownIsInitiator,
-          identity,
-          file
-        ).pipe(
+        this.exchangePeerInfo(signalingKey, roomId, role, identity, file).pipe(
           map(({ peerIdentity, fileInfo }) => ({
             signalingKey,
             sas,
@@ -227,112 +220,52 @@ export class HandshakeService {
   private exchangePeerInfo(
     key: CryptoKey,
     roomId: RoomId,
-    ownIsInitiator: boolean,
+    role: SignalRole,
     identity: Identity,
     file: FileMetadata | null
   ): Observable<{ peerIdentity: Identity; fileInfo: FileMetadata | null }> {
     const transport = this.transport;
     if (!transport) throw new Error('handshake transport missing');
 
-    const ownRole: SignalRole = ownIsInitiator ? 'initiator' : 'responder';
-    const peerRole: SignalRole = ownIsInitiator ? 'responder' : 'initiator';
+    const channel = new SealedChannel(transport, key, roomId, role);
 
-    const receiveIdentity$ = this.receiveSealed(
-      transport,
-      key,
-      roomId,
-      peerRole,
-      'peer-info',
-      parseIdentity
-    );
-    const sendIdentity$ = this.sendSealed(
-      transport,
-      key,
-      roomId,
-      ownRole,
-      'peer-info',
-      identity
-    );
+    return match(role)
+      .with('initiator', () =>
+        this.exchangeAsInitiator(channel, identity, file)
+      )
+      .with('responder', () => this.exchangeAsResponder(channel, identity))
+      .exhaustive();
+  }
 
-    if (ownIsInitiator) {
-      if (!file) throw new Error('initiator handshake missing file metadata');
-      const sendFile$ = this.sendSealed(
-        transport,
-        key,
-        roomId,
-        ownRole,
-        'file',
-        file
-      );
-      return combineLatest([sendIdentity$, sendFile$]).pipe(
-        switchMap(() =>
-          receiveIdentity$.pipe(
-            map((peerIdentity) => ({ peerIdentity, fileInfo: null }))
-          )
-        )
-      );
-    }
-
-    const receiveFile$ = this.receiveSealed(
-      transport,
-      key,
-      roomId,
-      peerRole,
-      'file',
-      parseFileMetadata
-    );
-    return combineLatest([receiveIdentity$, receiveFile$]).pipe(
-      switchMap(([peerIdentity, fileInfo]) =>
-        sendIdentity$.pipe(map(() => ({ peerIdentity, fileInfo })))
+  private exchangeAsInitiator(
+    channel: SealedChannel,
+    identity: Identity,
+    file: FileMetadata | null
+  ): Observable<{ peerIdentity: Identity; fileInfo: FileMetadata | null }> {
+    if (!file) throw new Error('initiator handshake missing file metadata');
+    return combineLatest([
+      channel.send('peer-info', identity),
+      channel.send('file', file)
+    ]).pipe(
+      switchMap(() =>
+        channel
+          .receive('peer-info', parseIdentity)
+          .pipe(map((peerIdentity) => ({ peerIdentity, fileInfo: null })))
       )
     );
   }
 
-  private receiveSealed<T>(
-    transport: SignalTransport,
-    key: CryptoKey,
-    roomId: RoomId,
-    role: SignalRole,
-    kind: SealedKind,
-    parse: (json: string) => T
-  ): Observable<T> {
-    return transport.messages$.pipe(
-      filter(
-        (message): message is SealedMessage =>
-          message.type === 'sealed' && message.kind === kind
-      ),
-      take(1),
-      switchMap((message) =>
-        from(
-          open(
-            key,
-            decodeBase64Url(message.ct) as Uint8Array<ArrayBuffer>,
-            roomId,
-            role
-          )
-        )
-      ),
-      map((bytes) => parse(decoder.decode(bytes)))
-    );
-  }
-
-  private sendSealed(
-    transport: SignalTransport,
-    key: CryptoKey,
-    roomId: RoomId,
-    role: SignalRole,
-    kind: SealedKind,
-    payload: Identity | FileMetadata
-  ): Observable<Uint8Array<ArrayBuffer>> {
-    return defer(() =>
-      from(seal(key, utf8ToBytes(JSON.stringify(payload)), roomId, role)).pipe(
-        tap((ct) =>
-          transport.send({
-            type: 'sealed',
-            kind,
-            ct: encodeBase64Url(ct)
-          })
-        )
+  private exchangeAsResponder(
+    channel: SealedChannel,
+    identity: Identity
+  ): Observable<{ peerIdentity: Identity; fileInfo: FileMetadata | null }> {
+    const sendIdentity$ = channel.send('peer-info', identity);
+    return combineLatest([
+      channel.receive('peer-info', parseIdentity),
+      channel.receive('file', parseFileMetadata)
+    ]).pipe(
+      switchMap(([peerIdentity, fileInfo]) =>
+        sendIdentity$.pipe(map(() => ({ peerIdentity, fileInfo })))
       )
     );
   }
