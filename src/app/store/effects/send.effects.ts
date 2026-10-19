@@ -19,6 +19,7 @@ import { routeForPhase } from '../../features/send/send-phase';
 import { SignalTransport } from '../../shared/interfaces/signal-transport';
 import { HandshakeService } from '../../shared/services/handshake.service';
 import { HashService } from '../../shared/services/hash.service';
+import { toErrorMessage } from '../../shared/utilities/error-message';
 import { generatePassword } from '../../shared/utilities/password';
 import {
   sendFileSelected,
@@ -33,10 +34,6 @@ import {
   sendSasComputed
 } from '../actions/send.actions';
 import { selectSendFile, selectSendPhase } from '../selectors/send.selectors';
-
-function toErrorMessage(error: unknown, fallback: string): string {
-  return error instanceof Error ? error.message : fallback;
-}
 
 @Injectable()
 export class SendEffects {
