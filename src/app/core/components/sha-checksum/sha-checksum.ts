@@ -6,6 +6,7 @@ import {
 } from '@angular/core';
 import { HlmSkeleton } from '@spartan-ng/helm/skeleton';
 import { CopyButtonComponent } from '../../../shared/components/copy-button/copy-button';
+import { chunk } from '../../../shared/utilities/chunk';
 
 const GROUP_SIZE = 4;
 const GROUP_COUNT = 16;
@@ -55,12 +56,4 @@ export class ShaChecksumComponent {
   );
 
   protected readonly skeletonGroups = Array.from({ length: GROUP_COUNT });
-}
-
-function chunk(value: string, size: number): string[] {
-  const groups: string[] = [];
-  for (let i = 0; i < value.length; i += size) {
-    groups.push(value.slice(i, i + size));
-  }
-  return groups;
 }
