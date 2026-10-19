@@ -78,11 +78,7 @@ export class FingerprintCardComponent {
     return [
       { label: 'Browser', value: identity?.browser ?? '' },
       { label: 'Operating system', value: identity?.os ?? '' },
-      {
-        label: 'Location',
-        value: identity ? locationFromTimeZone(identity.timeZone) : ''
-      },
-      { label: 'Language', value: identity?.language ?? '' }
+      { label: 'Location', value: identity?.timeZone ?? '' }
     ];
   });
 
@@ -91,9 +87,4 @@ export class FingerprintCardComponent {
   );
 
   protected readonly skeletonGroups = Array.from({ length: SKELETON_GROUPS });
-}
-
-function locationFromTimeZone(timeZone: string): string {
-  const region = timeZone.split('/')[0];
-  return region && region !== 'Etc' ? region : timeZone;
 }
