@@ -10,7 +10,7 @@ import { SendFailedComponent } from './features/send/send-failed';
 import { SendIdleComponent } from './features/send/send-idle';
 import { SendLayoutComponent } from './features/send/send-layout';
 import { SendTransferComponent } from './features/send/send-transfer';
-import { SendVerifyingComponent } from './features/send/send-verifying';
+import { SendVerifyComponent } from './features/send/send-verify';
 
 export const routes: Routes = [
   { path: '', redirectTo: 'send', pathMatch: 'full' },
@@ -43,8 +43,8 @@ export const routes: Routes = [
         canDeactivate: [sendCanDeactivate]
       },
       {
-        path: 'verifying',
-        component: SendVerifyingComponent,
+        path: 'verify',
+        component: SendVerifyComponent,
         canActivate: [sendCanActivate],
         canDeactivate: [sendCanDeactivate]
       },
