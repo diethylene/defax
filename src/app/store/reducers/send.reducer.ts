@@ -1,5 +1,5 @@
 import { createReducer, on } from '@ngrx/store';
-import type { SendPhase } from '../../features/send/send-phase';
+import type { SendPhase } from '../../features/send/send-phase/send-phase';
 import type { FileMetadata } from '../../shared/interfaces/file-metadata';
 import type { Identity } from '../../shared/interfaces/identity';
 import type { RoomId } from '../../shared/interfaces/signal-session';

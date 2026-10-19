@@ -5,7 +5,7 @@ import {
   Router
 } from '@angular/router';
 import { Store } from '@ngrx/store';
-import { routeForPhase } from '../../features/send/send-phase';
+import { routeForPhase } from '../../features/send/send-phase/send-phase';
 import { sendReset } from '../../store/actions/send.actions';
 import { selectSendPhase } from '../../store/selectors/send.selectors';
 

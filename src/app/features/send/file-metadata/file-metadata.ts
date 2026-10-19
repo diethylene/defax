@@ -1,4 +1,4 @@
-import type { FileMetadata } from '../../shared/interfaces/file-metadata';
+import type { FileMetadata } from '../../../shared/interfaces/file-metadata';
 
 export function toFileMetadata(file: File): FileMetadata {
   return {

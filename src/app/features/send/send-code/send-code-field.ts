@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component, input } from '@angular/core';
-import { CopyButtonComponent } from '../../shared/components/copy-button/copy-button';
+import { CopyButtonComponent } from '../../../shared/components/copy-button/copy-button';
 
 @Component({
   selector: 'app-send-code-field',

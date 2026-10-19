@@ -14,17 +14,17 @@ import { HlmButton } from '@spartan-ng/helm/button';
 import { HlmCard, HlmCardContent } from '@spartan-ng/helm/card';
 import { HlmSeparator } from '@spartan-ng/helm/separator';
 import { HlmSkeleton } from '@spartan-ng/helm/skeleton';
-import { ShaChecksumComponent } from '../../core/components/sha-checksum/sha-checksum';
-import { SpinnerComponent } from '../../core/components/spinner/spinner';
-import { FileSizePipe } from '../../shared/pipes/file-size.pipe';
-import { FileTypePipe } from '../../shared/pipes/file-type.pipe';
-import { sendReset } from '../../store/actions/send.actions';
+import { ShaChecksumComponent } from '../../../core/components/sha-checksum/sha-checksum';
+import { SpinnerComponent } from '../../../core/components/spinner/spinner';
+import { FileSizePipe } from '../../../shared/pipes/file-size.pipe';
+import { FileTypePipe } from '../../../shared/pipes/file-type.pipe';
+import { sendReset } from '../../../store/actions/send.actions';
 import {
   selectSendHashDigest,
   selectSendMetadata,
   selectSendPassword,
   selectSendRoomId
-} from '../../store/selectors/send.selectors';
+} from '../../../store/selectors/send.selectors';
 import { SendCodeFieldComponent } from './send-code-field';
 
 @Component({

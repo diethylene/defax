@@ -12,15 +12,15 @@ import { HlmSpinner } from '@spartan-ng/helm/spinner';
 import {
   type FileSummary,
   FingerprintCardComponent
-} from '../../core/components/fingerprint-card/fingerprint-card';
-import { PageShellComponent } from '../../core/components/page-shell/page-shell';
-import { SasNumberComponent } from '../../core/components/sas-number/sas-number';
-import { sendReset } from '../../store/actions/send.actions';
+} from '../../../core/components/fingerprint-card/fingerprint-card';
+import { PageShellComponent } from '../../../core/components/page-shell/page-shell';
+import { SasNumberComponent } from '../../../core/components/sas-number/sas-number';
+import { sendReset } from '../../../store/actions/send.actions';
 import {
   selectSendMetadata,
   selectSendPeerIdentity,
   selectSendSas
-} from '../../store/selectors/send.selectors';
+} from '../../../store/selectors/send.selectors';
 
 @Component({
   selector: 'app-send-approve',

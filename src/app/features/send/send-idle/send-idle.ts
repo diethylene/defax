@@ -3,11 +3,11 @@ import { Store } from '@ngrx/store';
 import {
   PageShellComponent,
   type PageStep
-} from '../../core/components/page-shell/page-shell';
-import { DropzoneComponent } from '../../shared/components/dropzone/dropzone.component';
-import type { DropzoneResult } from '../../shared/components/dropzone/dropzone.model';
-import { sendFileSelected } from '../../store/actions/send.actions';
-import { toFileMetadata } from './file-metadata';
+} from '../../../core/components/page-shell/page-shell';
+import { DropzoneComponent } from '../../../shared/components/dropzone/dropzone.component';
+import type { DropzoneResult } from '../../../shared/components/dropzone/dropzone.model';
+import { sendFileSelected } from '../../../store/actions/send.actions';
+import { toFileMetadata } from '../file-metadata/file-metadata';
 
 @Component({
   selector: 'app-send-idle',

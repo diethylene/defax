@@ -13,14 +13,14 @@ import { ReceiveLayoutComponent } from './features/receive/receive-layout';
 import { ReceiveTransferComponent } from './features/receive/receive-transfer';
 import { ReceiveVerifyComponent } from './features/receive/receive-verify';
 import { RelayHelpFeature } from './features/relay-help/relay-help';
-import { SendApproveComponent } from './features/send/send-approve';
-import { SendCodeComponent } from './features/send/send-code';
-import { SendCompleteComponent } from './features/send/send-complete';
-import { SendFailedComponent } from './features/send/send-failed';
-import { SendIdleComponent } from './features/send/send-idle';
-import { SendLayoutComponent } from './features/send/send-layout';
-import { SendTransferComponent } from './features/send/send-transfer';
-import { SendVerifyComponent } from './features/send/send-verify';
+import { SendApproveComponent } from './features/send/send-approve/send-approve';
+import { SendCodeComponent } from './features/send/send-code/send-code';
+import { SendCompleteComponent } from './features/send/send-complete/send-complete';
+import { SendFailedComponent } from './features/send/send-failed/send-failed';
+import { SendIdleComponent } from './features/send/send-idle/send-idle';
+import { SendLayoutComponent } from './features/send/send-layout/send-layout';
+import { SendTransferComponent } from './features/send/send-transfer/send-transfer';
+import { SendVerifyComponent } from './features/send/send-verify/send-verify';
 
 export const routes: Routes = [
   { path: '', redirectTo: 'send', pathMatch: 'full' },
