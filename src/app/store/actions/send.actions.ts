@@ -46,3 +46,5 @@ export const sendHashFailed = createAction(
 );
 
 export const sendReset = createAction('[Send] Reset');
+
+export const sendDisconnect = createAction('[Send] Disconnect');

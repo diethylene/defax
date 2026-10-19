@@ -4,6 +4,7 @@ import type { FileMetadata } from '../../shared/interfaces/file-metadata';
 import type { Identity } from '../../shared/interfaces/identity';
 import type { RoomId } from '../../shared/interfaces/signal-session';
 import {
+  sendDisconnect,
   sendFileSelected,
   sendHandshakeFailed,
   sendHashComplete,
@@ -120,5 +121,5 @@ export const sendReducer = createReducer(
       hash: { ...state.hash, status: 'failed', error }
     })
   ),
-  on(sendReset, () => initialSendState)
+  on(sendReset, sendDisconnect, () => initialSendState)
 );

@@ -15,7 +15,7 @@ import {
 } from '../../../core/components/fingerprint-card/fingerprint-card';
 import { PageShellComponent } from '../../../core/components/page-shell/page-shell';
 import { SasNumberComponent } from '../../../core/components/sas-number/sas-number';
-import { sendReset } from '../../../store/actions/send.actions';
+import { sendDisconnect } from '../../../store/actions/send.actions';
 import {
   selectSendMetadata,
   selectSendPeerIdentity,
@@ -60,6 +60,6 @@ export class SendApproveComponent {
   });
 
   protected cancel(): void {
-    this.store.dispatch(sendReset());
+    this.store.dispatch(sendDisconnect());
   }
 }

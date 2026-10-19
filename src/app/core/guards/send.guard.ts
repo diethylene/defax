@@ -6,7 +6,7 @@ import {
 } from '@angular/router';
 import { Store } from '@ngrx/store';
 import { routeForPhase } from '../../features/send/send-phase/send-phase';
-import { sendReset } from '../../store/actions/send.actions';
+import { sendDisconnect } from '../../store/actions/send.actions';
 import { selectSendPhase } from '../../store/selectors/send.selectors';
 
 const cancelMessage =
@@ -31,6 +31,6 @@ export const sendCanDeactivate: CanDeactivateFn<unknown> = (
   if (nextState.url === routeForPhase(phase)) return true;
   if (phase === 'idle') return true;
   if (!window.confirm(cancelMessage)) return false;
-  store.dispatch(sendReset());
+  store.dispatch(sendDisconnect());
   return false;
 };

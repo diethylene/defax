@@ -16,7 +16,7 @@ import { PageShellComponent } from '../../../core/components/page-shell/page-she
 import { SasNumberComponent } from '../../../core/components/sas-number/sas-number';
 import {
   receiveAccepted,
-  receiveReset
+  receiveDisconnect
 } from '../../../store/actions/receive.actions';
 import {
   selectReceiveFile,
@@ -60,7 +60,7 @@ export class ReceiveConfirmComponent {
   });
 
   protected decline(): void {
-    this.store.dispatch(receiveReset());
+    this.store.dispatch(receiveDisconnect());
   }
 
   protected accept(): void {

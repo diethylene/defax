@@ -2,9 +2,11 @@ import { Injectable, inject } from '@angular/core';
 import { Router } from '@angular/router';
 import { Actions, createEffect, ofType } from '@ngrx/effects';
 import { Store } from '@ngrx/store';
+import { toast } from '@spartan-ng/brain/sonner';
 import {
   catchError,
   distinctUntilChanged,
+  filter,
   map,
   of,
   skip,
@@ -17,6 +19,7 @@ import { IdentityService } from '../../shared/services/identity.service';
 import { toErrorMessage } from '../../shared/utilities/error-message';
 import {
   receiveCodeEntered,
+  receiveDisconnect,
   receiveHandshakeFailed,
   receiveReset,
   receiveSasComputed
@@ -75,5 +78,22 @@ export class ReceiveEffects {
         tap(() => this.connection.close())
       ),
     { dispatch: false }
+  );
+
+  readonly disconnect$ = createEffect(
+    () =>
+      this.actions$.pipe(
+        ofType(receiveDisconnect),
+        tap(() => this.connection.disconnect())
+      ),
+    { dispatch: false }
+  );
+
+  readonly peerDisconnected$ = createEffect(() =>
+    this.connection.peerDisconnected$.pipe(
+      filter((notice) => notice.cancelledBy === 'sender'),
+      tap(() => toast.warning('The sender canceled the transfer.')),
+      map(() => receiveReset())
+    )
   );
 }

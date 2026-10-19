@@ -6,7 +6,7 @@ import {
 } from '@angular/router';
 import { Store } from '@ngrx/store';
 import { routeForPhase } from '../../features/receive/receive-phase/receive-phase';
-import { receiveReset } from '../../store/actions/receive.actions';
+import { receiveDisconnect } from '../../store/actions/receive.actions';
 import { selectReceivePhase } from '../../store/selectors/receive.selectors';
 
 const cancelMessage =
@@ -31,6 +31,6 @@ export const receiveCanDeactivate: CanDeactivateFn<unknown> = (
   if (nextState.url === routeForPhase(phase)) return true;
   if (phase === 'idle') return true;
   if (!window.confirm(cancelMessage)) return false;
-  store.dispatch(receiveReset());
+  store.dispatch(receiveDisconnect());
   return false;
 };

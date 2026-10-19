@@ -5,6 +5,7 @@ import type { Identity } from '../../shared/interfaces/identity';
 import {
   receiveAccepted,
   receiveCodeEntered,
+  receiveDisconnect,
   receiveHandshakeFailed,
   receiveReset,
   receiveSasComputed
@@ -61,5 +62,5 @@ export const receiveReducer = createReducer(
     receiveAccepted,
     (state): ReceiveState => ({ ...state, phase: 'transferring' })
   ),
-  on(receiveReset, () => initialReceiveState)
+  on(receiveReset, receiveDisconnect, () => initialReceiveState)
 );

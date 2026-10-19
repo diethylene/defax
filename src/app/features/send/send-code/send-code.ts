@@ -18,7 +18,7 @@ import { ShaChecksumComponent } from '../../../core/components/sha-checksum/sha-
 import { SpinnerComponent } from '../../../core/components/spinner/spinner';
 import { FileSizePipe } from '../../../shared/pipes/file-size.pipe';
 import { FileTypePipe } from '../../../shared/pipes/file-type.pipe';
-import { sendReset } from '../../../store/actions/send.actions';
+import { sendDisconnect } from '../../../store/actions/send.actions';
 import {
   selectSendHashDigest,
   selectSendMetadata,
@@ -83,7 +83,7 @@ export class SendCodeComponent {
   );
 
   protected cancel(): void {
-    this.store.dispatch(sendReset());
+    this.store.dispatch(sendDisconnect());
     this.router.navigate(['/send']);
   }
 }

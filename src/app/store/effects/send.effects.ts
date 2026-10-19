@@ -2,6 +2,7 @@ import { Injectable, inject } from '@angular/core';
 import { Router } from '@angular/router';
 import { Actions, createEffect, ofType } from '@ngrx/effects';
 import { Store } from '@ngrx/store';
+import { toast } from '@spartan-ng/brain/sonner';
 import {
   catchError,
   concat,
@@ -22,6 +23,7 @@ import { HashService } from '../../shared/services/hash.service';
 import { IdentityService } from '../../shared/services/identity.service';
 import { toErrorMessage } from '../../shared/utilities/error-message';
 import {
+  sendDisconnect,
   sendFileSelected,
   sendHandshakeFailed,
   sendHashComplete,
@@ -99,6 +101,23 @@ export class SendEffects {
         tap(() => this.connection.close())
       ),
     { dispatch: false }
+  );
+
+  readonly disconnect$ = createEffect(
+    () =>
+      this.actions$.pipe(
+        ofType(sendDisconnect),
+        tap(() => this.connection.disconnect())
+      ),
+    { dispatch: false }
+  );
+
+  readonly peerDisconnected$ = createEffect(() =>
+    this.connection.peerDisconnected$.pipe(
+      filter((notice) => notice.cancelledBy === 'receiver'),
+      tap(() => toast.warning('The receiver canceled the transfer.')),
+      map(() => sendReset())
+    )
   );
 
   readonly hashFile$ = createEffect(() =>

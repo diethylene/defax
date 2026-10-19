@@ -13,7 +13,7 @@ import {
 } from '../../../core/components/page-shell/page-shell';
 import {
   receiveCodeEntered,
-  receiveReset
+  receiveDisconnect
 } from '../../../store/actions/receive.actions';
 import { selectReceivePhase } from '../../../store/selectors/receive.selectors';
 import { ReceiveCodeFormComponent } from '../receive-code-form/receive-code-form';
@@ -54,6 +54,6 @@ export class ReceiveIdleComponent {
   }
 
   protected onCancel(): void {
-    this.store.dispatch(receiveReset());
+    this.store.dispatch(receiveDisconnect());
   }
 }

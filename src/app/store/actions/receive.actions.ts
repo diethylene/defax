@@ -20,3 +20,5 @@ export const receiveHandshakeFailed = createAction(
 export const receiveAccepted = createAction('[Receive] Accepted');
 
 export const receiveReset = createAction('[Receive] Reset');
+
+export const receiveDisconnect = createAction('[Receive] Disconnect');
