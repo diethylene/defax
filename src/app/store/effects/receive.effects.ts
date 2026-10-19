@@ -10,12 +10,15 @@ import {
   of,
   skip,
   switchMap,
+  takeUntil,
   tap
 } from 'rxjs';
 import { routeForPhase } from '../../features/receive/receive-phase';
 import { SignalTransport } from '../../shared/interfaces/signal-transport';
 import { HandshakeService } from '../../shared/services/handshake.service';
 import { IdentityService } from '../../shared/services/identity.service';
+import { exchangePeerInfo } from '../../shared/services/peer-exchange';
+import { SealedChannel } from '../../shared/services/sealed-channel';
 import { toErrorMessage } from '../../shared/utilities/error-message';
 import {
   receiveCodeEntered,
@@ -56,24 +59,31 @@ export class ReceiveEffects {
         this.handshake?.destroy();
         const handshake = new HandshakeService();
         this.handshake = handshake;
-        return defer(() =>
-          handshake.runAsResponder(
-            this.signalTransport,
-            code,
-            this.identityService.detect()
-          )
-        ).pipe(
-          map(({ sas, peerIdentity, fileInfo }) =>
-            receiveSasComputed({ sas, peerIdentity, file: fileInfo })
-          ),
-          catchError((error) =>
-            of(
-              receiveHandshakeFailed({
-                error: toErrorMessage(error, 'Handshake failed')
-              })
+        const identity = this.identityService.detect();
+        return defer(() => handshake.runAsResponder(this.signalTransport, code))
+          .pipe(
+            switchMap(({ signalingKey, sas, roomId }) => {
+              const channel = new SealedChannel(
+                this.signalTransport,
+                signalingKey,
+                roomId,
+                'responder'
+              );
+              return exchangePeerInfo(channel, identity, null).pipe(
+                map(({ peerIdentity, fileInfo }) =>
+                  receiveSasComputed({ sas, peerIdentity, file: fileInfo })
+                )
+              );
+            }),
+            catchError((error) =>
+              of(
+                receiveHandshakeFailed({
+                  error: toErrorMessage(error, 'Handshake failed')
+                })
+              )
             )
           )
-        );
+          .pipe(takeUntil(this.actions$.pipe(ofType(receiveReset))));
       })
     )
   );

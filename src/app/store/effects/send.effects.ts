@@ -12,6 +12,7 @@ import {
   of,
   skip,
   switchMap,
+  takeUntil,
   tap,
   withLatestFrom
 } from 'rxjs';
@@ -20,6 +21,8 @@ import { SignalTransport } from '../../shared/interfaces/signal-transport';
 import { HandshakeService } from '../../shared/services/handshake.service';
 import { HashService } from '../../shared/services/hash.service';
 import { IdentityService } from '../../shared/services/identity.service';
+import { exchangePeerInfo } from '../../shared/services/peer-exchange';
+import { SealedChannel } from '../../shared/services/sealed-channel';
 import { toErrorMessage } from '../../shared/utilities/error-message';
 import { generatePassword } from '../../shared/utilities/password';
 import {
@@ -70,20 +73,25 @@ export class SendEffects {
         const password = generatePassword();
         const handshake = new HandshakeService();
         this.handshake = handshake;
+        const identity = this.identityService.detect();
         return concat(
           of(sendRoomCreated({ roomId }), sendPasswordGenerated({ password })),
           handshake
-            .runAsInitiator(this.signalTransport, {
-              roomId,
-              sid,
-              password,
-              identity: this.identityService.detect(),
-              file: metadata
-            })
+            .runAsInitiator(this.signalTransport, { roomId, sid, password })
             .pipe(
-              map(({ sas, peerIdentity }) =>
-                sendSasComputed({ sas, peerIdentity })
-              ),
+              switchMap(({ signalingKey, sas }) => {
+                const channel = new SealedChannel(
+                  this.signalTransport,
+                  signalingKey,
+                  roomId,
+                  'initiator'
+                );
+                return exchangePeerInfo(channel, identity, metadata).pipe(
+                  map(({ peerIdentity }) =>
+                    sendSasComputed({ sas, peerIdentity })
+                  )
+                );
+              }),
               catchError((error) =>
                 of(
                   sendHandshakeFailed({
@@ -92,7 +100,7 @@ export class SendEffects {
                 )
               )
             )
-        );
+        ).pipe(takeUntil(this.actions$.pipe(ofType(sendReset))));
       })
     )
   );

@@ -2,12 +2,14 @@ import { TestBed } from '@angular/core/testing';
 import { Router } from '@angular/router';
 import { provideEffects } from '@ngrx/effects';
 import { provideStore, Store } from '@ngrx/store';
-import { filter, firstValueFrom, take } from 'rxjs';
+import { filter, firstValueFrom, map, switchMap, take } from 'rxjs';
 import type { FileMetadata } from '../../shared/interfaces/file-metadata';
 import type { Identity } from '../../shared/interfaces/identity';
 import { SignalTransport } from '../../shared/interfaces/signal-transport';
 import { BroadcastChannelTransport } from '../../shared/services/broadcast-channel-transport';
 import { HandshakeService } from '../../shared/services/handshake.service';
+import { exchangePeerInfo } from '../../shared/services/peer-exchange';
+import { SealedChannel } from '../../shared/services/sealed-channel';
 import { receiveCodeEntered } from '../actions/receive.actions';
 import { receiveReducer } from '../reducers/receive.reducer';
 import {
@@ -40,14 +42,20 @@ function openSender(password: string): {
   const sender = new HandshakeService();
   const { roomId, sid } = transport.createRoom();
   const senderSas = firstValueFrom(
-    sender.runAsInitiator(transport, {
-      roomId,
-      sid,
-      password,
-      identity: senderIdentity,
-      file: senderFile
-    })
-  ).then((result) => result.sas);
+    sender.runAsInitiator(transport, { roomId, sid, password }).pipe(
+      switchMap(({ signalingKey, sas }) => {
+        const channel = new SealedChannel(
+          transport,
+          signalingKey,
+          roomId,
+          'initiator'
+        );
+        return exchangePeerInfo(channel, senderIdentity, senderFile).pipe(
+          map(() => sas)
+        );
+      })
+    )
+  );
   return { code: `${roomId}-${password}`, senderSas, sender };
 }
 

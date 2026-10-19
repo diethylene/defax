@@ -26,7 +26,7 @@ export class SealedChannel {
     private readonly transport: SignalTransport,
     private readonly key: CryptoKey,
     private readonly roomId: RoomId,
-    private readonly role: SignalRole
+    readonly role: SignalRole
   ) {}
 
   send(kind: SealedKind, payload: unknown): Observable<void> {
