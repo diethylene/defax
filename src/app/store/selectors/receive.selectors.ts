@@ -17,6 +17,11 @@ export const selectReceiveCode = createSelector(
   (state) => state.code
 );
 
+export const selectReceiveSas = createSelector(
+  selectReceiveState,
+  (state) => state.sas
+);
+
 export const selectReceiveError = createSelector(
   selectReceiveState,
   (state) => state.error
