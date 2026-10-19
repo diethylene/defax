@@ -5,6 +5,7 @@ import { Store } from '@ngrx/store';
 import { toast } from '@spartan-ng/brain/sonner';
 import {
   catchError,
+  combineLatest,
   concat,
   distinctUntilChanged,
   EMPTY,
@@ -17,7 +18,10 @@ import {
   withLatestFrom
 } from 'rxjs';
 import { match } from 'ts-pattern';
-import { routeForPhase } from '../../features/send/send-phase/send-phase';
+import {
+  routeForPhase,
+  type SendPhase
+} from '../../features/send/send-phase/send-phase';
 import { ConnectionService } from '../../shared/services/connection.service';
 import { HashService } from '../../shared/services/hash.service';
 import { IdentityService } from '../../shared/services/identity.service';
@@ -35,7 +39,11 @@ import {
   sendRoomCreated,
   sendSasComputed
 } from '../actions/send.actions';
-import { selectSendFile, selectSendPhase } from '../selectors/send.selectors';
+import {
+  selectSendFile,
+  selectSendHashDigest,
+  selectSendPhase
+} from '../selectors/send.selectors';
 
 @Injectable()
 export class SendEffects {
@@ -152,4 +160,27 @@ export class SendEffects {
       })
     )
   );
+
+  readonly sendFileHash$ = createEffect(
+    () =>
+      combineLatest([
+        this.store.select(selectSendHashDigest),
+        this.store.select(selectSendPhase)
+      ]).pipe(
+        filter(
+          (value): value is [string, SendPhase] =>
+            value[0] !== null && isConnectedPhase(value[1])
+        ),
+        map(([digest]) => digest),
+        distinctUntilChanged(),
+        tap((digest) => this.connection.sendFileHash(digest))
+      ),
+    { dispatch: false }
+  );
+}
+
+function isConnectedPhase(phase: SendPhase): boolean {
+  return match(phase)
+    .with('sasConfirm', 'transferring', 'verifying', 'done', () => true)
+    .otherwise(() => false);
 }

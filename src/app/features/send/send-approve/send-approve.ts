@@ -17,6 +17,7 @@ import { PageShellComponent } from '../../../core/components/page-shell/page-she
 import { SasNumberComponent } from '../../../core/components/sas-number/sas-number';
 import { sendDisconnect } from '../../../store/actions/send.actions';
 import {
+  selectSendHashDigest,
   selectSendMetadata,
   selectSendPeerIdentity,
   selectSendSas
@@ -51,6 +52,11 @@ export class SendApproveComponent {
 
   protected readonly metadata = toSignal(
     this.store.select(selectSendMetadata),
+    { initialValue: null }
+  );
+
+  protected readonly digest = toSignal(
+    this.store.select(selectSendHashDigest),
     { initialValue: null }
   );
 
