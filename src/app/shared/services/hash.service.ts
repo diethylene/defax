@@ -1,5 +1,6 @@
 import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
+import { match } from 'ts-pattern';
 import type {
   FileHashEvent,
   FileHashWorkerMessage
@@ -15,15 +16,18 @@ export class HashService {
       );
 
       const onMessage = (event: MessageEvent<FileHashWorkerMessage>): void => {
-        const message = event.data;
-        if (message.type === 'error') {
-          subscriber.error(new Error(message.message));
-          return;
-        }
-        subscriber.next(message);
-        if (message.type === 'complete') {
-          subscriber.complete();
-        }
+        match(event.data)
+          .with({ type: 'error' }, ({ message }) => {
+            subscriber.error(new Error(message));
+          })
+          .with({ type: 'progress' }, (message) => {
+            subscriber.next(message);
+          })
+          .with({ type: 'complete' }, (message) => {
+            subscriber.next(message);
+            subscriber.complete();
+          })
+          .exhaustive();
       };
 
       const onError = (event: ErrorEvent): void => {

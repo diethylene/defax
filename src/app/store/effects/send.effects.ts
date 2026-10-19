@@ -15,6 +15,7 @@ import {
   tap,
   withLatestFrom
 } from 'rxjs';
+import { match } from 'ts-pattern';
 import { routeForPhase } from '../../features/send/send-phase';
 import { ConnectionService } from '../../shared/services/connection.service';
 import { HashService } from '../../shared/services/hash.service';
@@ -111,9 +112,14 @@ export class SendEffects {
           of(sendHashStarted()),
           this.hashService.hashFile(file).pipe(
             map((event) =>
-              event.type === 'progress'
-                ? sendHashProgress({ processed: event.processed })
-                : sendHashComplete({ digest: event.digest })
+              match(event)
+                .with({ type: 'progress' }, (e) =>
+                  sendHashProgress({ processed: e.processed })
+                )
+                .with({ type: 'complete' }, (e) =>
+                  sendHashComplete({ digest: e.digest })
+                )
+                .exhaustive()
             ),
             catchError((error: unknown) =>
               of(
