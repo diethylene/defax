@@ -1,6 +1,6 @@
 import { createReducer, on } from '@ngrx/store';
-import type { FileMetadata } from '../../features/send/file-metadata';
 import type { SendPhase } from '../../features/send/send-phase';
+import type { FileMetadata } from '../../shared/interfaces/file-metadata';
 import type { RoomId } from '../../shared/interfaces/signal-session';
 import {
   sendFileSelected,

@@ -1,10 +1,4 @@
-export interface FileMetadata {
-  name: string;
-  size: number;
-  mime: string;
-  extension: string;
-  lastModified: number;
-}
+import type { FileMetadata } from '../../shared/interfaces/file-metadata';
 
 export function toFileMetadata(file: File): FileMetadata {
   return {

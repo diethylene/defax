@@ -9,7 +9,11 @@ export const signalMessageSchema = z.discriminatedUnion('type', [
   z.object({ type: z.literal('joined'), sid: sidSchema }),
   z.object({ type: z.literal('peer-joined') }),
   z.object({ type: z.literal('pake'), y: pakeKeySchema }),
-  z.object({ type: z.literal('sealed'), ct: z.string() }),
+  z.object({
+    type: z.literal('sealed'),
+    kind: z.enum(['peer-info', 'file']),
+    ct: z.string()
+  }),
   z.object({
     type: z.literal('error'),
     code: z.enum([

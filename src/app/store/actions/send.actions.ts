@@ -1,5 +1,5 @@
 import { createAction, props } from '@ngrx/store';
-import type { FileMetadata } from '../../features/send/file-metadata';
+import type { FileMetadata } from '../../shared/interfaces/file-metadata';
 import type { RoomId } from '../../shared/interfaces/signal-session';
 
 export const sendFileSelected = createAction(

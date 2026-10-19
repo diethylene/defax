@@ -22,7 +22,11 @@ describe('signalMessageSchema', () => {
       signalMessageSchema.safeParse({ type: 'pake', y: pakeY }).success
     ).toBe(true);
     expect(
-      signalMessageSchema.safeParse({ type: 'sealed', ct: 'abc' }).success
+      signalMessageSchema.safeParse({
+        type: 'sealed',
+        kind: 'peer-info',
+        ct: 'abc'
+      }).success
     ).toBe(true);
     expect(
       signalMessageSchema.safeParse({ type: 'error', code: 'room-full' })
