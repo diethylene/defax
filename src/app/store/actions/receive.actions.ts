@@ -39,7 +39,8 @@ export const receiveTransferComplete = createAction(
 );
 
 export const receiveTransferVerified = createAction(
-  '[Receive] Transfer Verified'
+  '[Receive] Transfer Verified',
+  props<{ elapsed: number }>()
 );
 
 export const receiveTransferFailed = createAction(

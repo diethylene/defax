@@ -25,6 +25,7 @@ export interface ReceiveTransferState {
   total: number;
   route: TransferRoute | null;
   verified: boolean;
+  durationMs: number | null;
 }
 
 export interface ReceiveState {
@@ -42,7 +43,8 @@ const initialTransferState: ReceiveTransferState = {
   received: 0,
   total: 0,
   route: null,
-  verified: false
+  verified: false,
+  durationMs: null
 };
 
 export const initialReceiveState: ReceiveState = {
@@ -97,7 +99,13 @@ export const receiveReducer = createReducer(
     receiveTransferStarted,
     (state, { total }): ReceiveState => ({
       ...state,
-      transfer: { received: 0, total, route: 'direct', verified: false }
+      transfer: {
+        received: 0,
+        total,
+        route: 'direct',
+        verified: false,
+        durationMs: null
+      }
     })
   ),
   on(
@@ -113,10 +121,10 @@ export const receiveReducer = createReducer(
   ),
   on(
     receiveTransferVerified,
-    (state): ReceiveState => ({
+    (state, { elapsed }): ReceiveState => ({
       ...state,
       phase: 'done',
-      transfer: { ...state.transfer, verified: true }
+      transfer: { ...state.transfer, verified: true, durationMs: elapsed }
     })
   ),
   on(

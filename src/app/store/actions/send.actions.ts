@@ -57,7 +57,10 @@ export const sendTransferProgress = createAction(
 
 export const sendTransferComplete = createAction('[Send] Transfer Complete');
 
-export const sendTransferVerified = createAction('[Send] Transfer Verified');
+export const sendTransferVerified = createAction(
+  '[Send] Transfer Verified',
+  props<{ elapsed: number }>()
+);
 
 export const sendTransferFailed = createAction(
   '[Send] Transfer Failed',

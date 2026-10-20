@@ -191,17 +191,21 @@ export class SendEffects {
       withLatestFrom(this.store.select(selectSendFile)),
       switchMap(([, file]) => {
         if (!file) return EMPTY;
+        let startedAt = 0;
         return this.transfer.send(file).pipe(
           map((event) =>
             match(event)
-              .with({ type: 'started' }, (e) =>
-                sendTransferStarted({ total: e.total })
-              )
+              .with({ type: 'started' }, (e) => {
+                startedAt = Date.now();
+                return sendTransferStarted({ total: e.total });
+              })
               .with({ type: 'progress' }, (e) =>
                 sendTransferProgress({ sent: e.transferred })
               )
               .with({ type: 'complete' }, () => sendTransferComplete())
-              .with({ type: 'verified' }, () => sendTransferVerified())
+              .with({ type: 'verified' }, () =>
+                sendTransferVerified({ elapsed: Date.now() - startedAt })
+              )
               .with({ type: 'failed' }, (e) =>
                 sendTransferFailed({ error: e.error })
               )

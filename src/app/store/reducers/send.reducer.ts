@@ -39,6 +39,7 @@ export interface SendTransferState {
   total: number;
   route: TransferRoute | null;
   verified: boolean;
+  durationMs: number | null;
 }
 
 export interface SendState {
@@ -65,7 +66,8 @@ const initialTransferState: SendTransferState = {
   sent: 0,
   total: 0,
   route: null,
-  verified: false
+  verified: false,
+  durationMs: null
 };
 
 export const initialSendState: SendState = {
@@ -149,7 +151,13 @@ export const sendReducer = createReducer(
     (state, { total }): SendState => ({
       ...state,
       phase: 'transferring',
-      transfer: { sent: 0, total, route: 'direct', verified: false }
+      transfer: {
+        sent: 0,
+        total,
+        route: 'direct',
+        verified: false,
+        durationMs: null
+      }
     })
   ),
   on(
@@ -165,10 +173,10 @@ export const sendReducer = createReducer(
   ),
   on(
     sendTransferVerified,
-    (state): SendState => ({
+    (state, { elapsed }): SendState => ({
       ...state,
       phase: 'done',
-      transfer: { ...state.transfer, verified: true }
+      transfer: { ...state.transfer, verified: true, durationMs: elapsed }
     })
   ),
   on(

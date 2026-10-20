@@ -88,3 +88,8 @@ export const selectSendTransferRoute = createSelector(
   selectSendTransfer,
   (transfer) => transfer.route
 );
+
+export const selectSendTransferDurationMs = createSelector(
+  selectSendTransfer,
+  (transfer) => transfer.durationMs
+);

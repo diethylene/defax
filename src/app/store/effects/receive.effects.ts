@@ -132,17 +132,21 @@ export class ReceiveEffects {
             receiveTransferFailed({ error: 'missing file metadata or digest' })
           );
         }
+        let startedAt = 0;
         return this.transfer.receive({ metadata: file, digest }).pipe(
           map((event) =>
             match(event)
-              .with({ type: 'started' }, (e) =>
-                receiveTransferStarted({ total: e.total })
-              )
+              .with({ type: 'started' }, (e) => {
+                startedAt = Date.now();
+                return receiveTransferStarted({ total: e.total });
+              })
               .with({ type: 'progress' }, (e) =>
                 receiveTransferProgress({ received: e.transferred })
               )
               .with({ type: 'complete' }, () => receiveTransferComplete())
-              .with({ type: 'verified' }, () => receiveTransferVerified())
+              .with({ type: 'verified' }, () =>
+                receiveTransferVerified({ elapsed: Date.now() - startedAt })
+              )
               .with({ type: 'failed' }, (e) =>
                 receiveTransferFailed({ error: e.error })
               )
