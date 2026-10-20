@@ -8,6 +8,7 @@ import {
 import { toSignal } from '@angular/core/rxjs-interop';
 import { Store } from '@ngrx/store';
 import { HlmButton } from '@spartan-ng/helm/button';
+import { throttleTime } from 'rxjs';
 import { PageShellComponent } from '../../../core/components/page-shell/page-shell';
 import { TransferMetricsStore } from '../../../core/components/transfer-progress/transfer-metrics.store';
 import {
@@ -21,6 +22,10 @@ import {
   selectSendTransfer
 } from '../../../store/selectors/send.selectors';
 
+const SAMPLE_INTERVAL_MS = 1000;
+
+const initialTransfer = { sent: 0, total: 0, route: null };
+
 @Component({
   selector: 'app-send-transfer',
   imports: [PageShellComponent, TransferProgressComponent, HlmButton],
@@ -33,9 +38,19 @@ export class SendTransferComponent {
   private readonly store = inject(Store);
   private readonly metrics = inject(TransferMetricsStore);
 
-  private readonly transfer = toSignal(this.store.select(selectSendTransfer), {
-    initialValue: { sent: 0, total: 0, route: null }
-  });
+  private readonly liveTransfer = toSignal(
+    this.store.select(selectSendTransfer),
+    { initialValue: initialTransfer }
+  );
+  private readonly sampledTransfer = toSignal(
+    this.store.select(selectSendTransfer).pipe(
+      throttleTime(SAMPLE_INTERVAL_MS, undefined, {
+        leading: true,
+        trailing: true
+      })
+    ),
+    { initialValue: initialTransfer }
+  );
   private readonly metadata = toSignal(this.store.select(selectSendMetadata), {
     initialValue: null
   });
@@ -45,19 +60,18 @@ export class SendTransferComponent {
   );
 
   constructor() {
-    effect(() => this.metrics.sample(this.transfer().sent));
+    effect(() => this.metrics.sample(this.sampledTransfer().sent));
   }
 
   protected readonly progress = computed<TransferProgress>(() => {
-    const transfer = this.transfer();
+    const live = this.liveTransfer();
+    const sampled = this.sampledTransfer();
     const metadata = this.metadata();
     const peer = this.peerIdentity();
     const speed = this.metrics.speed();
     const percent =
-      transfer.total > 0
-        ? Math.round((transfer.sent / transfer.total) * 100)
-        : 0;
-    const remaining = transfer.total - transfer.sent;
+      live.total > 0 ? Math.round((live.sent / live.total) * 100) : 0;
+    const remaining = sampled.total - sampled.sent;
     const timeLeft = speed > 0 ? remaining / speed : null;
 
     return {
@@ -65,11 +79,11 @@ export class SendTransferComponent {
       peerBrowser: peer?.browser ?? '',
       peerOs: peer?.os ?? '',
       percent,
-      sent: transfer.sent,
-      total: transfer.total,
+      sent: sampled.sent,
+      total: sampled.total,
       speed,
       timeLeft,
-      route: transfer.route ?? 'direct'
+      route: sampled.route ?? 'direct'
     };
   });
 
