@@ -1,4 +1,6 @@
 import type { Routes } from '@angular/router';
+import { ReceiverTransferComponent } from './core/components/transfer/receiver-transfer/receiver-transfer';
+import { SenderTransferComponent } from './core/components/transfer/sender-transfer/sender-transfer';
 import {
   receiveCanActivate,
   receiveCanDeactivate
@@ -10,7 +12,6 @@ import { ReceiveConfirmComponent } from './features/receive/receive-confirm/rece
 import { ReceiveFailedComponent } from './features/receive/receive-failed/receive-failed';
 import { ReceiveIdleComponent } from './features/receive/receive-idle/receive-idle';
 import { ReceiveLayoutComponent } from './features/receive/receive-layout/receive-layout';
-import { ReceiveTransferComponent } from './features/receive/receive-transfer/receive-transfer';
 import { ReceiveVerifyComponent } from './features/receive/receive-verify/receive-verify';
 import { RelayHelpFeature } from './features/relay-help/relay-help';
 import { SendApproveComponent } from './features/send/send-approve/send-approve';
@@ -19,7 +20,6 @@ import { SendCompleteComponent } from './features/send/send-complete/send-comple
 import { SendFailedComponent } from './features/send/send-failed/send-failed';
 import { SendIdleComponent } from './features/send/send-idle/send-idle';
 import { SendLayoutComponent } from './features/send/send-layout/send-layout';
-import { SendTransferComponent } from './features/send/send-transfer/send-transfer';
 import { SendVerifyComponent } from './features/send/send-verify/send-verify';
 
 export const routes: Routes = [
@@ -48,7 +48,7 @@ export const routes: Routes = [
       },
       {
         path: 'transfer',
-        component: SendTransferComponent,
+        component: SenderTransferComponent,
         canActivate: [sendCanActivate],
         canDeactivate: [sendCanDeactivate]
       },
@@ -90,7 +90,7 @@ export const routes: Routes = [
       },
       {
         path: 'transfer',
-        component: ReceiveTransferComponent,
+        component: ReceiverTransferComponent,
         canActivate: [receiveCanActivate],
         canDeactivate: [receiveCanDeactivate]
       },

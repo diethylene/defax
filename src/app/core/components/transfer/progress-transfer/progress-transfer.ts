@@ -10,14 +10,14 @@ import { HlmBadge } from '@spartan-ng/helm/badge';
 import { HlmCard, HlmCardContent } from '@spartan-ng/helm/card';
 import { HlmProgressImports } from '@spartan-ng/helm/progress';
 import { match } from 'ts-pattern';
-import { StatusLightComponent } from '../../../shared/components/status-light/status-light';
-import type { TransferRoute } from '../../../shared/interfaces/transfer';
-import { DurationPipe } from '../../../shared/pipes/duration.pipe';
-import { FileSizePipe } from '../../../shared/pipes/file-size.pipe';
+import { StatusLightComponent } from '../../../../shared/components/status-light/status-light';
+import type { TransferRoute } from '../../../../shared/interfaces/transfer';
+import { DurationPipe } from '../../../../shared/pipes/duration.pipe';
+import { FileSizePipe } from '../../../../shared/pipes/file-size.pipe';
 
 export type TransferMode = 'send' | 'receive';
 
-export interface TransferProgress {
+export interface ProgressTransfer {
   fileName: string;
   peerBrowser: string;
   peerOs: string;
@@ -30,7 +30,7 @@ export interface TransferProgress {
 }
 
 @Component({
-  selector: 'app-transfer-progress',
+  selector: 'app-progress-transfer',
   imports: [
     NgIcon,
     HlmBadge,
@@ -44,11 +44,11 @@ export interface TransferProgress {
   providers: [provideIcons({ lucideFile })],
   host: { class: 'block w-full' },
   changeDetection: ChangeDetectionStrategy.OnPush,
-  templateUrl: './transfer-progress.html'
+  templateUrl: './progress-transfer.html'
 })
-export class TransferProgressComponent {
+export class ProgressTransferComponent {
   readonly mode = input.required<TransferMode>();
-  readonly progress = input.required<TransferProgress>();
+  readonly progress = input.required<ProgressTransfer>();
 
   protected readonly sentLabel = computed(() =>
     match(this.mode())
