@@ -1,5 +1,16 @@
 import { Injectable, inject } from '@angular/core';
-import { catchError, EMPTY, firstValueFrom } from 'rxjs';
+import {
+  catchError,
+  defer,
+  EMPTY,
+  finalize,
+  from,
+  Observable,
+  ReplaySubject,
+  switchMap,
+  tap,
+  timeout
+} from 'rxjs';
 import type { SealedKind } from '../../shared/constants/signal-message';
 import {
   DATA_CHANNEL_BUFFER_LOW,
@@ -14,14 +25,9 @@ import {
 import { SignalingService } from './signaling.service';
 
 export interface RtcChannel {
-  send(data: ArrayBuffer): Promise<void>;
-  receive(): Promise<ArrayBuffer>;
+  send(data: ArrayBuffer): Observable<void>;
+  readonly messages$: Observable<ArrayBuffer>;
   close(): void;
-}
-
-interface Waiter {
-  resolve: (value: ArrayBuffer) => void;
-  reject: (error: Error) => void;
 }
 
 interface IceHandle {
@@ -31,77 +37,91 @@ interface IceHandle {
 
 const CONNECT_TIMEOUT_MS = 30_000;
 
-function withTimeout<T>(promise: Promise<T>, ms: number): Promise<T> {
-  return Promise.race([
-    promise,
-    new Promise<never>((_, reject) =>
-      setTimeout(() => reject(new Error('connection timed out')), ms)
-    )
-  ]);
-}
-
 @Injectable({ providedIn: 'root' })
 export class WebRtcService {
   private readonly signaling = inject(SignalingService);
 
-  openInitiator(): Promise<RtcChannel> {
-    const peer = new RTCPeerConnection(RTC_CONFIGURATION);
-    const channel = peer.createDataChannel(DATA_CHANNEL_LABEL, {
-      ordered: true
-    });
-    const ice = this.attachIce(peer);
-    return withTimeout(
-      this.exchangeAsInitiator(peer, channel, ice),
-      CONNECT_TIMEOUT_MS
-    ).finally(() => ice.dispose());
+  openInitiator(): Observable<RtcChannel> {
+    return defer(() => {
+      const peer = new RTCPeerConnection(RTC_CONFIGURATION);
+      const channel = peer.createDataChannel(DATA_CHANNEL_LABEL, {
+        ordered: true
+      });
+      const ice = this.attachIce(peer);
+      let opened = false;
+      return this.negotiateInitiator(peer, channel, ice).pipe(
+        tap(() => {
+          opened = true;
+        }),
+        finalize(() => {
+          ice.dispose();
+          if (!opened) peer.close();
+        })
+      );
+    }).pipe(timeout(CONNECT_TIMEOUT_MS));
   }
 
-  openResponder(): Promise<RtcChannel> {
-    const peer = new RTCPeerConnection(RTC_CONFIGURATION);
-    const ice = this.attachIce(peer);
-    const channel = this.awaitDataChannel(peer);
-    return withTimeout(
-      this.exchangeAsResponder(peer, channel, ice),
-      CONNECT_TIMEOUT_MS
-    ).finally(() => ice.dispose());
+  openResponder(): Observable<RtcChannel> {
+    return defer(() => {
+      const peer = new RTCPeerConnection(RTC_CONFIGURATION);
+      const ice = this.attachIce(peer);
+      const incoming = new ReplaySubject<RTCDataChannel>(1);
+      peer.ondatachannel = (event) => {
+        incoming.next(event.channel);
+        incoming.complete();
+      };
+      let opened = false;
+      return this.negotiateResponder(peer, incoming, ice).pipe(
+        tap(() => {
+          opened = true;
+        }),
+        finalize(() => {
+          ice.dispose();
+          if (!opened) peer.close();
+        })
+      );
+    }).pipe(timeout(CONNECT_TIMEOUT_MS));
   }
 
-  private async exchangeAsInitiator(
+  private negotiateInitiator(
     peer: RTCPeerConnection,
     channel: RTCDataChannel,
     ice: IceHandle
-  ): Promise<RtcChannel> {
-    const offer = await peer.createOffer();
-    await peer.setLocalDescription(offer);
-    this.sendSignal('rtc-offer', { sdp: peer.localDescription?.sdp ?? '' });
-    const answer = await firstValueFrom(
-      this.signaling.receiveSealed('rtc-answer', parseRtcAnswer)
+  ): Observable<RtcChannel> {
+    return from(peer.createOffer()).pipe(
+      switchMap((offer) => from(peer.setLocalDescription(offer))),
+      tap(() =>
+        this.sendSignal('rtc-offer', { sdp: peer.localDescription?.sdp ?? '' })
+      ),
+      switchMap(() =>
+        this.signaling.receiveSealed('rtc-answer', parseRtcAnswer)
+      ),
+      switchMap((answer) =>
+        from(peer.setRemoteDescription({ type: 'answer', sdp: answer.sdp }))
+      ),
+      tap(() => ice.flush()),
+      switchMap(() => this.openChannel(channel, peer))
     );
-    await peer.setRemoteDescription({ type: 'answer', sdp: answer.sdp });
-    ice.flush();
-    return this.openChannel(channel);
   }
 
-  private async exchangeAsResponder(
+  private negotiateResponder(
     peer: RTCPeerConnection,
-    channel: Promise<RTCDataChannel>,
+    incoming: Observable<RTCDataChannel>,
     ice: IceHandle
-  ): Promise<RtcChannel> {
-    const offer = await firstValueFrom(
-      this.signaling.receiveSealed('rtc-offer', parseRtcOffer)
+  ): Observable<RtcChannel> {
+    return this.signaling.receiveSealed('rtc-offer', parseRtcOffer).pipe(
+      switchMap((offer) =>
+        from(peer.setRemoteDescription({ type: 'offer', sdp: offer.sdp }))
+      ),
+      tap(() => ice.flush()),
+      switchMap(() => from(peer.createAnswer())),
+      switchMap((answer) => from(peer.setLocalDescription(answer))),
+      tap(() =>
+        this.sendSignal('rtc-answer', { sdp: peer.localDescription?.sdp ?? '' })
+      ),
+      switchMap(() => incoming),
+      switchMap((channel) => this.openChannel(channel, peer))
     );
-    await peer.setRemoteDescription({ type: 'offer', sdp: offer.sdp });
-    ice.flush();
-    const answer = await peer.createAnswer();
-    await peer.setLocalDescription(answer);
-    this.sendSignal('rtc-answer', { sdp: peer.localDescription?.sdp ?? '' });
-    return this.openChannel(await channel);
-  }
-
-  private awaitDataChannel(peer: RTCPeerConnection): Promise<RTCDataChannel> {
-    return new Promise((resolve) => {
-      peer.ondatachannel = (event) => resolve(event.channel);
-    });
   }
 
   private attachIce(peer: RTCPeerConnection): IceHandle {
@@ -132,63 +152,52 @@ export class WebRtcService {
     };
   }
 
-  private openChannel(channel: RTCDataChannel): Promise<RtcChannel> {
-    return new Promise((resolve, reject) => {
-      const queue: ArrayBuffer[] = [];
-      const waiters: Waiter[] = [];
-      let closed = false;
-
+  private openChannel(
+    channel: RTCDataChannel,
+    peer: RTCPeerConnection
+  ): Observable<RtcChannel> {
+    return new Observable<RtcChannel>((subscriber) => {
+      const messages = new ReplaySubject<ArrayBuffer>();
       channel.binaryType = 'arraybuffer';
       channel.bufferedAmountLowThreshold = DATA_CHANNEL_BUFFER_LOW;
 
-      const fail = (error: Error): void => {
-        closed = true;
-        for (const waiter of waiters.splice(0)) waiter.reject(error);
-        reject(error);
-      };
-
-      const receive = (): Promise<ArrayBuffer> =>
-        new Promise((res, rej) => {
-          const next = queue.shift();
-          if (next) {
-            res(next);
-          } else if (closed) {
-            rej(new Error('data channel closed'));
-          } else {
-            waiters.push({ resolve: res, reject: rej });
+      channel.onopen = () => {
+        subscriber.next({
+          send: (data) => this.sendData(channel, data),
+          messages$: messages.asObservable(),
+          close: () => {
+            channel.close();
+            peer.close();
           }
         });
-
-      channel.onopen = () =>
-        resolve({
-          send: (data) => this.sendData(channel, data),
-          receive,
-          close: () => channel.close()
-        });
-      channel.onmessage = (event) => {
-        const data = event.data as ArrayBuffer;
-        const waiter = waiters.shift();
-        if (waiter) waiter.resolve(data);
-        else queue.push(data);
+        subscriber.complete();
       };
-      channel.onerror = () => fail(new Error('data channel error'));
-      channel.onclose = () => fail(new Error('data channel closed'));
+      channel.onmessage = (event) => messages.next(event.data as ArrayBuffer);
+      channel.onerror = () => subscriber.error(new Error('data channel error'));
+      channel.onclose = () => {
+        messages.complete();
+        subscriber.error(new Error('data channel closed'));
+      };
     });
   }
 
-  private sendData(channel: RTCDataChannel, data: ArrayBuffer): Promise<void> {
-    return new Promise((resolve, reject) => {
+  private sendData(
+    channel: RTCDataChannel,
+    data: ArrayBuffer
+  ): Observable<void> {
+    return new Observable<void>((subscriber) => {
       if (channel.readyState !== 'open') {
-        reject(new Error('data channel not open'));
+        subscriber.error(new Error('data channel not open'));
         return;
       }
       const onLow = (): void => {
         cleanup();
-        resolve();
+        subscriber.next();
+        subscriber.complete();
       };
       const onClose = (): void => {
         cleanup();
-        reject(new Error('data channel closed'));
+        subscriber.error(new Error('data channel closed'));
       };
       const cleanup = (): void => {
         channel.removeEventListener('bufferedamountlow', onLow);
@@ -196,11 +205,13 @@ export class WebRtcService {
       };
       channel.send(data);
       if (channel.bufferedAmount <= DATA_CHANNEL_BUFFER_LOW) {
-        resolve();
+        subscriber.next();
+        subscriber.complete();
         return;
       }
       channel.addEventListener('bufferedamountlow', onLow);
       channel.addEventListener('close', onClose);
+      return cleanup;
     });
   }
 

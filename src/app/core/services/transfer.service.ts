@@ -1,17 +1,25 @@
 import { Injectable, inject } from '@angular/core';
 import {
   catchError,
+  concat,
+  concatMap,
+  defer,
   EMPTY,
-  firstValueFrom,
-  lastValueFrom,
-  Observable,
-  type Subscriber
+  finalize,
+  from,
+  last,
+  map,
+  type Observable,
+  of,
+  range,
+  scan,
+  switchMap,
+  take,
+  tap
 } from 'rxjs';
 import { match } from 'ts-pattern';
-import type { SealedKind } from '../../shared/constants/signal-message';
 import { TRANSFER_CHUNK_SIZE } from '../../shared/constants/transfer-protocol';
 import type { FileMetadata } from '../../shared/interfaces/file-metadata';
-import { toErrorMessage } from '../../shared/utilities/error-message';
 import {
   parseAccept,
   parseVerifyResult
@@ -41,130 +49,182 @@ export class TransferService {
   private readonly hash = inject(HashService);
 
   send(file: File): Observable<TransferEvent> {
-    return new Observable<TransferEvent>((subscriber) => {
-      let channel: RtcChannel | null = null;
-      const accept = this.signaling.sealed$('accept', parseAccept).subscribe({
-        next: () => {
-          void this.streamOut(file, subscriber, (opened) => {
-            channel = opened;
-          }).catch((error) =>
-            subscriber.error(toErrorMessage(error, 'Transfer failed'))
-          );
-        },
-        error: (error) =>
-          subscriber.error(toErrorMessage(error, 'Transfer failed'))
-      });
-
-      return () => {
-        accept.unsubscribe();
-        channel?.close();
-      };
-    });
+    return this.signaling.sealed$('accept', parseAccept).pipe(
+      take(1),
+      switchMap(() =>
+        concat(
+          of<TransferEvent>({ type: 'started', total: file.size }),
+          this.streamOut(file)
+        )
+      )
+    );
   }
 
   receive(input: ReceiveRequest): Observable<TransferEvent> {
-    return new Observable<TransferEvent>((subscriber) => {
-      let channel: RtcChannel | null = null;
-      void this.receiveIn(input, subscriber, (opened) => {
-        channel = opened;
-      }).catch((error) =>
-        subscriber.error(toErrorMessage(error, 'Transfer failed'))
-      );
+    return this.storage.open().pipe(
+      switchMap(() => this.storage.estimate()),
+      switchMap((estimate) =>
+        hasRoomFor(estimate, input.metadata.size)
+          ? this.receiveIn(input)
+          : of<TransferEvent>({
+              type: 'failed',
+              error: 'not enough storage space'
+            })
+      ),
+      finalize(() => this.storage.close())
+    );
+  }
 
-      return () => {
-        channel?.close();
-        void this.storage.close();
-      };
+  private streamOut(file: File): Observable<TransferEvent> {
+    return this.webrtc
+      .openInitiator()
+      .pipe(
+        switchMap((channel) =>
+          concat(
+            this.sendChunks(file, channel),
+            of<TransferEvent>({ type: 'complete' }).pipe(
+              tap(() => channel.close())
+            ),
+            this.awaitVerification()
+          ).pipe(finalize(() => channel.close()))
+        )
+      );
+  }
+
+  private sendChunks(
+    file: File,
+    channel: RtcChannel
+  ): Observable<TransferEvent> {
+    const chunkCount = Math.ceil(file.size / TRANSFER_CHUNK_SIZE);
+    return range(chunkCount).pipe(
+      concatMap((index) =>
+        from(
+          file
+            .slice(
+              index * TRANSFER_CHUNK_SIZE,
+              (index + 1) * TRANSFER_CHUNK_SIZE
+            )
+            .arrayBuffer()
+        )
+      ),
+      concatMap((bytes) =>
+        channel.send(bytes).pipe(map(() => bytes.byteLength))
+      ),
+      scan((sent, byteLength) => sent + byteLength, 0),
+      map((sent): TransferEvent => ({ type: 'progress', transferred: sent }))
+    );
+  }
+
+  private awaitVerification(): Observable<TransferEvent> {
+    return this.signaling
+      .receiveSealed('verify-result', parseVerifyResult)
+      .pipe(
+        map(
+          (result): TransferEvent =>
+            result.ok
+              ? { type: 'verified' }
+              : { type: 'failed', error: 'receiver verification failed' }
+        )
+      );
+  }
+
+  private receiveIn(input: ReceiveRequest): Observable<TransferEvent> {
+    return defer(() => {
+      this.sendAccept();
+      return this.webrtc.openResponder().pipe(
+        switchMap((channel) =>
+          concat(
+            of<TransferEvent>({
+              type: 'started',
+              total: input.metadata.size
+            }),
+            this.receiveChunks(channel),
+            this.verifyAndFinish(input)
+          ).pipe(finalize(() => channel.close()))
+        )
+      );
     });
   }
 
-  private async streamOut(
-    file: File,
-    subscriber: Subscriber<TransferEvent>,
-    onChannel: (channel: RtcChannel) => void
-  ): Promise<void> {
-    subscriber.next({ type: 'started', total: file.size });
-    const channel = await this.webrtc.openInitiator();
-    onChannel(channel);
-
-    const chunkCount = Math.ceil(file.size / TRANSFER_CHUNK_SIZE);
-    let sent = 0;
-    for (let index = 0; index < chunkCount; index++) {
-      const bytes = await file
-        .slice(index * TRANSFER_CHUNK_SIZE, (index + 1) * TRANSFER_CHUNK_SIZE)
-        .arrayBuffer();
-      await channel.send(bytes);
-      sent += bytes.byteLength;
-      subscriber.next({ type: 'progress', transferred: sent });
-    }
-
-    channel.close();
-    subscriber.next({ type: 'complete' });
-
-    const result = await firstValueFrom(
-      this.signaling.receiveSealed('verify-result', parseVerifyResult)
+  private receiveChunks(channel: RtcChannel): Observable<TransferEvent> {
+    return channel.messages$.pipe(
+      concatMap((chunk) =>
+        this.storage.storeChunk(chunk).pipe(map(() => chunk.byteLength))
+      ),
+      scan((received, byteLength) => received + byteLength, 0),
+      map(
+        (received): TransferEvent => ({
+          type: 'progress',
+          transferred: received
+        })
+      )
     );
-    if (result.ok) {
-      subscriber.next({ type: 'verified' });
-    } else {
-      subscriber.next({
-        type: 'failed',
-        error: 'receiver verification failed'
-      });
-    }
-    subscriber.complete();
   }
 
-  private async receiveIn(
-    input: ReceiveRequest,
-    subscriber: Subscriber<TransferEvent>,
-    onChannel: (channel: RtcChannel) => void
-  ): Promise<void> {
-    const channelPromise = this.webrtc.openResponder();
-    await this.storage.open();
-    this.sendSignal('accept', {});
-    const channel = await channelPromise;
-    onChannel(channel);
-    subscriber.next({ type: 'started', total: input.metadata.size });
+  private verifyAndFinish(input: ReceiveRequest): Observable<TransferEvent> {
+    return concat(
+      of<TransferEvent>({ type: 'complete' }),
+      this.storage
+        .assemble(input.metadata.mime)
+        .pipe(switchMap((blob) => this.hashAndCompare(blob, input)))
+    );
+  }
 
-    let received = 0;
-    let index = 0;
-    while (received < input.metadata.size) {
-      const chunk = await channel.receive();
-      await this.storage.storeChunk(index, chunk);
-      index++;
-      received += chunk.byteLength;
-      subscriber.next({ type: 'progress', transferred: received });
-    }
-    subscriber.next({ type: 'complete' });
-
-    const blob = await this.storage.assemble(input.metadata.mime);
-    await this.storage.close();
+  private hashAndCompare(
+    blob: Blob,
+    input: ReceiveRequest
+  ): Observable<TransferEvent> {
     const file = new File([blob], input.metadata.name, {
       type: input.metadata.mime,
       lastModified: input.metadata.lastModified
     });
-    const digest = match(await lastValueFrom(this.hash.hashFile(file)))
-      .with({ type: 'complete' }, (event) => event.digest)
-      .otherwise(() => {
-        throw new Error('hash did not complete');
-      });
-
-    if (digest === input.digest) {
-      this.storage.download(blob, input.metadata.name);
-      this.sendSignal('verify-result', { ok: true });
-      subscriber.next({ type: 'verified' });
-    } else {
-      this.sendSignal('verify-result', { ok: false });
-      subscriber.next({ type: 'failed', error: 'file verification failed' });
-    }
-    subscriber.complete();
+    return this.hash.hashFile(file).pipe(
+      last(),
+      map((event) =>
+        match(event)
+          .with({ type: 'complete' }, (e) => e.digest)
+          .otherwise(() => {
+            throw new Error('hash did not complete');
+          })
+      ),
+      switchMap((digest) => this.finishAfterVerify(digest, input, blob))
+    );
   }
 
-  private sendSignal(kind: SealedKind, payload: unknown): void {
+  private finishAfterVerify(
+    digest: string,
+    input: ReceiveRequest,
+    blob: Blob
+  ): Observable<TransferEvent> {
+    const ok = digest === input.digest;
+    if (ok) {
+      this.storage.download(blob, input.metadata.name);
+    }
+    this.sendVerifyResult(ok);
+    return of<TransferEvent>(
+      ok
+        ? { type: 'verified' }
+        : { type: 'failed', error: 'file verification failed' }
+    );
+  }
+
+  private sendAccept(): void {
     this.signaling
-      .sendSealed(kind, payload)
+      .sendSealed('accept', {})
       .pipe(catchError(() => EMPTY))
       .subscribe();
   }
+
+  private sendVerifyResult(ok: boolean): void {
+    this.signaling
+      .sendSealed('verify-result', { ok })
+      .pipe(catchError(() => EMPTY))
+      .subscribe();
+  }
+}
+
+function hasRoomFor(estimate: StorageEstimate, size: number): boolean {
+  const available =
+    (estimate.quota ?? Number.POSITIVE_INFINITY) - (estimate.usage ?? 0);
+  return size <= available;
 }

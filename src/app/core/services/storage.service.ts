@@ -1,69 +1,80 @@
 import { Injectable } from '@angular/core';
+import { defer, from, map, Observable, switchMap, tap } from 'rxjs';
 
 const DB_NAME = 'defax-transfer';
 const STORE_NAME = 'chunks';
 
-interface ChunkRecord {
-  index: number;
-  data: ArrayBuffer;
-}
-
-function openDatabase(): Promise<IDBDatabase> {
-  return new Promise((resolve, reject) => {
+function openDatabase$(): Observable<IDBDatabase> {
+  return new Observable((subscriber) => {
     const request = indexedDB.open(DB_NAME, 1);
     request.onupgradeneeded = () => {
       if (!request.result.objectStoreNames.contains(STORE_NAME)) {
-        request.result.createObjectStore(STORE_NAME, { keyPath: 'index' });
+        request.result.createObjectStore(STORE_NAME, { autoIncrement: true });
       }
     };
-    request.onsuccess = () => resolve(request.result);
+    request.onsuccess = () => {
+      subscriber.next(request.result);
+      subscriber.complete();
+    };
     request.onerror = () =>
-      reject(request.error ?? new Error('indexeddb open failed'));
+      subscriber.error(request.error ?? new Error('indexeddb open failed'));
   });
 }
 
-function clearStore(db: IDBDatabase): Promise<void> {
-  return new Promise((resolve, reject) => {
+function clearStore$(db: IDBDatabase): Observable<void> {
+  return new Observable((subscriber) => {
     const tx = db.transaction(STORE_NAME, 'readwrite');
     tx.objectStore(STORE_NAME).clear();
-    tx.oncomplete = () => resolve();
-    tx.onerror = () => reject(tx.error ?? new Error('indexeddb clear failed'));
+    tx.oncomplete = () => {
+      subscriber.next();
+      subscriber.complete();
+    };
+    tx.onerror = () =>
+      subscriber.error(tx.error ?? new Error('indexeddb clear failed'));
   });
 }
 
-function putChunk(
-  db: IDBDatabase,
-  index: number,
-  data: ArrayBuffer
-): Promise<void> {
-  return new Promise((resolve, reject) => {
+function putChunk$(db: IDBDatabase, data: ArrayBuffer): Observable<void> {
+  return new Observable((subscriber) => {
     const tx = db.transaction(STORE_NAME, 'readwrite');
-    const request = tx.objectStore(STORE_NAME).put({ index, data });
-    request.onsuccess = () => resolve();
+    const request = tx.objectStore(STORE_NAME).put(data);
+    request.onsuccess = () => {
+      subscriber.next();
+      subscriber.complete();
+    };
     request.onerror = () =>
-      reject(request.error ?? new Error('indexeddb write failed'));
+      subscriber.error(request.error ?? new Error('indexeddb write failed'));
   });
 }
 
-function readAll(db: IDBDatabase): Promise<ChunkRecord[]> {
-  return new Promise((resolve, reject) => {
+function readAll$(db: IDBDatabase): Observable<ArrayBuffer[]> {
+  return new Observable((subscriber) => {
     const store = db
       .transaction(STORE_NAME, 'readonly')
       .objectStore(STORE_NAME);
     const request = store.getAll();
-    request.onsuccess = () => resolve(request.result as ChunkRecord[]);
+    request.onsuccess = () => {
+      subscriber.next(request.result as ArrayBuffer[]);
+      subscriber.complete();
+    };
     request.onerror = () =>
-      reject(request.error ?? new Error('indexeddb read failed'));
+      subscriber.error(request.error ?? new Error('indexeddb read failed'));
   });
 }
 
-function deleteDatabase(): Promise<void> {
-  return new Promise((resolve, reject) => {
+function deleteDatabase$(): Observable<void> {
+  return new Observable((subscriber) => {
     const request = indexedDB.deleteDatabase(DB_NAME);
-    request.onsuccess = () => resolve();
-    request.onblocked = () => resolve();
+    request.onsuccess = () => {
+      subscriber.next();
+      subscriber.complete();
+    };
+    request.onblocked = () => {
+      subscriber.next();
+      subscriber.complete();
+    };
     request.onerror = () =>
-      reject(request.error ?? new Error('indexeddb delete failed'));
+      subscriber.error(request.error ?? new Error('indexeddb delete failed'));
   });
 }
 
@@ -71,30 +82,37 @@ function deleteDatabase(): Promise<void> {
 export class StorageService {
   private db: IDBDatabase | null = null;
 
-  async open(): Promise<void> {
-    const db = await openDatabase();
-    await clearStore(db);
-    this.db = db;
-  }
-
-  async storeChunk(index: number, data: ArrayBuffer): Promise<void> {
-    await putChunk(this.requireDb(), index, data);
-  }
-
-  async assemble(mime: string): Promise<Blob> {
-    const records = await readAll(this.requireDb());
-    records.sort((a, b) => a.index - b.index);
-    return new Blob(
-      records.map((record) => record.data),
-      { type: mime }
+  open(): Observable<void> {
+    return defer(() => openDatabase$()).pipe(
+      switchMap((db) =>
+        clearStore$(db).pipe(
+          tap(() => {
+            this.db = db;
+          })
+        )
+      )
     );
   }
 
-  async close(): Promise<void> {
+  storeChunk(data: ArrayBuffer): Observable<void> {
+    return defer(() => putChunk$(this.requireDb(), data));
+  }
+
+  assemble(mime: string): Observable<Blob> {
+    return defer(() => readAll$(this.requireDb())).pipe(
+      map((chunks) => new Blob(chunks, { type: mime }))
+    );
+  }
+
+  estimate(): Observable<StorageEstimate> {
+    return defer(() => from(navigator.storage.estimate()));
+  }
+
+  close(): void {
     const db = this.db;
     this.db = null;
     db?.close();
-    await deleteDatabase();
+    deleteDatabase$().subscribe();
   }
 
   download(blob: Blob, name: string): void {
