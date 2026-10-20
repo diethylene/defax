@@ -13,7 +13,7 @@ import { match } from 'ts-pattern';
 import { StatusLightComponent } from '../../../../shared/components/status-light/status-light';
 import { DurationPipe } from '../../../../shared/pipes/duration.pipe';
 import { FileSizePipe } from '../../../../shared/pipes/file-size.pipe';
-import type { TransferRoute } from '../transfer.interface';
+import type { TransferRoute } from '../../../interfaces/transfer.interface';
 
 export type TransferMode = 'send' | 'receive';
 

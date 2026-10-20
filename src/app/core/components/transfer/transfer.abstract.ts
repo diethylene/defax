@@ -4,8 +4,8 @@ import { Store } from '@ngrx/store';
 import { type Observable, throttleTime } from 'rxjs';
 import type { FileMetadata } from '../../../shared/interfaces/file-metadata';
 import type { Identity } from '../../../shared/interfaces/identity';
+import type { TransferSnapshot } from '../../interfaces/transfer.interface';
 import type { ProgressTransfer } from './progress-transfer/progress-transfer';
-import type { TransferSnapshot } from './transfer.interface';
 import { TransferMetricsStore } from './transfer-metrics.store';
 
 const SAMPLE_INTERVAL_MS = 1000;
