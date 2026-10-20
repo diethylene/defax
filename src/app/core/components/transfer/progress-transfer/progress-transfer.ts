@@ -4,8 +4,6 @@ import {
   computed,
   input
 } from '@angular/core';
-import { NgIcon, provideIcons } from '@ng-icons/core';
-import { lucideFile } from '@ng-icons/lucide';
 import { HlmBadge } from '@spartan-ng/helm/badge';
 import { HlmCard, HlmCardContent } from '@spartan-ng/helm/card';
 import { HlmProgressImports } from '@spartan-ng/helm/progress';
@@ -14,6 +12,7 @@ import { StatusLightComponent } from '../../../../shared/components/status-light
 import { DurationPipe } from '../../../../shared/pipes/duration.pipe';
 import { FileSizePipe } from '../../../../shared/pipes/file-size.pipe';
 import type { TransferRoute } from '../../../interfaces/transfer.interface';
+import { TransferFileSummaryComponent } from '../transfer-file-summary/transfer-file-summary';
 
 export type TransferMode = 'send' | 'receive';
 
@@ -32,16 +31,15 @@ export interface ProgressTransfer {
 @Component({
   selector: 'app-progress-transfer',
   imports: [
-    NgIcon,
     HlmBadge,
     HlmCard,
     HlmCardContent,
     HlmProgressImports,
     StatusLightComponent,
     FileSizePipe,
-    DurationPipe
+    DurationPipe,
+    TransferFileSummaryComponent
   ],
-  providers: [provideIcons({ lucideFile })],
   host: { class: 'block w-full' },
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './progress-transfer.html'

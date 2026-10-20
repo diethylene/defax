@@ -1,25 +1,17 @@
 <section hlmCard>
   <div hlmCardContent class="flex flex-col gap-6">
-    <div class="flex items-center gap-4">
-      <div
-        class="flex size-12 shrink-0 items-center justify-center rounded-lg bg-muted text-muted-foreground"
+    <app-transfer-file-summary
+      [name]="progress().fileName"
+      [peerBrowser]="progress().peerBrowser"
+      [peerOs]="progress().peerOs"
+    >
+      <p
+        trailing
+        class="shrink-0 text-2xl font-semibold tabular-nums text-foreground"
       >
-        <ng-icon name="lucideFile" size="24" />
-      </div>
-
-      <div class="min-w-0 flex-1">
-        <h2 class="truncate text-base font-semibold tracking-tight text-foreground">
-          {{ progress().fileName }}
-        </h2>
-        <p class="truncate text-sm text-muted-foreground">
-          To {{ progress().peerBrowser }} on {{ progress().peerOs }}
-        </p>
-      </div>
-
-      <p class="shrink-0 text-2xl font-semibold tabular-nums text-foreground">
         {{ progress().percent }}%
       </p>
-    </div>
+    </app-transfer-file-summary>
 
     <hlm-progress [value]="progress().percent">
       <hlm-progress-indicator />
