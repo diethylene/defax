@@ -41,3 +41,23 @@ export const selectReceiveError = createSelector(
   selectReceiveState,
   (state) => state.error
 );
+
+export const selectReceiveTransfer = createSelector(
+  selectReceiveState,
+  (state) => state.transfer
+);
+
+export const selectReceiveTransferReceived = createSelector(
+  selectReceiveTransfer,
+  (transfer) => transfer.received
+);
+
+export const selectReceiveTransferTotal = createSelector(
+  selectReceiveTransfer,
+  (transfer) => transfer.total
+);
+
+export const selectReceiveTransferRoute = createSelector(
+  selectReceiveTransfer,
+  (transfer) => transfer.route
+);

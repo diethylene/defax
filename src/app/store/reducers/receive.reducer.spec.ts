@@ -85,7 +85,8 @@ describe('receiveReducer', () => {
       peerIdentity: null,
       file: null,
       digest: null,
-      error: null
+      error: null,
+      transfer: initialReceiveState.transfer
     };
 
     expect(receiveReducer(state, receiveReset())).toEqual(initialReceiveState);

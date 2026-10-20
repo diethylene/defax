@@ -2,6 +2,7 @@ import { createReducer, on } from '@ngrx/store';
 import type { ReceivePhase } from '../../features/receive/receive-phase/receive-phase';
 import type { FileMetadata } from '../../shared/interfaces/file-metadata';
 import type { Identity } from '../../shared/interfaces/identity';
+import type { TransferRoute } from '../../shared/interfaces/transfer';
 import {
   receiveAccepted,
   receiveCodeEntered,
@@ -9,10 +10,21 @@ import {
   receiveDisconnect,
   receiveHandshakeFailed,
   receiveReset,
-  receiveSasComputed
+  receiveSasComputed,
+  receiveTransferComplete,
+  receiveTransferFailed,
+  receiveTransferProgress,
+  receiveTransferStarted,
+  receiveTransferVerified
 } from '../actions/receive.actions';
 
 export const RECEIVE_FEATURE_KEY = 'receive';
+
+export interface ReceiveTransferState {
+  received: number;
+  total: number;
+  route: TransferRoute | null;
+}
 
 export interface ReceiveState {
   phase: ReceivePhase;
@@ -22,7 +34,14 @@ export interface ReceiveState {
   file: FileMetadata | null;
   digest: string | null;
   error: string | null;
+  transfer: ReceiveTransferState;
 }
+
+const initialTransferState: ReceiveTransferState = {
+  received: 0,
+  total: 0,
+  route: null
+};
 
 export const initialReceiveState: ReceiveState = {
   phase: 'idle',
@@ -31,7 +50,8 @@ export const initialReceiveState: ReceiveState = {
   peerIdentity: null,
   file: null,
   digest: null,
-  error: null
+  error: null,
+  transfer: initialTransferState
 };
 
 export const receiveReducer = createReducer(
@@ -45,7 +65,8 @@ export const receiveReducer = createReducer(
       peerIdentity: null,
       file: null,
       digest: null,
-      error: null
+      error: null,
+      transfer: initialTransferState
     })
   ),
   on(
@@ -69,6 +90,32 @@ export const receiveReducer = createReducer(
   on(
     receiveAccepted,
     (state): ReceiveState => ({ ...state, phase: 'transferring' })
+  ),
+  on(
+    receiveTransferStarted,
+    (state, { total }): ReceiveState => ({
+      ...state,
+      transfer: { received: 0, total, route: 'direct' }
+    })
+  ),
+  on(
+    receiveTransferProgress,
+    (state, { received }): ReceiveState => ({
+      ...state,
+      transfer: { ...state.transfer, received }
+    })
+  ),
+  on(
+    receiveTransferComplete,
+    (state): ReceiveState => ({ ...state, phase: 'verifying' })
+  ),
+  on(
+    receiveTransferVerified,
+    (state): ReceiveState => ({ ...state, phase: 'done' })
+  ),
+  on(
+    receiveTransferFailed,
+    (state, { error }): ReceiveState => ({ ...state, error, phase: 'failed' })
   ),
   on(receiveReset, receiveDisconnect, () => initialReceiveState)
 );

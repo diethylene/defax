@@ -45,6 +45,25 @@ export const sendHashFailed = createAction(
   props<{ error: string }>()
 );
 
+export const sendTransferStarted = createAction(
+  '[Send] Transfer Started',
+  props<{ total: number }>()
+);
+
+export const sendTransferProgress = createAction(
+  '[Send] Transfer Progress',
+  props<{ sent: number }>()
+);
+
+export const sendTransferComplete = createAction('[Send] Transfer Complete');
+
+export const sendTransferVerified = createAction('[Send] Transfer Verified');
+
+export const sendTransferFailed = createAction(
+  '[Send] Transfer Failed',
+  props<{ error: string }>()
+);
+
 export const sendReset = createAction('[Send] Reset');
 
 export const sendDisconnect = createAction('[Send] Disconnect');

@@ -24,6 +24,29 @@ export const receiveHandshakeFailed = createAction(
 
 export const receiveAccepted = createAction('[Receive] Accepted');
 
+export const receiveTransferStarted = createAction(
+  '[Receive] Transfer Started',
+  props<{ total: number }>()
+);
+
+export const receiveTransferProgress = createAction(
+  '[Receive] Transfer Progress',
+  props<{ received: number }>()
+);
+
+export const receiveTransferComplete = createAction(
+  '[Receive] Transfer Complete'
+);
+
+export const receiveTransferVerified = createAction(
+  '[Receive] Transfer Verified'
+);
+
+export const receiveTransferFailed = createAction(
+  '[Receive] Transfer Failed',
+  props<{ error: string }>()
+);
+
 export const receiveReset = createAction('[Receive] Reset');
 
 export const receiveDisconnect = createAction('[Receive] Disconnect');

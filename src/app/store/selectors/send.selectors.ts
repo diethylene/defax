@@ -68,3 +68,23 @@ export const selectSendHashError = createSelector(
   selectSendHash,
   (hash) => hash.error
 );
+
+export const selectSendTransfer = createSelector(
+  selectSendState,
+  (state) => state.transfer
+);
+
+export const selectSendTransferSent = createSelector(
+  selectSendTransfer,
+  (transfer) => transfer.sent
+);
+
+export const selectSendTransferTotal = createSelector(
+  selectSendTransfer,
+  (transfer) => transfer.total
+);
+
+export const selectSendTransferRoute = createSelector(
+  selectSendTransfer,
+  (transfer) => transfer.route
+);
