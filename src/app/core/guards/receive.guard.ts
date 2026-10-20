@@ -5,7 +5,11 @@ import {
   Router
 } from '@angular/router';
 import { Store } from '@ngrx/store';
-import { routeForPhase } from '../../features/receive/receive-phase/receive-phase';
+import { match } from 'ts-pattern';
+import {
+  type ReceivePhase,
+  routeForPhase
+} from '../../features/receive/receive-phase/receive-phase';
 import { receiveDisconnect } from '../../store/actions/receive.actions';
 import { selectReceivePhase } from '../../store/selectors/receive.selectors';
 
@@ -29,8 +33,14 @@ export const receiveCanDeactivate: CanDeactivateFn<unknown> = (
   const store = inject(Store);
   const phase = store.selectSignal(selectReceivePhase)();
   if (nextState.url === routeForPhase(phase)) return true;
-  if (phase === 'idle') return true;
+  if (isSafeToLeave(phase)) return true;
   if (!window.confirm(cancelMessage)) return false;
   store.dispatch(receiveDisconnect());
   return false;
 };
+
+function isSafeToLeave(phase: ReceivePhase): boolean {
+  return match(phase)
+    .with('idle', 'done', 'failed', () => true)
+    .otherwise(() => false);
+}

@@ -5,7 +5,11 @@ import {
   Router
 } from '@angular/router';
 import { Store } from '@ngrx/store';
-import { routeForPhase } from '../../features/send/send-phase/send-phase';
+import { match } from 'ts-pattern';
+import {
+  routeForPhase,
+  type SendPhase
+} from '../../features/send/send-phase/send-phase';
 import { sendDisconnect } from '../../store/actions/send.actions';
 import { selectSendPhase } from '../../store/selectors/send.selectors';
 
@@ -29,8 +33,14 @@ export const sendCanDeactivate: CanDeactivateFn<unknown> = (
   const store = inject(Store);
   const phase = store.selectSignal(selectSendPhase)();
   if (nextState.url === routeForPhase(phase)) return true;
-  if (phase === 'idle') return true;
+  if (isSafeToLeave(phase)) return true;
   if (!window.confirm(cancelMessage)) return false;
   store.dispatch(sendDisconnect());
   return false;
 };
+
+function isSafeToLeave(phase: SendPhase): boolean {
+  return match(phase)
+    .with('idle', 'done', 'failed', () => true)
+    .otherwise(() => false);
+}
