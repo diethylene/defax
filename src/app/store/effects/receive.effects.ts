@@ -11,21 +11,35 @@ import {
   of,
   skip,
   switchMap,
-  tap
+  takeUntil,
+  tap,
+  withLatestFrom
 } from 'rxjs';
+import { match } from 'ts-pattern';
 import { SignalingService } from '../../core/services/signaling.service';
+import { TransferService } from '../../core/services/transfer.service';
 import { routeForPhase } from '../../features/receive/receive-phase/receive-phase';
 import { IdentityService } from '../../shared/services/identity.service';
 import { toErrorMessage } from '../../shared/utilities/error-message';
 import {
+  receiveAccepted,
   receiveCodeEntered,
   receiveDigestReceived,
   receiveDisconnect,
   receiveHandshakeFailed,
   receiveReset,
-  receiveSasComputed
+  receiveSasComputed,
+  receiveTransferComplete,
+  receiveTransferFailed,
+  receiveTransferProgress,
+  receiveTransferStarted,
+  receiveTransferVerified
 } from '../actions/receive.actions';
-import { selectReceivePhase } from '../selectors/receive.selectors';
+import {
+  selectReceiveDigest,
+  selectReceiveFile,
+  selectReceivePhase
+} from '../selectors/receive.selectors';
 
 @Injectable()
 export class ReceiveEffects {
@@ -33,6 +47,7 @@ export class ReceiveEffects {
   private readonly router = inject(Router);
   private readonly identityService = inject(IdentityService);
   private readonly signaling = inject(SignalingService);
+  private readonly transfer = inject(TransferService);
   private readonly actions$ = inject(Actions);
 
   readonly routeToPhase$ = createEffect(
@@ -101,6 +116,52 @@ export class ReceiveEffects {
   readonly fileHash$ = createEffect(() =>
     this.signaling.peerFileHash$.pipe(
       map((digest) => receiveDigestReceived({ digest }))
+    )
+  );
+
+  readonly startTransfer$ = createEffect(() =>
+    this.actions$.pipe(
+      ofType(receiveAccepted),
+      withLatestFrom(
+        this.store.select(selectReceiveFile),
+        this.store.select(selectReceiveDigest)
+      ),
+      switchMap(([, file, digest]) => {
+        if (!file || !digest) {
+          return of(
+            receiveTransferFailed({ error: 'missing file metadata or digest' })
+          );
+        }
+        return this.transfer.receive({ metadata: file, digest }).pipe(
+          map((event) =>
+            match(event)
+              .with({ type: 'started' }, (e) =>
+                receiveTransferStarted({ total: e.total })
+              )
+              .with({ type: 'progress' }, (e) =>
+                receiveTransferProgress({ received: e.transferred })
+              )
+              .with({ type: 'complete' }, () => receiveTransferComplete())
+              .with({ type: 'verified' }, () => receiveTransferVerified())
+              .with({ type: 'failed' }, (e) =>
+                receiveTransferFailed({ error: e.error })
+              )
+              .exhaustive()
+          ),
+          catchError((error) =>
+            of(
+              receiveTransferFailed({
+                error: toErrorMessage(error, 'Transfer failed')
+              })
+            )
+          ),
+          takeUntil(
+            this.actions$.pipe(
+              ofType(receiveCodeEntered, receiveReset, receiveDisconnect)
+            )
+          )
+        );
+      })
     )
   );
 }

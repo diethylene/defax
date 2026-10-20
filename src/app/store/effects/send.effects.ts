@@ -21,6 +21,7 @@ import {
 import { match } from 'ts-pattern';
 import { HashService } from '../../core/services/hash.service';
 import { SignalingService } from '../../core/services/signaling.service';
+import { TransferService } from '../../core/services/transfer.service';
 import {
   routeForPhase,
   type SendPhase
@@ -38,7 +39,12 @@ import {
   sendPasswordGenerated,
   sendReset,
   sendRoomCreated,
-  sendSasComputed
+  sendSasComputed,
+  sendTransferComplete,
+  sendTransferFailed,
+  sendTransferProgress,
+  sendTransferStarted,
+  sendTransferVerified
 } from '../actions/send.actions';
 import { selectSendFile, selectSendPhase } from '../selectors/send.selectors';
 
@@ -49,6 +55,7 @@ export class SendEffects {
   private readonly hashService = inject(HashService);
   private readonly identityService = inject(IdentityService);
   private readonly signaling = inject(SignalingService);
+  private readonly transfer = inject(TransferService);
   private readonly actions$ = inject(Actions);
 
   readonly routeToPhase$ = createEffect(
@@ -176,6 +183,45 @@ export class SendEffects {
         )
       ),
     { dispatch: false }
+  );
+
+  readonly startTransfer$ = createEffect(() =>
+    this.actions$.pipe(
+      ofType(sendSasComputed),
+      withLatestFrom(this.store.select(selectSendFile)),
+      switchMap(([, file]) => {
+        if (!file) return EMPTY;
+        return this.transfer.send(file).pipe(
+          map((event) =>
+            match(event)
+              .with({ type: 'started' }, (e) =>
+                sendTransferStarted({ total: e.total })
+              )
+              .with({ type: 'progress' }, (e) =>
+                sendTransferProgress({ sent: e.transferred })
+              )
+              .with({ type: 'complete' }, () => sendTransferComplete())
+              .with({ type: 'verified' }, () => sendTransferVerified())
+              .with({ type: 'failed' }, (e) =>
+                sendTransferFailed({ error: e.error })
+              )
+              .exhaustive()
+          ),
+          catchError((error) =>
+            of(
+              sendTransferFailed({
+                error: toErrorMessage(error, 'Transfer failed')
+              })
+            )
+          ),
+          takeUntil(
+            this.actions$.pipe(
+              ofType(sendFileSelected, sendReset, sendDisconnect)
+            )
+          )
+        );
+      })
+    )
   );
 }
 
