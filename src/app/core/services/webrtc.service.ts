@@ -27,6 +27,7 @@ import { SignalingService } from './signaling.service';
 export interface RtcChannel {
   send(data: ArrayBuffer): Observable<void>;
   readonly messages$: Observable<ArrayBuffer>;
+  drain(): Observable<void>;
   close(): void;
 }
 
@@ -166,6 +167,7 @@ export class WebRtcService {
       const handle: RtcChannel = {
         send: (data) => this.sendData(channel, data),
         messages$: messages.asObservable(),
+        drain: () => this.drain(channel),
         close: () => {
           channel.close();
           peer.close();
@@ -221,6 +223,38 @@ export class WebRtcService {
         subscriber.complete();
         return;
       }
+      channel.addEventListener('bufferedamountlow', onLow);
+      channel.addEventListener('close', onClose);
+      return cleanup;
+    });
+  }
+
+  private drain(channel: RTCDataChannel): Observable<void> {
+    return new Observable<void>((subscriber) => {
+      if (channel.readyState !== 'open') {
+        subscriber.error(new Error('data channel not open'));
+        return;
+      }
+      if (channel.bufferedAmount === 0) {
+        subscriber.next();
+        subscriber.complete();
+        return;
+      }
+      channel.bufferedAmountLowThreshold = 0;
+      const onLow = (): void => {
+        channel.bufferedAmountLowThreshold = DATA_CHANNEL_BUFFER_LOW;
+        cleanup();
+        subscriber.next();
+        subscriber.complete();
+      };
+      const onClose = (): void => {
+        cleanup();
+        subscriber.error(new Error('data channel closed'));
+      };
+      const cleanup = (): void => {
+        channel.removeEventListener('bufferedamountlow', onLow);
+        channel.removeEventListener('close', onClose);
+      };
       channel.addEventListener('bufferedamountlow', onLow);
       channel.addEventListener('close', onClose);
       return cleanup;

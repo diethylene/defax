@@ -7,6 +7,7 @@ import {
   EMPTY,
   finalize,
   from,
+  ignoreElements,
   last,
   map,
   type Observable,
@@ -82,6 +83,7 @@ export class TransferService {
         switchMap((channel) =>
           concat(
             this.sendChunks(file, channel),
+            channel.drain().pipe(ignoreElements()),
             of<TransferEvent>({ type: 'complete' }).pipe(
               tap(() => channel.close())
             ),
