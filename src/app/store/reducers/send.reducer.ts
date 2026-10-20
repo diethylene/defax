@@ -38,6 +38,7 @@ export interface SendTransferState {
   sent: number;
   total: number;
   route: TransferRoute | null;
+  verified: boolean;
 }
 
 export interface SendState {
@@ -63,7 +64,8 @@ const initialHashState: HashState = {
 const initialTransferState: SendTransferState = {
   sent: 0,
   total: 0,
-  route: null
+  route: null,
+  verified: false
 };
 
 export const initialSendState: SendState = {
@@ -147,7 +149,7 @@ export const sendReducer = createReducer(
     (state, { total }): SendState => ({
       ...state,
       phase: 'transferring',
-      transfer: { sent: 0, total, route: 'direct' }
+      transfer: { sent: 0, total, route: 'direct', verified: false }
     })
   ),
   on(
@@ -161,7 +163,14 @@ export const sendReducer = createReducer(
     sendTransferComplete,
     (state): SendState => ({ ...state, phase: 'verifying' })
   ),
-  on(sendTransferVerified, (state): SendState => ({ ...state, phase: 'done' })),
+  on(
+    sendTransferVerified,
+    (state): SendState => ({
+      ...state,
+      phase: 'done',
+      transfer: { ...state.transfer, verified: true }
+    })
+  ),
   on(
     sendTransferFailed,
     (state, { error }): SendState => ({ ...state, error, phase: 'failed' })

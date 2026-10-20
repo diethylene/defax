@@ -29,7 +29,8 @@ export class ReceiverTransferComponent extends TransferComponent {
         map((transfer) => ({
           transferred: transfer.received,
           total: transfer.total,
-          route: transfer.route
+          route: transfer.route,
+          verified: transfer.verified
         }))
       ),
       store.select(selectReceiveFile),

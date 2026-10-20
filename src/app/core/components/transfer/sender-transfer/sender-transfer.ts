@@ -29,7 +29,8 @@ export class SenderTransferComponent extends TransferComponent {
         map((transfer) => ({
           transferred: transfer.sent,
           total: transfer.total,
-          route: transfer.route
+          route: transfer.route,
+          verified: transfer.verified
         }))
       ),
       store.select(selectSendMetadata),
