@@ -12,7 +12,7 @@ const receivePhaseRoutes: Record<ReceivePhase, string> = {
   connecting: '/receive',
   confirming: '/receive/confirm',
   transferring: '/receive/transfer',
-  verifying: '/receive/verify',
+  verifying: '/receive/transfer',
   done: '/receive/complete',
   failed: '/receive/failed'
 };

@@ -12,7 +12,7 @@ const sendPhaseRoutes: Record<SendPhase, string> = {
   awaitingPeer: '/send/code',
   sasConfirm: '/send/approve',
   transferring: '/send/transfer',
-  verifying: '/send/verify',
+  verifying: '/send/transfer',
   done: '/send/complete',
   failed: '/send/failed'
 };

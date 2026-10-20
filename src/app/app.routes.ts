@@ -12,7 +12,6 @@ import { ReceiveConfirmComponent } from './features/receive/receive-confirm/rece
 import { ReceiveFailedComponent } from './features/receive/receive-failed/receive-failed';
 import { ReceiveIdleComponent } from './features/receive/receive-idle/receive-idle';
 import { ReceiveLayoutComponent } from './features/receive/receive-layout/receive-layout';
-import { ReceiveVerifyComponent } from './features/receive/receive-verify/receive-verify';
 import { RelayHelpFeature } from './features/relay-help/relay-help';
 import { SendApproveComponent } from './features/send/send-approve/send-approve';
 import { SendCodeComponent } from './features/send/send-code/send-code';
@@ -20,7 +19,6 @@ import { SendCompleteComponent } from './features/send/send-complete/send-comple
 import { SendFailedComponent } from './features/send/send-failed/send-failed';
 import { SendIdleComponent } from './features/send/send-idle/send-idle';
 import { SendLayoutComponent } from './features/send/send-layout/send-layout';
-import { SendVerifyComponent } from './features/send/send-verify/send-verify';
 
 export const routes: Routes = [
   { path: '', redirectTo: 'send', pathMatch: 'full' },
@@ -49,12 +47,6 @@ export const routes: Routes = [
       {
         path: 'transfer',
         component: SenderTransferComponent,
-        canActivate: [sendCanActivate],
-        canDeactivate: [sendCanDeactivate]
-      },
-      {
-        path: 'verify',
-        component: SendVerifyComponent,
         canActivate: [sendCanActivate],
         canDeactivate: [sendCanDeactivate]
       },
@@ -91,12 +83,6 @@ export const routes: Routes = [
       {
         path: 'transfer',
         component: ReceiverTransferComponent,
-        canActivate: [receiveCanActivate],
-        canDeactivate: [receiveCanDeactivate]
-      },
-      {
-        path: 'verify',
-        component: ReceiveVerifyComponent,
         canActivate: [receiveCanActivate],
         canDeactivate: [receiveCanDeactivate]
       },
