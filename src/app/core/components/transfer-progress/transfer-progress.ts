@@ -12,6 +12,8 @@ import { HlmProgressImports } from '@spartan-ng/helm/progress';
 import { match } from 'ts-pattern';
 import { StatusLightComponent } from '../../../shared/components/status-light/status-light';
 import type { TransferRoute } from '../../../shared/interfaces/transfer';
+import { DurationPipe } from '../../../shared/pipes/duration.pipe';
+import { FileSizePipe } from '../../../shared/pipes/file-size.pipe';
 
 export type TransferMode = 'send' | 'receive';
 
@@ -20,9 +22,10 @@ export interface TransferProgress {
   peerBrowser: string;
   peerOs: string;
   percent: number;
-  sent: string;
-  speed: string;
-  timeLeft: string;
+  sent: number;
+  total: number;
+  speed: number;
+  timeLeft: number | null;
   route: TransferRoute;
 }
 
@@ -34,7 +37,9 @@ export interface TransferProgress {
     HlmCard,
     HlmCardContent,
     HlmProgressImports,
-    StatusLightComponent
+    StatusLightComponent,
+    FileSizePipe,
+    DurationPipe
   ],
   providers: [provideIcons({ lucideFile })],
   host: { class: 'block w-full' },

@@ -28,16 +28,20 @@
     <dl class="grid grid-cols-2 gap-4 sm:grid-cols-4">
       <div class="flex flex-col gap-1">
         <dt class="text-xs text-muted-foreground">{{ sentLabel() }}</dt>
-        <dd class="text-sm font-medium text-foreground">{{ progress().sent }}</dd>
+        <dd class="text-sm font-medium text-foreground">
+          {{ progress().sent | fileSize }} of {{ progress().total | fileSize }}
+        </dd>
       </div>
       <div class="flex flex-col gap-1">
         <dt class="text-xs text-muted-foreground">Speed</dt>
-        <dd class="text-sm font-medium text-foreground">{{ progress().speed }}</dd>
+        <dd class="text-sm font-medium text-foreground">
+          {{ progress().speed | fileSize }}/s
+        </dd>
       </div>
       <div class="flex flex-col gap-1">
         <dt class="text-xs text-muted-foreground">Time left</dt>
         <dd class="text-sm font-medium text-foreground">
-          {{ progress().timeLeft }}
+          {{ progress().timeLeft | duration }}
         </dd>
       </div>
       <div class="flex flex-col gap-1">

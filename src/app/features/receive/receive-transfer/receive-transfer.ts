@@ -14,8 +14,6 @@ import {
   type TransferProgress,
   TransferProgressComponent
 } from '../../../core/components/transfer-progress/transfer-progress';
-import { formatDuration } from '../../../shared/utilities/duration';
-import { formatFileSize } from '../../../shared/utilities/file-size';
 import { receiveDisconnect } from '../../../store/actions/receive.actions';
 import {
   selectReceiveFile,
@@ -61,19 +59,17 @@ export class ReceiveTransferComponent {
         ? Math.round((transfer.received / transfer.total) * 100)
         : 0;
     const remaining = transfer.total - transfer.received;
-    const timeLeftSeconds = speed > 0 ? remaining / speed : null;
+    const timeLeft = speed > 0 ? remaining / speed : null;
 
     return {
       fileName: file?.name ?? '',
       peerBrowser: peer?.browser ?? '',
       peerOs: peer?.os ?? '',
       percent,
-      sent: `${formatFileSize(transfer.received)} of ${formatFileSize(transfer.total)}`,
-      speed: speed > 0 ? `${formatFileSize(speed)}/s` : '',
-      timeLeft:
-        timeLeftSeconds === null
-          ? ''
-          : `About ${formatDuration(timeLeftSeconds)}`,
+      sent: transfer.received,
+      total: transfer.total,
+      speed,
+      timeLeft,
       route: transfer.route ?? 'direct'
     };
   });
