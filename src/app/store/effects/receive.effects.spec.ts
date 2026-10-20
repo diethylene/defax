@@ -3,7 +3,7 @@ import { Router } from '@angular/router';
 import { provideEffects } from '@ngrx/effects';
 import { provideStore, Store } from '@ngrx/store';
 import { EMPTY, filter, firstValueFrom, of, take, throwError } from 'rxjs';
-import { ConnectionService } from '../../core/services/connection.service';
+import { SignalingService } from '../../core/services/signaling.service';
 import type { FileMetadata } from '../../shared/interfaces/file-metadata';
 import type { Identity } from '../../shared/interfaces/identity';
 import { receiveCodeEntered } from '../actions/receive.actions';
@@ -35,14 +35,14 @@ function configure(connectAsResponder: () => unknown): void {
       provideStore({ receive: receiveReducer }),
       provideEffects(ReceiveEffects),
       {
-        provide: ConnectionService,
+        provide: SignalingService,
         useValue: {
           connectAsResponder,
           close: () => {},
           disconnect: () => {},
           peerDisconnected$: EMPTY,
           peerFileHash$: EMPTY
-        } as unknown as ConnectionService
+        } as unknown as SignalingService
       },
       {
         provide: Router,

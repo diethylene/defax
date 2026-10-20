@@ -13,7 +13,7 @@ import {
   switchMap,
   tap
 } from 'rxjs';
-import { ConnectionService } from '../../core/services/connection.service';
+import { SignalingService } from '../../core/services/signaling.service';
 import { routeForPhase } from '../../features/receive/receive-phase/receive-phase';
 import { IdentityService } from '../../shared/services/identity.service';
 import { toErrorMessage } from '../../shared/utilities/error-message';
@@ -32,7 +32,7 @@ export class ReceiveEffects {
   private readonly store = inject(Store);
   private readonly router = inject(Router);
   private readonly identityService = inject(IdentityService);
-  private readonly connection = inject(ConnectionService);
+  private readonly signaling = inject(SignalingService);
   private readonly actions$ = inject(Actions);
 
   readonly routeToPhase$ = createEffect(
@@ -54,7 +54,7 @@ export class ReceiveEffects {
     this.actions$.pipe(
       ofType(receiveCodeEntered),
       switchMap(({ code }) =>
-        this.connection
+        this.signaling
           .connectAsResponder(code, this.identityService.detect())
           .pipe(
             map(({ sas, peerIdentity, fileInfo }) =>
@@ -76,7 +76,7 @@ export class ReceiveEffects {
     () =>
       this.actions$.pipe(
         ofType(receiveReset),
-        tap(() => this.connection.close())
+        tap(() => this.signaling.close())
       ),
     { dispatch: false }
   );
@@ -85,13 +85,13 @@ export class ReceiveEffects {
     () =>
       this.actions$.pipe(
         ofType(receiveDisconnect),
-        tap(() => this.connection.disconnect())
+        tap(() => this.signaling.disconnect())
       ),
     { dispatch: false }
   );
 
   readonly peerDisconnected$ = createEffect(() =>
-    this.connection.peerDisconnected$.pipe(
+    this.signaling.peerDisconnected$.pipe(
       filter((notice) => notice.cancelledBy === 'sender'),
       tap(() => toast.warning('The sender canceled the transfer.')),
       map(() => receiveReset())
@@ -99,7 +99,7 @@ export class ReceiveEffects {
   );
 
   readonly fileHash$ = createEffect(() =>
-    this.connection.peerFileHash$.pipe(
+    this.signaling.peerFileHash$.pipe(
       map((digest) => receiveDigestReceived({ digest }))
     )
   );

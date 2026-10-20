@@ -4,8 +4,8 @@ import type { FileMetadata } from '../../shared/interfaces/file-metadata';
 import type { Identity } from '../../shared/interfaces/identity';
 import { SignalTransport } from '../../shared/interfaces/signal-transport';
 import { BroadcastChannelTransport } from './broadcast-channel-transport';
-import { ConnectionService } from './connection.service';
 import { HandshakeService } from './handshake.service';
+import { SignalingService } from './signaling.service';
 
 const initiatorIdentity: Identity = {
   browser: 'Chrome 122',
@@ -29,22 +29,22 @@ const file: FileMetadata = {
   lastModified: 1700000000000
 };
 
-function createConnection(transport: SignalTransport): ConnectionService {
+function createSignaling(transport: SignalTransport): SignalingService {
   return Injector.create({
     providers: [
       { provide: SignalTransport, useValue: transport },
       { provide: HandshakeService, useClass: HandshakeService },
-      { provide: ConnectionService, useClass: ConnectionService }
+      { provide: SignalingService, useClass: SignalingService }
     ]
-  }).get(ConnectionService);
+  }).get(SignalingService);
 }
 
-describe('ConnectionService', () => {
+describe('SignalingService', () => {
   it('establishes a connection and exchanges peer info', async () => {
     const initiatorTransport = new BroadcastChannelTransport();
     const responderTransport = new BroadcastChannelTransport();
-    const initiator = createConnection(initiatorTransport);
-    const responder = createConnection(responderTransport);
+    const initiator = createSignaling(initiatorTransport);
+    const responder = createSignaling(responderTransport);
 
     const session = initiator.createSession();
     const code = `${session.roomId}-${session.password}`;

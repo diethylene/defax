@@ -19,8 +19,8 @@ import {
   withLatestFrom
 } from 'rxjs';
 import { match } from 'ts-pattern';
-import { ConnectionService } from '../../core/services/connection.service';
 import { HashService } from '../../core/services/hash.service';
+import { SignalingService } from '../../core/services/signaling.service';
 import {
   routeForPhase,
   type SendPhase
@@ -48,7 +48,7 @@ export class SendEffects {
   private readonly router = inject(Router);
   private readonly hashService = inject(HashService);
   private readonly identityService = inject(IdentityService);
-  private readonly connection = inject(ConnectionService);
+  private readonly signaling = inject(SignalingService);
   private readonly actions$ = inject(Actions);
 
   readonly routeToPhase$ = createEffect(
@@ -70,13 +70,13 @@ export class SendEffects {
     this.actions$.pipe(
       ofType(sendFileSelected),
       switchMap(({ metadata }) => {
-        const session = this.connection.createSession();
+        const session = this.signaling.createSession();
         return concat(
           of(
             sendRoomCreated({ roomId: session.roomId }),
             sendPasswordGenerated({ password: session.password })
           ),
-          this.connection
+          this.signaling
             .connectAsInitiator(
               session,
               this.identityService.detect(),
@@ -103,7 +103,7 @@ export class SendEffects {
     () =>
       this.actions$.pipe(
         ofType(sendReset),
-        tap(() => this.connection.close())
+        tap(() => this.signaling.close())
       ),
     { dispatch: false }
   );
@@ -112,13 +112,13 @@ export class SendEffects {
     () =>
       this.actions$.pipe(
         ofType(sendDisconnect),
-        tap(() => this.connection.disconnect())
+        tap(() => this.signaling.disconnect())
       ),
     { dispatch: false }
   );
 
   readonly peerDisconnected$ = createEffect(() =>
-    this.connection.peerDisconnected$.pipe(
+    this.signaling.peerDisconnected$.pipe(
       filter((notice) => notice.cancelledBy === 'receiver'),
       tap(() => toast.warning('The receiver canceled the transfer.')),
       map(() => sendReset())
@@ -171,7 +171,7 @@ export class SendEffects {
               )
             ),
             take(1),
-            tap(() => this.connection.sendFileHash(digest))
+            tap(() => this.signaling.sendFileHash(digest))
           )
         )
       ),

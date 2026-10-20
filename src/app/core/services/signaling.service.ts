@@ -69,7 +69,7 @@ function parseFileHash(json: string): string {
 }
 
 @Injectable({ providedIn: 'root' })
-export class ConnectionService {
+export class SignalingService {
   private readonly transport = inject(SignalTransport);
   private readonly handshake = inject(HandshakeService);
   private readonly close$ = new Subject<void>();
