@@ -1,9 +1,9 @@
 import { createReducer, on } from '@ngrx/store';
+import type { TransferRoute } from '../../core/components/transfer/transfer.interface';
 import type { SendPhase } from '../../features/send/send-phase/send-phase';
 import type { FileMetadata } from '../../shared/interfaces/file-metadata';
 import type { Identity } from '../../shared/interfaces/identity';
 import type { RoomId } from '../../shared/interfaces/signal-session';
-import type { TransferRoute } from '../../shared/interfaces/transfer';
 import {
   sendDisconnect,
   sendFileSelected,
