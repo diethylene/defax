@@ -11,9 +11,9 @@ import { HlmCard, HlmCardContent } from '@spartan-ng/helm/card';
 import { HlmProgressImports } from '@spartan-ng/helm/progress';
 import { match } from 'ts-pattern';
 import { StatusLightComponent } from '../../../shared/components/status-light/status-light';
+import type { TransferRoute } from '../../../shared/interfaces/transfer';
 
 export type TransferMode = 'send' | 'receive';
-export type TransferRoute = 'direct' | 'relay';
 
 export interface TransferProgress {
   fileName: string;

@@ -15,11 +15,6 @@ export type AcceptPayload = z.infer<typeof acceptSchema>;
 export const verifyResultSchema = z.object({ ok: z.boolean() });
 export type VerifyResultPayload = z.infer<typeof verifyResultSchema>;
 
-export const transferHeaderSchema = z.object({
-  total: z.number().int().nonnegative()
-});
-export type TransferHeader = z.infer<typeof transferHeaderSchema>;
-
 export function parseRtcOffer(json: string): RtcOfferPayload {
   return rtcOfferSchema.parse(JSON.parse(json));
 }
@@ -38,8 +33,4 @@ export function parseAccept(json: string): AcceptPayload {
 
 export function parseVerifyResult(json: string): VerifyResultPayload {
   return verifyResultSchema.parse(JSON.parse(json));
-}
-
-export function parseTransferHeader(json: string): TransferHeader {
-  return transferHeaderSchema.parse(JSON.parse(json));
 }

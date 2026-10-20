@@ -1,11 +1,5 @@
 import { Injectable, inject } from '@angular/core';
-import {
-  catchError,
-  EMPTY,
-  firstValueFrom,
-  type Observable,
-  Subject
-} from 'rxjs';
+import { catchError, EMPTY, firstValueFrom } from 'rxjs';
 import type { SealedKind } from '../../shared/constants/signal-message';
 import {
   DATA_CHANNEL_BUFFER_LOW,
@@ -20,9 +14,14 @@ import {
 import { SignalingService } from './signaling.service';
 
 export interface RtcChannel {
-  send(data: string | ArrayBuffer): Promise<void>;
-  readonly messages$: Observable<string | ArrayBuffer>;
+  send(data: ArrayBuffer): Promise<void>;
+  receive(): Promise<ArrayBuffer>;
   close(): void;
+}
+
+interface Waiter {
+  resolve: (value: ArrayBuffer) => void;
+  reject: (error: Error) => void;
 }
 
 interface IceHandle {
@@ -135,35 +134,49 @@ export class WebRtcService {
 
   private openChannel(channel: RTCDataChannel): Promise<RtcChannel> {
     return new Promise((resolve, reject) => {
-      const messages = new Subject<string | ArrayBuffer>();
+      const queue: ArrayBuffer[] = [];
+      const waiters: Waiter[] = [];
+      let closed = false;
+
       channel.binaryType = 'arraybuffer';
       channel.bufferedAmountLowThreshold = DATA_CHANNEL_BUFFER_LOW;
-      channel.onopen = () => resolve(this.channelHandle(channel, messages));
-      channel.onmessage = (event) =>
-        messages.next(event.data as string | ArrayBuffer);
-      channel.onerror = () => reject(new Error('data channel error'));
-      channel.onclose = () => {
-        messages.complete();
-        reject(new Error('data channel closed'));
+
+      const fail = (error: Error): void => {
+        closed = true;
+        for (const waiter of waiters.splice(0)) waiter.reject(error);
+        reject(error);
       };
+
+      const receive = (): Promise<ArrayBuffer> =>
+        new Promise((res, rej) => {
+          const next = queue.shift();
+          if (next) {
+            res(next);
+          } else if (closed) {
+            rej(new Error('data channel closed'));
+          } else {
+            waiters.push({ resolve: res, reject: rej });
+          }
+        });
+
+      channel.onopen = () =>
+        resolve({
+          send: (data) => this.sendData(channel, data),
+          receive,
+          close: () => channel.close()
+        });
+      channel.onmessage = (event) => {
+        const data = event.data as ArrayBuffer;
+        const waiter = waiters.shift();
+        if (waiter) waiter.resolve(data);
+        else queue.push(data);
+      };
+      channel.onerror = () => fail(new Error('data channel error'));
+      channel.onclose = () => fail(new Error('data channel closed'));
     });
   }
 
-  private channelHandle(
-    channel: RTCDataChannel,
-    messages: Subject<string | ArrayBuffer>
-  ): RtcChannel {
-    return {
-      send: (data) => this.sendData(channel, data),
-      messages$: messages.asObservable(),
-      close: () => channel.close()
-    };
-  }
-
-  private sendData(
-    channel: RTCDataChannel,
-    data: string | ArrayBuffer
-  ): Promise<void> {
+  private sendData(channel: RTCDataChannel, data: ArrayBuffer): Promise<void> {
     return new Promise((resolve, reject) => {
       if (channel.readyState !== 'open') {
         reject(new Error('data channel not open'));
@@ -181,11 +194,7 @@ export class WebRtcService {
         channel.removeEventListener('bufferedamountlow', onLow);
         channel.removeEventListener('close', onClose);
       };
-      if (typeof data === 'string') {
-        channel.send(data);
-      } else {
-        channel.send(data);
-      }
+      channel.send(data);
       if (channel.bufferedAmount <= DATA_CHANNEL_BUFFER_LOW) {
         resolve();
         return;
