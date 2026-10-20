@@ -11,10 +11,13 @@ import {
   take,
   tap
 } from 'rxjs';
-import type { SignalMessage } from '../interfaces/signal-message';
-import type { RoomId, Sid } from '../interfaces/signal-session';
-import type { SignalTransport } from '../interfaces/signal-transport';
-import { decodeBase64Url, encodeBase64Url } from '../utilities/base64url';
+import type { SignalMessage } from '../../shared/interfaces/signal-message';
+import type { RoomId, Sid } from '../../shared/interfaces/signal-session';
+import type { SignalTransport } from '../../shared/interfaces/signal-transport';
+import {
+  decodeBase64Url,
+  encodeBase64Url
+} from '../../shared/utilities/base64url';
 import {
   deriveGeneratorString,
   derivePublicKey,
@@ -22,11 +25,11 @@ import {
   isValidPublicKey,
   mapToGroup,
   secretFromBytes
-} from '../utilities/cpace';
-import { deriveSessionKeys } from '../utilities/hkdf';
-import { deriveIsk } from '../utilities/isk';
-import { parsePasscode } from '../utilities/passcode';
-import { normalizePassword } from '../utilities/password';
+} from '../../shared/utilities/cpace';
+import { deriveSessionKeys } from '../../shared/utilities/hkdf';
+import { deriveIsk } from '../../shared/utilities/isk';
+import { parsePasscode } from '../../shared/utilities/passcode';
+import { normalizePassword } from '../../shared/utilities/password';
 
 export interface HandshakeResult {
   signalingKey: CryptoKey;

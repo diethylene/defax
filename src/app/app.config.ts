@@ -13,13 +13,13 @@ import { provideRouterStore, routerReducer } from '@ngrx/router-store';
 import { provideStore, Store } from '@ngrx/store';
 import { provideSpartanHlm } from '@spartan-ng/helm/utils';
 import { routes } from './app.routes';
+import { BroadcastChannelTransport } from './core/services/broadcast-channel-transport';
+import { ServerTransport } from './core/services/server-transport';
 import {
   applyMode,
   resolveInitialMode
 } from './core/services/theme-preference';
 import { SignalTransport } from './shared/interfaces/signal-transport';
-import { BroadcastChannelTransport } from './shared/services/broadcast-channel-transport';
-import { ServerTransport } from './shared/services/server-transport';
 import { setMode } from './store/actions/application-config.actions';
 import { ApplicationConfigEffects } from './store/effects/application-config.effects';
 import { ReceiveEffects } from './store/effects/receive.effects';

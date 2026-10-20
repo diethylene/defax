@@ -4,14 +4,14 @@ import { match } from 'ts-pattern';
 import type {
   FileHashEvent,
   FileHashWorkerMessage
-} from '../utilities/hash-protocol';
+} from '../../shared/utilities/hash-protocol';
 
 @Injectable({ providedIn: 'root' })
 export class HashService {
   hashFile(file: File): Observable<FileHashEvent> {
     return new Observable<FileHashEvent>((subscriber) => {
       const worker = new Worker(
-        new URL('../utilities/hash.worker.ts', import.meta.url),
+        new URL('../../shared/utilities/hash.worker.ts', import.meta.url),
         { type: 'module' }
       );
 

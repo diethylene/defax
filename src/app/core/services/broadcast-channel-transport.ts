@@ -1,12 +1,16 @@
 import { Injectable } from '@angular/core';
 import { Subject } from 'rxjs';
 import { match } from 'ts-pattern';
-import { PROTOCOL_VERSION } from '../constants/protocol-version';
-import type { SignalMessage } from '../interfaces/signal-message';
-import type { RoomCreated, RoomId, Sid } from '../interfaces/signal-session';
-import { SignalTransport } from '../interfaces/signal-transport';
-import { createSid, decodeSid, encodeSid } from '../utilities/sid';
-import { parseSignalMessage } from '../utilities/signal-message';
+import { PROTOCOL_VERSION } from '../../shared/constants/protocol-version';
+import type { SignalMessage } from '../../shared/interfaces/signal-message';
+import type {
+  RoomCreated,
+  RoomId,
+  Sid
+} from '../../shared/interfaces/signal-session';
+import { SignalTransport } from '../../shared/interfaces/signal-transport';
+import { createSid, decodeSid, encodeSid } from '../../shared/utilities/sid';
+import { parseSignalMessage } from '../../shared/utilities/signal-message';
 
 type Mode = 'host' | 'guest';
 

@@ -3,9 +3,9 @@ import { Router } from '@angular/router';
 import { provideEffects } from '@ngrx/effects';
 import { provideStore, Store } from '@ngrx/store';
 import { EMPTY, filter, firstValueFrom, of, take, throwError } from 'rxjs';
+import { ConnectionService } from '../../core/services/connection.service';
 import type { FileMetadata } from '../../shared/interfaces/file-metadata';
 import type { Identity } from '../../shared/interfaces/identity';
-import { ConnectionService } from '../../shared/services/connection.service';
 import { receiveCodeEntered } from '../actions/receive.actions';
 import { receiveReducer } from '../reducers/receive.reducer';
 import {

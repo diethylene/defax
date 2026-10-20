@@ -1,8 +1,8 @@
 import { Injector } from '@angular/core';
 import { firstValueFrom } from 'rxjs';
-import type { FileMetadata } from '../interfaces/file-metadata';
-import type { Identity } from '../interfaces/identity';
-import { SignalTransport } from '../interfaces/signal-transport';
+import type { FileMetadata } from '../../shared/interfaces/file-metadata';
+import type { Identity } from '../../shared/interfaces/identity';
+import { SignalTransport } from '../../shared/interfaces/signal-transport';
 import { BroadcastChannelTransport } from './broadcast-channel-transport';
 import { ConnectionService } from './connection.service';
 import { HandshakeService } from './handshake.service';

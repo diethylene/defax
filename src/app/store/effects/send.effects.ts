@@ -19,12 +19,12 @@ import {
   withLatestFrom
 } from 'rxjs';
 import { match } from 'ts-pattern';
+import { ConnectionService } from '../../core/services/connection.service';
+import { HashService } from '../../core/services/hash.service';
 import {
   routeForPhase,
   type SendPhase
 } from '../../features/send/send-phase/send-phase';
-import { ConnectionService } from '../../shared/services/connection.service';
-import { HashService } from '../../shared/services/hash.service';
 import { IdentityService } from '../../shared/services/identity.service';
 import { toErrorMessage } from '../../shared/utilities/error-message';
 import {

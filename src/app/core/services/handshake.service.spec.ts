@@ -1,5 +1,5 @@
 import { firstValueFrom } from 'rxjs';
-import { open, seal } from '../utilities/aead';
+import { open, seal } from '../../shared/utilities/aead';
 import { BroadcastChannelTransport } from './broadcast-channel-transport';
 import { type HandshakeResult, HandshakeService } from './handshake.service';
 
