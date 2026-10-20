@@ -6,7 +6,11 @@ export type RtcOfferPayload = z.infer<typeof rtcOfferSchema>;
 export const rtcAnswerSchema = z.object({ sdp: z.string().min(1) });
 export type RtcAnswerPayload = z.infer<typeof rtcAnswerSchema>;
 
-export const rtcIceSchema = z.object({ candidate: z.string().nullable() });
+export const rtcIceSchema = z.object({
+  candidate: z.string().nullable(),
+  sdpMid: z.string().nullable(),
+  sdpMLineIndex: z.number().int().nullable()
+});
 export type RtcIcePayload = z.infer<typeof rtcIceSchema>;
 
 export const acceptSchema = z.object({});

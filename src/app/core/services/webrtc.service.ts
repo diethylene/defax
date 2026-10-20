@@ -128,14 +128,16 @@ export class WebRtcService {
     const pending: RTCIceCandidateInit[] = [];
     peer.onicecandidate = (event) => {
       this.sendSignal('rtc-ice', {
-        candidate: event.candidate?.candidate ?? null
+        candidate: event.candidate?.candidate ?? null,
+        sdpMid: event.candidate?.sdpMid ?? null,
+        sdpMLineIndex: event.candidate?.sdpMLineIndex ?? null
       });
     };
     const sub = this.signaling
       .sealed$('rtc-ice', parseRtcIce)
-      .subscribe(({ candidate }) => {
+      .subscribe(({ candidate, sdpMid, sdpMLineIndex }) => {
         if (candidate === null) return;
-        const init: RTCIceCandidateInit = { candidate };
+        const init: RTCIceCandidateInit = { candidate, sdpMid, sdpMLineIndex };
         if (peer.remoteDescription) {
           void peer.addIceCandidate(init).catch(() => undefined);
         } else {
@@ -161,23 +163,33 @@ export class WebRtcService {
       channel.binaryType = 'arraybuffer';
       channel.bufferedAmountLowThreshold = DATA_CHANNEL_BUFFER_LOW;
 
-      channel.onopen = () => {
-        subscriber.next({
-          send: (data) => this.sendData(channel, data),
-          messages$: messages.asObservable(),
-          close: () => {
-            channel.close();
-            peer.close();
-          }
-        });
+      const handle: RtcChannel = {
+        send: (data) => this.sendData(channel, data),
+        messages$: messages.asObservable(),
+        close: () => {
+          channel.close();
+          peer.close();
+        }
+      };
+
+      const open = (): void => {
+        subscriber.next(handle);
         subscriber.complete();
       };
+
       channel.onmessage = (event) => messages.next(event.data as ArrayBuffer);
       channel.onerror = () => subscriber.error(new Error('data channel error'));
       channel.onclose = () => {
         messages.complete();
         subscriber.error(new Error('data channel closed'));
       };
+      channel.onopen = open;
+
+      // The channel can already be open by the time this observable is
+      // subscribed, in which case onopen has already fired and never will.
+      if (channel.readyState === 'open') {
+        open();
+      }
     });
   }
 
