@@ -1,0 +1,42 @@
+<app-page-shell [heading]="heading()" [subheading]="subheading()">
+  <section hlmCard class="w-full">
+    <div hlmCardContent class="flex flex-col gap-6">
+      <app-transfer-file-summary
+        [name]="fileName()"
+        [size]="fileSize()"
+        [peerBrowser]="peerBrowser()"
+        [peerOs]="peerOs()"
+        [timeTaken]="timeTaken()"
+      />
+
+      <hlm-separator />
+
+      <div class="flex flex-col gap-2">
+        <h2 class="text-sm font-medium text-foreground">Checksum</h2>
+
+        <div
+          class="flex flex-wrap gap-x-2 gap-y-1 font-mono text-sm text-foreground"
+        >
+          @for (group of checksumGroups(); track $index) {
+            <span>{{ group }}</span>
+          }
+        </div>
+
+        <p class="flex items-center gap-1.5 text-sm font-medium text-success">
+          <ng-icon name="lucideCheck" size="16" />
+          Matched on both devices
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <button
+    type="button"
+    hlmBtn
+    size="lg"
+    class="w-full sm:w-auto"
+    (click)="restart.emit()"
+  >
+    {{ actionLabel() }}
+  </button>
+</app-page-shell>
