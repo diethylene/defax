@@ -84,10 +84,10 @@ export class SignalingService {
   private role: SignalRole | null = null;
 
   constructor() {
-    this.receiveSealedStream('disconnect', parseDisconnect).subscribe(
-      (notice) => this.disconnect$.next(notice)
+    this.sealed$('disconnect', parseDisconnect).subscribe((notice) =>
+      this.disconnect$.next(notice)
     );
-    this.receiveSealedStream('file-hash', parseFileHash).subscribe((digest) =>
+    this.sealed$('file-hash', parseFileHash).subscribe((digest) =>
       this.fileHash$.next(digest)
     );
   }
@@ -224,10 +224,7 @@ export class SignalingService {
       .subscribe();
   }
 
-  private receiveSealedStream<T>(
-    kind: SealedKind,
-    parse: (json: string) => T
-  ): Observable<T> {
+  sealed$<T>(kind: SealedKind, parse: (json: string) => T): Observable<T> {
     return this.transport.messages$.pipe(
       filter(
         (message): message is SealedMessage =>

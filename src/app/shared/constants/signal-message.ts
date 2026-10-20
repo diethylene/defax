@@ -2,7 +2,12 @@ export const SEALED_KINDS = [
   'peer-info',
   'file',
   'disconnect',
-  'file-hash'
+  'file-hash',
+  'accept',
+  'rtc-offer',
+  'rtc-answer',
+  'rtc-ice',
+  'verify-result'
 ] as const;
 export type SealedKind = (typeof SEALED_KINDS)[number];
 
