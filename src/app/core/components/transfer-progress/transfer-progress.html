@@ -1,0 +1,59 @@
+<section hlmCard>
+  <div hlmCardContent class="flex flex-col gap-6">
+    <div class="flex items-center gap-4">
+      <div
+        class="flex size-12 shrink-0 items-center justify-center rounded-lg bg-muted text-muted-foreground"
+      >
+        <ng-icon name="lucideFile" size="24" />
+      </div>
+
+      <div class="min-w-0 flex-1">
+        <h2 class="truncate text-base font-semibold tracking-tight text-foreground">
+          {{ progress().fileName }}
+        </h2>
+        <p class="truncate text-sm text-muted-foreground">
+          To {{ progress().peerBrowser }} on {{ progress().peerOs }}
+        </p>
+      </div>
+
+      <p class="shrink-0 text-2xl font-semibold tabular-nums text-foreground">
+        {{ progress().percent }}%
+      </p>
+    </div>
+
+    <hlm-progress [value]="progress().percent">
+      <hlm-progress-indicator />
+    </hlm-progress>
+
+    <dl class="grid grid-cols-2 gap-4 sm:grid-cols-4">
+      <div class="flex flex-col gap-1">
+        <dt class="text-xs text-muted-foreground">{{ sentLabel() }}</dt>
+        <dd class="text-sm font-medium text-foreground">{{ progress().sent }}</dd>
+      </div>
+      <div class="flex flex-col gap-1">
+        <dt class="text-xs text-muted-foreground">Speed</dt>
+        <dd class="text-sm font-medium text-foreground">{{ progress().speed }}</dd>
+      </div>
+      <div class="flex flex-col gap-1">
+        <dt class="text-xs text-muted-foreground">Time left</dt>
+        <dd class="text-sm font-medium text-foreground">
+          {{ progress().timeLeft }}
+        </dd>
+      </div>
+      <div class="flex flex-col gap-1">
+        <dt class="text-xs text-muted-foreground">Route</dt>
+        <dd class="text-sm font-medium text-foreground">
+          <span
+            hlmBadge
+            variant="outline"
+            class="h-6 rounded-md bg-background px-2.5 py-0"
+          >
+            <app-status-light [variant]="route().variant" size="sm">
+              {{ route().label }}
+            </app-status-light>
+          </span>
+        </dd>
+      </div>
+    </dl>
+  </div>
+</section>
