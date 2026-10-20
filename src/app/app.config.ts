@@ -7,7 +7,7 @@ import {
   provideBrowserGlobalErrorListeners
 } from '@angular/core';
 import { provideAnimationsAsync } from '@angular/platform-browser/animations/async';
-import { provideRouter, withViewTransitions } from '@angular/router';
+import { provideRouter } from '@angular/router';
 import { provideEffects } from '@ngrx/effects';
 import { provideRouterStore, routerReducer } from '@ngrx/router-store';
 import { provideStore, Store } from '@ngrx/store';
@@ -39,7 +39,7 @@ export const appConfig: ApplicationConfig = {
       router: routerReducer
     }),
     provideEffects(ApplicationConfigEffects, SendEffects, ReceiveEffects),
-    provideRouter(routes, withViewTransitions()),
+    provideRouter(routes),
     provideRouterStore(),
     provideSpartanHlm(),
     {
