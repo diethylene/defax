@@ -20,6 +20,7 @@ import {
   resolveInitialMode
 } from './core/services/theme-preference';
 import { SignalTransport } from './shared/interfaces/signal-transport';
+import { provideMaskedUrls } from './shared/services/masking-location-strategy';
 import { setMode } from './store/actions/application-config.actions';
 import { ApplicationConfigEffects } from './store/effects/application-config.effects';
 import { ReceiveEffects } from './store/effects/receive.effects';
@@ -40,6 +41,7 @@ export const appConfig: ApplicationConfig = {
     }),
     provideEffects(ApplicationConfigEffects, SendEffects, ReceiveEffects),
     provideRouter(routes),
+    provideMaskedUrls('/send', '/receive'),
     provideRouterStore(),
     provideSpartanHlm(),
     {
