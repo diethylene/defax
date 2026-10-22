@@ -1,6 +1,7 @@
 <div
   [class]="containerClasses()"
   [@selectAnim]="reduceMotion() ? null : animState()"
+  [@frameAnim]="reduceMotion() ? null : frameState()"
   (@selectAnim.done)="onSelectAnimDone($event)"
   (animationend)="onRejectionFlashEnd($event)"
 >

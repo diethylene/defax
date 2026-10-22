@@ -3,7 +3,6 @@ import {
   group,
   type AnimationEvent as NgAnimationEvent,
   query,
-  sequence,
   style,
   transition,
   trigger
@@ -36,17 +35,6 @@ const EASE_OUT = 'cubic-bezier(0.22, 1, 0.36, 1)';
 const selectAnimation = trigger('selectAnim', [
   transition('idle => selected', [
     group([
-      sequence([
-        style({
-          borderColor: 'var(--foreground)',
-          backgroundColor: 'var(--muted)',
-          boxShadow: 'none'
-        }),
-        animate(
-          `500ms 320ms ${EASE_OUT}`,
-          style({ borderColor: '*', backgroundColor: '*', boxShadow: '*' })
-        )
-      ]),
       query('.content-base', [
         style({ opacity: 1, transform: 'translateY(0)' }),
         animate(
@@ -119,11 +107,37 @@ const selectAnimation = trigger('selectAnim', [
   ])
 ]);
 
+const frameAnimation = trigger('frameAnim', [
+  transition('idle <=> drag', [
+    animate(
+      `200ms ${EASE_OUT}`,
+      style({ borderColor: '*', backgroundColor: '*', boxShadow: '*' })
+    )
+  ]),
+  transition('selected <=> drag', [
+    animate(
+      `200ms ${EASE_OUT}`,
+      style({ borderColor: '*', backgroundColor: '*', boxShadow: '*' })
+    )
+  ]),
+  transition('idle => selected', [
+    style({
+      borderColor: 'var(--foreground)',
+      backgroundColor: 'var(--muted)',
+      boxShadow: 'none'
+    }),
+    animate(
+      `500ms 320ms ${EASE_OUT}`,
+      style({ borderColor: '*', backgroundColor: '*', boxShadow: '*' })
+    )
+  ])
+]);
+
 @Component({
   selector: 'app-dropzone',
   imports: [NgIcon, HlmButton],
   providers: [provideIcons({ lucideCircleCheck, lucideUpload, lucideX })],
-  animations: [selectAnimation],
+  animations: [selectAnimation, frameAnimation],
   hostDirectives: [
     {
       directive: DropzoneDirective,
@@ -178,6 +192,10 @@ export class DropzoneComponent {
     this.isSelectedView() ? 'selected' : 'idle'
   );
 
+  protected readonly frameState = computed(() =>
+    this.isDragging() ? 'drag' : this.isSelectedView() ? 'selected' : 'idle'
+  );
+
   protected readonly drops = computed(() => {
     const { width, height, radius } = this.layerSize();
     return computeDrops(width, height, radius);
@@ -211,7 +229,7 @@ export class DropzoneComponent {
 
   protected readonly iconBoxClasses = computed(() => {
     const base =
-      'flex size-10 items-center justify-center transition-[background-color,border-radius,color] duration-300 ease-out';
+      'flex size-10 items-center justify-center transition-[background-color,border-radius,color] duration-200 ease-out';
     if (this.showCheckIcon()) {
       return `${base} rounded-[20px] bg-success text-success-foreground`;
     }
