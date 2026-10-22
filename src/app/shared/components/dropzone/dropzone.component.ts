@@ -247,13 +247,10 @@ export class DropzoneComponent {
   );
 
   constructor() {
-    let previousRejectedCount = 0;
     effect(() => {
-      const rejected = this.error()?.length ?? 0;
-      if (rejected > previousRejectedCount) {
+      if (this.error() !== null) {
         this.rejectionFlash.set(true);
       }
-      previousRejectedCount = rejected;
     });
 
     effect(() => {
