@@ -110,13 +110,25 @@ const selectAnimation = trigger('selectAnim', [
 ]);
 
 const frameAnimation = trigger('frameAnim', [
-  transition('idle <=> drag', [
+  transition('idle => drag', [
+    animate(
+      `200ms 80ms ${DRAG_EASE}`,
+      style({ borderColor: '*', backgroundColor: '*', boxShadow: '*' })
+    )
+  ]),
+  transition('drag => idle', [
     animate(
       `200ms ${DRAG_EASE}`,
       style({ borderColor: '*', backgroundColor: '*', boxShadow: '*' })
     )
   ]),
-  transition('selected <=> drag', [
+  transition('selected => drag', [
+    animate(
+      `200ms 80ms ${DRAG_EASE}`,
+      style({ borderColor: '*', backgroundColor: '*', boxShadow: '*' })
+    )
+  ]),
+  transition('drag => selected', [
     animate(
       `200ms ${DRAG_EASE}`,
       style({ borderColor: '*', backgroundColor: '*', boxShadow: '*' })
