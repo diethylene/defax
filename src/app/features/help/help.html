@@ -1,0 +1,35 @@
+<app-page-shell
+  heading="How it works"
+  subheading="Defax moves a file straight from one device to another. No upload, no cloud copy, no account necessary."
+>
+  <div class="grid w-full gap-4 sm:grid-cols-3">
+    <app-how-it-works-card [step]="1" title="You get a one-time code">
+      Choose a file and you get a short code like
+      <code class="rounded bg-muted px-1 py-0.5 font-mono text-[13px] text-foreground">7-orbit-maple</code>.
+      Share it with the receiving party however you like.
+    </app-how-it-works-card>
+
+    <app-how-it-works-card [step]="2" title="The devices prove it's them">
+      Both sides use the code to agree on an encryption key without ever sending
+      the code. A wrong guess cancels it.
+    </app-how-it-works-card>
+
+    <app-how-it-works-card [step]="3" title="The file goes direct">
+      After the receiver accepts, the file is sent in an encrypted stream between
+      the two devices and is checked when it lands.
+    </app-how-it-works-card>
+  </div>
+
+  <div class="grid w-full gap-4 sm:grid-cols-2">
+    @for (card of serverCards; track card.title) {
+      <app-list-card [title]="card.title" [items]="card.items" />
+    }
+  </div>
+
+  <app-verification-card
+    title="Why compare a verification number?"
+    description="Both screens show the same number only if nobody sits between you. Reading it to each other takes a few seconds and confirms you're connected to the right person."
+    linkText="What if a relay is used?"
+    linkRoute="/relay-help"
+  />
+</app-page-shell>
