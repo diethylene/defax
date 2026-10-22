@@ -1,4 +1,5 @@
 import { Directionality } from '@angular/cdk/bidi';
+import { DOCUMENT } from '@angular/common';
 import {
   APP_INITIALIZER,
   type ApplicationConfig,
@@ -14,6 +15,7 @@ import { provideStore, Store } from '@ngrx/store';
 import { provideSpartanHlm } from '@spartan-ng/helm/utils';
 import { routes } from './app.routes';
 import { BroadcastChannelTransport } from './core/services/broadcast-channel-transport';
+import { navDirection } from './core/services/navigation-direction';
 import { ServerTransport } from './core/services/server-transport';
 import {
   applyMode,
@@ -40,7 +42,19 @@ export const appConfig: ApplicationConfig = {
       router: routerReducer
     }),
     provideEffects(ApplicationConfigEffects, SendEffects, ReceiveEffects),
-    provideRouter(routes, withViewTransitions()),
+    provideRouter(
+      routes,
+      withViewTransitions({
+        skipInitialTransition: true,
+        onViewTransitionCreated: ({ from, to }) => {
+          const document = inject(DOCUMENT);
+          document.documentElement.setAttribute(
+            'data-nav-direction',
+            navDirection(from, to)
+          );
+        }
+      })
+    ),
     provideMaskedUrls('/send', '/receive'),
     provideRouterStore(),
     provideSpartanHlm(),

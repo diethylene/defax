@@ -108,19 +108,29 @@ button:not(:disabled),
   contain: paint;
 }
 
+:root {
+  --page-slide-out-x: -100%;
+  --page-slide-in-x: 100%;
+}
+
+:root[data-nav-direction='backward'] {
+  --page-slide-out-x: 100%;
+  --page-slide-in-x: -100%;
+}
+
 @keyframes page-slide-out {
   from {
     transform: translateX(0);
   }
 
   to {
-    transform: translateX(-100%);
+    transform: translateX(var(--page-slide-out-x));
   }
 }
 
 @keyframes page-slide-in {
   from {
-    transform: translateX(100%);
+    transform: translateX(var(--page-slide-in-x));
   }
 
   to {
