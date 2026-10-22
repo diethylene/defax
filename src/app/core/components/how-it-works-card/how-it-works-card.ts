@@ -9,9 +9,10 @@ import {
 @Component({
   selector: 'app-how-it-works-card',
   imports: [HlmBadge, HlmCard, HlmCardTitle, HlmCardDescription],
+  host: { class: 'block' },
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <div hlmCard class="p-4">
+    <div hlmCard class="h-full p-4">
       <span
         hlmBadge
         variant="outline"

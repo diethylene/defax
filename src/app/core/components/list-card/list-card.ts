@@ -4,9 +4,10 @@ import { HlmCard, HlmCardTitle } from '@spartan-ng/helm/card';
 @Component({
   selector: 'app-list-card',
   imports: [HlmCard, HlmCardTitle],
+  host: { class: 'block' },
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <div hlmCard class="p-4">
+    <div hlmCard class="h-full p-4">
       <h3 hlmCardTitle>{{ title() }}</h3>
       <ul class="list-disc space-y-1 pl-4 text-sm text-muted-foreground">
         @for (item of items(); track item) {
