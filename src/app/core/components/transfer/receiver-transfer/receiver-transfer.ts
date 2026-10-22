@@ -6,6 +6,7 @@ import { receiveDisconnect } from '../../../../store/actions/receive.actions';
 import {
   selectReceiveFile,
   selectReceivePeerIdentity,
+  selectReceivePhase,
   selectReceiveTransfer
 } from '../../../../store/selectors/receive.selectors';
 import { PageShellComponent } from '../../page-shell/page-shell';
@@ -34,7 +35,10 @@ export class ReceiverTransferComponent extends TransferComponent {
         }))
       ),
       store.select(selectReceiveFile),
-      store.select(selectReceivePeerIdentity)
+      store.select(selectReceivePeerIdentity),
+      store
+        .select(selectReceivePhase)
+        .pipe(map((phase) => phase === 'verifying'))
     );
   }
 

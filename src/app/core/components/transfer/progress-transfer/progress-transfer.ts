@@ -27,6 +27,7 @@ export interface ProgressTransfer {
   speed: number;
   timeLeft: number | null;
   route: TransferRoute;
+  verifying: boolean;
 }
 
 @Component({
@@ -55,6 +56,14 @@ export class ProgressTransferComponent {
       .with('receive', () => 'Received')
       .exhaustive()
   );
+
+  protected readonly statusLabel = computed(() => {
+    if (this.progress().verifying) return 'Verifying...';
+    return match(this.mode())
+      .with('send', () => 'Transmitting...')
+      .with('receive', () => 'Receiving...')
+      .exhaustive();
+  });
 
   protected readonly route = computed(() =>
     match(this.progress().route)

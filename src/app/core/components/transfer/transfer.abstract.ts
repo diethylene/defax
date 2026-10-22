@@ -26,12 +26,14 @@ export abstract class TransferComponent {
   private readonly sampledTransfer: Signal<TransferSnapshot>;
   private readonly file: Signal<FileMetadata | null>;
   private readonly peer: Signal<Identity | null>;
+  private readonly verifying: Signal<boolean>;
   protected readonly progress: Signal<ProgressTransfer>;
 
   constructor(
     transfer$: Observable<TransferSnapshot>,
     file$: Observable<FileMetadata | null>,
-    peer$: Observable<Identity | null>
+    peer$: Observable<Identity | null>,
+    verifying$: Observable<boolean>
   ) {
     this.liveTransfer = toSignal(transfer$, { initialValue: EMPTY_SNAPSHOT });
     this.sampledTransfer = toSignal(
@@ -45,6 +47,7 @@ export abstract class TransferComponent {
     );
     this.file = toSignal(file$, { initialValue: null });
     this.peer = toSignal(peer$, { initialValue: null });
+    this.verifying = toSignal(verifying$, { initialValue: false });
 
     effect(() => this.metrics.sample(this.sampledTransfer().transferred));
 
@@ -72,7 +75,8 @@ export abstract class TransferComponent {
         total: sampled.total,
         speed,
         timeLeft,
-        route: sampled.route ?? 'direct'
+        route: sampled.route ?? 'direct',
+        verifying: this.verifying()
       };
     });
   }

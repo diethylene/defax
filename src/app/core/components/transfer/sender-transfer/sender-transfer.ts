@@ -6,6 +6,7 @@ import { sendDisconnect } from '../../../../store/actions/send.actions';
 import {
   selectSendMetadata,
   selectSendPeerIdentity,
+  selectSendPhase,
   selectSendTransfer
 } from '../../../../store/selectors/send.selectors';
 import { PageShellComponent } from '../../page-shell/page-shell';
@@ -34,7 +35,8 @@ export class SenderTransferComponent extends TransferComponent {
         }))
       ),
       store.select(selectSendMetadata),
-      store.select(selectSendPeerIdentity)
+      store.select(selectSendPeerIdentity),
+      store.select(selectSendPhase).pipe(map((phase) => phase === 'verifying'))
     );
   }
 
