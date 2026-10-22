@@ -13,11 +13,13 @@
       </p>
     </app-transfer-file-summary>
 
-    <hlm-progress [value]="progress().percent">
-      <hlm-progress-indicator />
-    </hlm-progress>
+    <div class="flex flex-col gap-1.5">
+      <hlm-progress [value]="progress().percent">
+        <hlm-progress-indicator />
+      </hlm-progress>
 
-    <p class="text-xs text-muted-foreground">{{ statusLabel() }}</p>
+      <p class="text-xs text-muted-foreground">{{ statusLabel() }}</p>
+    </div>
 
     <dl class="grid grid-cols-2 gap-4 sm:grid-cols-4">
       <div class="flex flex-col gap-1">
