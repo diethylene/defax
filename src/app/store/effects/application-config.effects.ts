@@ -16,10 +16,17 @@ export class ApplicationConfigEffects {
       this.actions$.pipe(
         ofType(setMode, toggleMode),
         withLatestFrom(this.store.select(selectMode)),
-        tap(([, mode]) => {
-          applyMode(mode);
-          persistMode(mode);
-        })
+        tap(([, mode]) => applyMode(mode))
+      ),
+    { dispatch: false }
+  );
+
+  readonly persistMode$ = createEffect(
+    () =>
+      this.actions$.pipe(
+        ofType(toggleMode),
+        withLatestFrom(this.store.select(selectMode)),
+        tap(([, mode]) => persistMode(mode))
       ),
     { dispatch: false }
   );
