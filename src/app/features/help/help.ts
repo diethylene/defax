@@ -12,7 +12,7 @@ interface ListCardData {
 @Component({
   selector: 'app-help',
   imports: [PageShellComponent, HowItWorksCard, ListCard, VerificationCard],
-  host: { class: 'block' },
+  host: { class: 'page-transition block' },
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './help.html'
 })
