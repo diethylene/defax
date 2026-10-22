@@ -28,11 +28,9 @@ import { DropzoneDirective } from './dropzone.directive';
 import { computeDrops } from './dropzone-drops';
 
 const baseContainer =
-  'relative flex w-full flex-col items-center justify-center gap-4 rounded-xl border p-6 text-center outline-none sm:p-8';
+  'dropzone-frame relative flex w-full flex-col items-center justify-center gap-4 rounded-xl border p-6 text-center outline-none sm:p-8';
 
 const EASE_OUT = 'cubic-bezier(0.22, 1, 0.36, 1)';
-
-const DRAG_EASE = 'cubic-bezier(0.4, 0, 0.2, 1)';
 
 const selectAnimation = trigger('selectAnim', [
   transition('idle => selected', [
@@ -109,49 +107,11 @@ const selectAnimation = trigger('selectAnim', [
   ])
 ]);
 
-const frameAnimation = trigger('frameAnim', [
-  transition('idle => drag', [
-    animate(
-      `200ms 80ms ${DRAG_EASE}`,
-      style({ borderColor: '*', backgroundColor: '*', boxShadow: '*' })
-    )
-  ]),
-  transition('drag => idle', [
-    animate(
-      `200ms ${DRAG_EASE}`,
-      style({ borderColor: '*', backgroundColor: '*', boxShadow: '*' })
-    )
-  ]),
-  transition('selected => drag', [
-    animate(
-      `200ms 80ms ${DRAG_EASE}`,
-      style({ borderColor: '*', backgroundColor: '*', boxShadow: '*' })
-    )
-  ]),
-  transition('drag => selected', [
-    animate(
-      `200ms ${DRAG_EASE}`,
-      style({ borderColor: '*', backgroundColor: '*', boxShadow: '*' })
-    )
-  ]),
-  transition('idle => selected', [
-    style({
-      borderColor: 'var(--foreground)',
-      backgroundColor: 'var(--muted)',
-      boxShadow: 'none'
-    }),
-    animate(
-      `500ms 320ms ${EASE_OUT}`,
-      style({ borderColor: '*', backgroundColor: '*', boxShadow: '*' })
-    )
-  ])
-]);
-
 @Component({
   selector: 'app-dropzone',
   imports: [NgIcon, HlmButton],
   providers: [provideIcons({ lucideCircleCheck, lucideUpload, lucideX })],
-  animations: [selectAnimation, frameAnimation],
+  animations: [selectAnimation],
   hostDirectives: [
     {
       directive: DropzoneDirective,
@@ -204,10 +164,6 @@ export class DropzoneComponent {
 
   protected readonly animState = computed(() =>
     this.isSelectedView() ? 'selected' : 'idle'
-  );
-
-  protected readonly frameState = computed(() =>
-    this.isDragging() ? 'drag' : this.isSelectedView() ? 'selected' : 'idle'
   );
 
   protected readonly drops = computed(() => {
