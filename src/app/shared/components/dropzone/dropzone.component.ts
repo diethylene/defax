@@ -32,6 +32,8 @@ const baseContainer =
 
 const EASE_OUT = 'cubic-bezier(0.22, 1, 0.36, 1)';
 
+const DRAG_EASE = 'cubic-bezier(0.4, 0, 0.2, 1)';
+
 const selectAnimation = trigger('selectAnim', [
   transition('idle => selected', [
     group([
@@ -110,13 +112,13 @@ const selectAnimation = trigger('selectAnim', [
 const frameAnimation = trigger('frameAnim', [
   transition('idle <=> drag', [
     animate(
-      `200ms ${EASE_OUT}`,
+      `200ms ${DRAG_EASE}`,
       style({ borderColor: '*', backgroundColor: '*', boxShadow: '*' })
     )
   ]),
   transition('selected <=> drag', [
     animate(
-      `200ms ${EASE_OUT}`,
+      `200ms ${DRAG_EASE}`,
       style({ borderColor: '*', backgroundColor: '*', boxShadow: '*' })
     )
   ]),
