@@ -5,6 +5,6 @@ import { RouterOutlet } from '@angular/router';
   selector: 'app-receive-layout',
   imports: [RouterOutlet],
   changeDetection: ChangeDetectionStrategy.OnPush,
-  template: '<router-outlet />'
+  template: '<div class="page-transition"><router-outlet /></div>'
 })
 export class ReceiveLayoutComponent {}

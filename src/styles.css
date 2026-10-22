@@ -103,24 +103,51 @@ button:not(:disabled),
 }
 }
 
-@keyframes view-fade-out {
+.page-transition {
+  view-transition-name: page;
+  contain: paint;
+}
+
+@keyframes page-slide-out {
+  from {
+    transform: translateX(0);
+  }
+
   to {
-    opacity: 0;
+    transform: translateX(-100%);
   }
 }
 
-@keyframes view-fade-in {
+@keyframes page-slide-in {
   from {
-    opacity: 0;
+    transform: translateX(100%);
+  }
+
+  to {
+    transform: translateX(0);
   }
 }
 
 @media (prefers-reduced-motion: no-preference) {
-  ::view-transition-old(root) {
-    animation: 160ms ease both view-fade-out;
+  ::view-transition-old(root),
+  ::view-transition-new(root) {
+    animation: none;
   }
 
-  ::view-transition-new(root) {
-    animation: 160ms ease both view-fade-in;
+  ::view-transition-old(page) {
+    animation: 250ms ease-out both page-slide-out;
+  }
+
+  ::view-transition-new(page) {
+    animation: 250ms ease-out both page-slide-in;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  ::view-transition-old(root),
+  ::view-transition-new(root),
+  ::view-transition-old(page),
+  ::view-transition-new(page) {
+    animation: none;
   }
 }
