@@ -69,42 +69,64 @@ function evaluatePartial(
   existing: File[],
   config: DropzoneConfig
 ): DropzoneResult {
-  const accepted: File[] = [];
+  const candidates: File[] = [];
   const rejected: RejectedFile[] = [...directoryRejections];
   const seen = [...existing];
-  let totalSize = existing.reduce((sum, file) => sum + file.size, 0);
 
   for (const entry of entries) {
-    const reasons = rejectionReasons(entry, seen, totalSize, config);
+    const reasons = perFileRejectionReasons(entry, seen);
     if (reasons.length > 0) {
       rejected.push(toRejected(entry.file, reasons));
       continue;
     }
-    accepted.push(entry.file);
+    candidates.push(entry.file);
     seen.push(entry.file);
-    totalSize += entry.file.size;
   }
-  return { accepted, rejected };
+
+  return match(evaluateCapacity(candidates, existing, config))
+    .with({ kind: 'ok' }, () => ({ accepted: candidates, rejected }))
+    .with({ kind: 'reject' }, ({ reason }) => ({
+      accepted: [],
+      rejected: [
+        ...directoryRejections,
+        ...entries.map((entry) => toRejected(entry.file, [reason]))
+      ]
+    }))
+    .exhaustive();
 }
 
-function rejectionReasons(
+function perFileRejectionReasons(
   entry: RejectedFile,
-  seen: File[],
-  totalSize: number,
-  config: DropzoneConfig
+  seen: File[]
 ): DropzoneReason[] {
   if (entry.reasons.length > 0) return entry.reasons;
   if (isDuplicate(entry.file, seen)) return ['duplicate'];
-  if (config.maxFiles !== null && seen.length >= config.maxFiles) {
-    return ['too-many-files'];
-  }
-  if (
-    config.maxTotalSize !== null &&
-    totalSize + entry.file.size > config.maxTotalSize
-  ) {
-    return ['total-size-exceeded'];
-  }
   return [];
+}
+
+type CapacityResult =
+  | { kind: 'ok' }
+  | { kind: 'reject'; reason: 'too-many-files' | 'total-size-exceeded' };
+
+function evaluateCapacity(
+  candidates: File[],
+  existing: File[],
+  config: DropzoneConfig
+): CapacityResult {
+  const remainingSlots =
+    config.maxFiles === null ? Infinity : config.maxFiles - existing.length;
+  if (candidates.length > remainingSlots) {
+    return { kind: 'reject', reason: 'too-many-files' };
+  }
+  if (config.maxTotalSize !== null) {
+    const totalSize =
+      existing.reduce((sum, file) => sum + file.size, 0) +
+      candidates.reduce((sum, file) => sum + file.size, 0);
+    if (totalSize > config.maxTotalSize) {
+      return { kind: 'reject', reason: 'total-size-exceeded' };
+    }
+  }
+  return { kind: 'ok' };
 }
 
 function evaluateAll(
