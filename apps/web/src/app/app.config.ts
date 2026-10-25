@@ -13,8 +13,6 @@ import { provideEffects } from '@ngrx/effects';
 import { provideRouterStore, routerReducer } from '@ngrx/router-store';
 import { provideStore, Store } from '@ngrx/store';
 import { provideSpartanHlm } from '@spartan-ng/helm/utils';
-import * as healthEffects from '@web/store/health/health.effects';
-import { healthFeature } from '@web/store/health/health.reducer';
 import { routes } from './app.routes';
 import { BroadcastChannelTransport } from './core/services/broadcast-channel-transport';
 import { navDirection } from './core/services/navigation-direction';
@@ -41,15 +39,9 @@ export const appConfig: ApplicationConfig = {
       applicationConfig: applicationConfigReducer,
       send: sendReducer,
       receive: receiveReducer,
-      [healthFeature.name]: healthFeature.reducer,
       router: routerReducer
     }),
-    provideEffects(
-      ApplicationConfigEffects,
-      SendEffects,
-      ReceiveEffects,
-      healthEffects
-    ),
+    provideEffects(ApplicationConfigEffects, SendEffects, ReceiveEffects),
     provideRouter(
       routes,
       withViewTransitions({
