@@ -1,0 +1,39 @@
+{
+  "extends": ["./tools/biome/base.json"],
+  "files": {
+    "includes": [
+      "**",
+      "!libs/ui",
+      "!dist",
+      "!.nx",
+      "!.angular",
+      "!apps/api/worker-configuration.d.ts"
+    ]
+  },
+  "plugins": [
+    {
+      "path": "./tools/boundaries/web.grit",
+      "includes": ["apps/web/**"]
+    },
+    {
+      "path": "./tools/boundaries/api.grit",
+      "includes": ["apps/api/**"]
+    },
+    {
+      "path": "./tools/boundaries/contract.grit",
+      "includes": ["libs/contract/**"]
+    }
+  ],
+  "overrides": [
+    {
+      "includes": ["apps/api/src/worker.ts"],
+      "linter": {
+        "rules": {
+          "style": {
+            "noDefaultExport": "off"
+          }
+        }
+      }
+    }
+  ]
+}

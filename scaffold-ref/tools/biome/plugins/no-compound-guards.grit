@@ -1,0 +1,20 @@
+pattern guard() {
+  JsIfStatement(else_clause=., consequent=or {
+    JsReturnStatement(),
+    JsThrowStatement(),
+    JsBlockStatement(statements=[
+      or {
+        JsReturnStatement(),
+        JsThrowStatement()
+      },
+    ])
+  })
+}
+
+guard() as $guard where {
+  $guard <: JsIfStatement(test=or {
+    `$left || $right`,
+    `$left && $right`
+  }),
+  register_diagnostic(span=$guard, message="A guard clause checks one condition. Split it, or parse at the boundary (design: Control flow).")
+}

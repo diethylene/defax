@@ -1,0 +1,9 @@
+{
+  "$schema": "../../node_modules/wrangler/config-schema.json",
+  "name": "stack-template-api",
+  "main": "src/worker.ts",
+  "compatibility_date": "2026-10-01",
+  "vars": {
+    "APP_VERSION": "0.0.0"
+  }
+}

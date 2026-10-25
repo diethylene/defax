@@ -1,0 +1,4 @@
+JsIfStatement(test=$test, consequent=$then, else_clause=$otherwise) where {
+  or { $then <: contains JsIfStatement(), $otherwise <: contains JsIfStatement() },
+  register_diagnostic(span=$test, message="No nested if or else-if. Use a match, a lookup table, or extract a function (design: Control flow).")
+}

@@ -1,0 +1,35 @@
+{
+  "name": "api",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "apps/api/src",
+  "projectType": "application",
+  "tags": ["scope:api"],
+  "implicitDependencies": ["contract"],
+  "targets": {
+    "typecheck": {
+      "executor": "nx:run-commands",
+      "options": { "command": "tsc -p apps/api/tsconfig.json --noEmit" }
+    },
+    "types-check": {
+      "executor": "nx:run-commands",
+      "options": { "command": "wrangler types --check", "cwd": "apps/api" }
+    },
+    "test": {
+      "executor": "nx:run-commands",
+      "options": { "command": "vitest run --config apps/api/vitest.config.ts" }
+    },
+    "build": {
+      "executor": "nx:run-commands",
+      "outputs": ["{workspaceRoot}/dist/apps/api"],
+      "options": {
+        "command": "wrangler deploy --dry-run --outdir ../../dist/apps/api",
+        "cwd": "apps/api"
+      }
+    },
+    "serve": {
+      "continuous": true,
+      "executor": "nx:run-commands",
+      "options": { "command": "wrangler dev", "cwd": "apps/api" }
+    }
+  }
+}
