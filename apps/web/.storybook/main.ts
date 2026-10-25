@@ -1,7 +1,8 @@
 import type { StorybookConfig } from '@storybook/angular-vite';
 
+/** Storybook for the web app's shared components. */
 const config: StorybookConfig = {
-  stories: ['../src/**/*.mdx', '../src/**/*.stories.@(js|jsx|mjs|ts|tsx)'],
+  stories: ['../src/**/*.stories.ts'],
   addons: [
     '@storybook/addon-a11y',
     '@storybook/addon-docs',
@@ -9,4 +10,5 @@ const config: StorybookConfig = {
   ],
   framework: '@storybook/angular-vite'
 };
+
 export default config;
