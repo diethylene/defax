@@ -9,7 +9,10 @@
       "!dist",
       "!.nx",
       "!.angular",
-      "!apps/api/worker-configuration.d.ts"
+      "!apps/api/worker-configuration.d.ts",
+      "!pnpm-lock.yaml",
+      "!pnpm-workspace.yaml",
+      "!README.md"
     ]
   },
   "plugins": [
