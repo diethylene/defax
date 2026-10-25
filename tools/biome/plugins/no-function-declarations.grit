@@ -1,0 +1,3 @@
+JsFunctionDeclaration(id=$name) where {
+  register_diagnostic(span=$name, message="Use a const arrow function instead of a function declaration (typescript: Modules and functions).")
+}
