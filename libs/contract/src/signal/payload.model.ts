@@ -12,7 +12,7 @@ export type DisconnectNotice = typeof DisconnectNotice.Type;
 /** Hash of a received file, sent back to the sender for verification. */
 export const FileHash = Schema.Struct({
   /** Non-empty digest of the file contents. */
-  digest: Schema.NonEmptyString,
+  digest: Schema.NonEmptyString.pipe(Schema.brand('Digest')),
 });
 
 /** A validated file hash payload. */

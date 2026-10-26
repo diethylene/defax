@@ -2,7 +2,7 @@ import * as Schema from 'effect/Schema';
 import { base64UrlBytes } from './base64url-bytes.model';
 
 /** A 16-byte session id in its base64url wire form. */
-export const Sid = base64UrlBytes(16, 'sid');
+export const Sid = base64UrlBytes(16, 'sid').pipe(Schema.brand('Sid'));
 
 /** A validated session id. */
 export type Sid = typeof Sid.Type;
