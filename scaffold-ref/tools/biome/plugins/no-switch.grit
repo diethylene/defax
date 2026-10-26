@@ -1,3 +1,0 @@
-JsSwitchStatement(discriminant=$subject) where {
-  register_diagnostic(span=$subject, message="No switch. Use an exhaustive Match, a lookup table, or polymorphism (design: Control flow).")
-}

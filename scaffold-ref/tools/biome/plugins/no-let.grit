@@ -1,4 +1,0 @@
-JsVariableDeclaration() as $declaration where {
-  $declaration <: r"let[\s\S]*",
-  register_diagnostic(span=$declaration, message="No let. Bindings are const; produce new values instead of reassigning (design: Functional style).")
-}
