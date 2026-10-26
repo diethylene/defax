@@ -188,7 +188,7 @@ describe('reduce', () => {
       expect(
         reduce(
           initialRoomState,
-          both,
+          { initiator: true, responder: false },
           { _tag: 'message', role: 'initiator', message: { type: 'pake', y: 'y' } },
           sid,
         ),
