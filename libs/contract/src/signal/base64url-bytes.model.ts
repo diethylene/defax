@@ -12,9 +12,9 @@ const Bytes = Schema.Uint8ArrayFromBase64Url;
  */
 export const base64UrlBytes = (length: number, label: string) =>
   Schema.String.pipe(
-    Schema.filter(
-      (value) =>
+    Schema.refine(
+      (value): value is string =>
         Option.exists(Schema.decodeUnknownOption(Bytes)(value), (bytes) => bytes.length === length),
-      { message: () => `${label} must be ${length} bytes as base64url` },
+      { message: `${label} must be ${length} bytes as base64url` },
     ),
   );
