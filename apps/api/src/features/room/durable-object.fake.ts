@@ -1,4 +1,4 @@
-/** The Durable Object base class the Worker runtime provides. */
+/** Test-only fake of the `DurableObject` base class the Worker runtime provides at deploy time. */
 export abstract class DurableObject<Env = unknown, Props = unknown> {
   /** Durable Object state handed to the instance by the runtime. */
   protected readonly ctx: DurableObjectState<Props>;
