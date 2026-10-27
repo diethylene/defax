@@ -1,55 +1,85 @@
 import type { ActivatedRouteSnapshot } from '@angular/router';
-import { match, P } from 'ts-pattern';
+import * as Match from 'effect/Match';
 
+/** Direction the router transition should animate. */
 export type NavDirection = 'forward' | 'backward';
 
-const STEP_ORDER: Record<'send' | 'receive', string[]> = {
+/** Transfer flow a route belongs to. */
+type Flow = 'send' | 'receive';
+
+/** Ordered step names for each transfer flow. */
+const STEP_ORDER: Record<Flow, readonly string[]> = {
   send: ['', 'code', 'approve', 'transfer', 'complete', 'failed'],
   receive: ['', 'confirm', 'transfer', 'complete', 'failed']
 };
 
-function leafSegments(snapshot: ActivatedRouteSnapshot): string[] {
-  const segments: string[] = [];
-  let node: ActivatedRouteSnapshot | null = snapshot;
-  while (node) {
-    segments.push(...node.url.map((segment) => segment.path));
-    node = node.firstChild ?? null;
-  }
-  return segments;
+/** A resolved flow and its position within the flow steps. */
+interface RouteStep {
+  /** Flow the route belongs to. */
+  readonly flow: Flow;
+  /** Zero-based step position within the flow. */
+  readonly step: number;
 }
 
-function stepIndex(flow: 'send' | 'receive', child: string): number {
-  return Math.max(0, STEP_ORDER[flow].indexOf(child));
-}
+/**
+ * Collects the URL segments along the deepest route branch.
+ * @param snapshot Root snapshot to walk.
+ * @returns Segment paths from the root down to the leaf.
+ */
+const leafSegments = (snapshot: ActivatedRouteSnapshot): string[] => [
+  ...snapshot.url.map((segment) => segment.path),
+  ...(snapshot.firstChild ? leafSegments(snapshot.firstChild) : [])
+];
 
-function routeStep(
-  snapshot: ActivatedRouteSnapshot
-): { flow: 'send' | 'receive'; step: number } | null {
+/**
+ * Returns the ordinal of a flow step, defaulting to the first step.
+ * @param flow Transfer flow.
+ * @param child Child route segment name.
+ * @returns The zero-based step index.
+ */
+const stepIndex = (flow: Flow, child: string): number =>
+  Math.max(0, STEP_ORDER[flow].indexOf(child));
+
+/**
+ * Resolves the flow and step a snapshot points at.
+ * @param snapshot Snapshot to resolve.
+ * @returns The route step, or null when the snapshot is not inside a flow.
+ */
+const routeStep = (snapshot: ActivatedRouteSnapshot): RouteStep | null => {
   const [flow, child = ''] = leafSegments(snapshot);
-  return match(flow)
-    .with('send', () => ({
+  return Match.value(flow).pipe(
+    Match.when('send', () => ({
       flow: 'send' as const,
       step: stepIndex('send', child)
-    }))
-    .with('receive', () => ({
+    })),
+    Match.when('receive', () => ({
       flow: 'receive' as const,
       step: stepIndex('receive', child)
-    }))
-    .otherwise(() => null);
-}
+    })),
+    Match.orElse(() => null)
+  );
+};
 
-export function navDirection(
+/**
+ * Tells whether a transition moves back within the same flow.
+ * @param from Step the transition leaves.
+ * @param to Step the transition enters.
+ * @returns True when both steps share a flow and the target is earlier.
+ */
+const isBackward = (from: RouteStep | null, to: RouteStep | null): boolean => {
+  if (!from || !to) return false;
+  if (from.flow !== to.flow) return false;
+  return to.step < from.step;
+};
+
+/**
+ * Derives the animation direction between two snapshots.
+ * @param from Snapshot the transition leaves.
+ * @param to Snapshot the transition enters.
+ * @returns Backward when the target step precedes the source within a flow.
+ */
+export const navDirection = (
   from: ActivatedRouteSnapshot,
   to: ActivatedRouteSnapshot
-): NavDirection {
-  return match([routeStep(from), routeStep(to)] as const)
-    .with(
-      [
-        { flow: P.select('fromFlow'), step: P.select('fromStep') },
-        { flow: P.select('toFlow'), step: P.select('toStep') }
-      ],
-      ({ fromFlow, fromStep, toFlow, toStep }) =>
-        fromFlow === toFlow && toStep < fromStep ? 'backward' : 'forward'
-    )
-    .otherwise(() => 'forward');
-}
+): NavDirection =>
+  isBackward(routeStep(from), routeStep(to)) ? 'backward' : 'forward';
