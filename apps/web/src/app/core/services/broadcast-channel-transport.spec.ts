@@ -1,4 +1,4 @@
-import type { SignalMessage } from '../../shared/interfaces/signal-message';
+import type { SignalMessage } from '../../shared/utilities/signal-message';
 import { encodeBase64Url } from '../../shared/utilities/base64url';
 import { BroadcastChannelTransport } from './broadcast-channel-transport';
 

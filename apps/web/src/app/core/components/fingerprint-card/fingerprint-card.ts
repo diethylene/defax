@@ -5,7 +5,7 @@ import {
   input
 } from '@angular/core';
 import { HlmSkeleton } from '@spartan-ng/helm/skeleton';
-import type { Identity } from '../../../shared/interfaces/identity';
+import type { Identity } from '@contract/signal/identity.model';
 import { FileSizePipe } from '../../../shared/pipes/file-size.pipe';
 import { chunk } from '../../../shared/utilities/chunk';
 

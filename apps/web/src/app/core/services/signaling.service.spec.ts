@@ -1,7 +1,7 @@
 import { Injector } from '@angular/core';
 import { firstValueFrom } from 'rxjs';
-import type { FileMetadata } from '../../shared/interfaces/file-metadata';
-import type { Identity } from '../../shared/interfaces/identity';
+import type { FileMetadata } from '@contract/signal/file-metadata.model';
+import type { Identity } from '@contract/signal/identity.model';
 import { SignalTransport } from '../../shared/interfaces/signal-transport';
 import { BroadcastChannelTransport } from './broadcast-channel-transport';
 import { HandshakeService } from './handshake.service';

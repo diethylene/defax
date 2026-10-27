@@ -20,11 +20,11 @@ import {
 } from 'rxjs';
 import { match } from 'ts-pattern';
 import { TRANSFER_CHUNK_SIZE } from '../../shared/constants/transfer-protocol';
-import type { FileMetadata } from '../../shared/interfaces/file-metadata';
+import type { FileMetadata } from '@contract/signal/file-metadata.model';
 import {
   parseAccept,
   parseVerifyResult
-} from '../../shared/validators/transfer-message';
+} from '../../shared/utilities/transfer-message';
 import { HashService } from './hash.service';
 import { SignalingService } from './signaling.service';
 import { StorageService } from './storage.service';

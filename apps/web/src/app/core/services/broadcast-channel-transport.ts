@@ -1,8 +1,10 @@
 import { Injectable } from '@angular/core';
+import { decodeSid as decodeWireSid } from '@contract/signal/sid.model';
+import * as Option from 'effect/Option';
 import { Subject } from 'rxjs';
 import { match } from 'ts-pattern';
-import { PROTOCOL_VERSION } from '../../shared/constants/protocol-version';
-import type { SignalMessage } from '../../shared/interfaces/signal-message';
+import { PROTOCOL_VERSION } from '@contract/signal/protocol-version.constant';
+import type { SignalMessage } from '../../shared/utilities/signal-message';
 import type {
   RoomCreated,
   RoomId,
@@ -117,7 +119,10 @@ export class BroadcastChannelTransport extends SignalTransport {
     }
     this.outgoing = [];
     if (this.sid) {
-      this.post({ type: 'joined', sid: encodeSid(this.sid) });
+      this.post({
+        type: 'joined',
+        sid: Option.getOrThrow(decodeWireSid(encodeSid(this.sid)))
+      });
     }
   }
 

@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { EMPTY, type Observable } from 'rxjs';
-import type { SignalMessage } from '../../shared/interfaces/signal-message';
+import type { SignalMessage } from '../../shared/utilities/signal-message';
 import type {
   RoomCreated,
   RoomId,
