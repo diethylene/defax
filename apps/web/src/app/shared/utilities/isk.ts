@@ -4,9 +4,19 @@ import { utf8ToBytes } from '@noble/hashes/utils.js';
 import { CPACE_DSI } from '../constants/cpace';
 import { lvCat } from './lv-cat';
 
+/** Associated data placeholder for a side that sent none. */
 const EMPTY = new Uint8Array(0);
 
-export function deriveIsk(
+/**
+ * Derives the implicit session key for a CPace exchange.
+ * @param sid Session id from the relay.
+ * @param k Shared group secret from the exchange.
+ * @param yInitiator Initiator public key.
+ * @param yResponder Responder public key.
+ * @param options Optional associated data for each side.
+ * @returns The 64-byte implicit session key.
+ */
+export const deriveIsk = (
   sid: Uint8Array,
   k: Uint8Array,
   yInitiator: Uint8Array,
@@ -15,7 +25,7 @@ export function deriveIsk(
     adInitiator?: Uint8Array;
     adResponder?: Uint8Array;
   } = {}
-): Uint8Array {
+): Uint8Array => {
   const { adInitiator = EMPTY, adResponder = EMPTY } = options;
   return sha512(
     concatBytes(
@@ -23,4 +33,4 @@ export function deriveIsk(
       lvCat(yInitiator, adInitiator, yResponder, adResponder)
     )
   );
-}
+};

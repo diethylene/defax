@@ -1,21 +1,21 @@
-export function encodeBase64Url(bytes: Uint8Array): string {
-  let binary = '';
-  for (let i = 0; i < bytes.length; i++) {
-    binary += String.fromCharCode(bytes[i]);
-  }
-  return btoa(binary)
+/**
+ * Encodes bytes as unpadded base64url.
+ * @param bytes Bytes to encode.
+ * @returns The base64url text.
+ */
+export const encodeBase64Url = (bytes: Uint8Array): string =>
+  btoa(Array.from(bytes, (byte) => String.fromCharCode(byte)).join(''))
     .replace(/\+/g, '-')
     .replace(/\//g, '_')
     .replace(/=+$/, '');
-}
 
-export function decodeBase64Url(value: string): Uint8Array {
+/**
+ * Decodes unpadded base64url text to bytes.
+ * @param value Base64url text.
+ * @returns The decoded bytes.
+ */
+export const decodeBase64Url = (value: string): Uint8Array => {
   const base64 = value.replace(/-/g, '+').replace(/_/g, '/');
   const padded = base64.padEnd(Math.ceil(base64.length / 4) * 4, '=');
-  const binary = atob(padded);
-  const bytes = new Uint8Array(binary.length);
-  for (let i = 0; i < binary.length; i++) {
-    bytes[i] = binary.charCodeAt(i);
-  }
-  return bytes;
-}
+  return Uint8Array.from(atob(padded), (character) => character.charCodeAt(0));
+};
