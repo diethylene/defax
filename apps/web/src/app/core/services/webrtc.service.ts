@@ -24,24 +24,39 @@ import {
 } from '../../shared/utilities/transfer-message';
 import { SignalingService } from './signaling.service';
 
+/** Open data channel handed to the transfer once the peer connection is up. */
 export interface RtcChannel {
+  /** Sends one buffer, completing once the channel has taken it. */
   send(data: ArrayBuffer): Observable<void>;
+  /** Buffers received from the peer. */
   readonly messages$: Observable<ArrayBuffer>;
+  /** Completes once the send buffer is empty. */
   drain(): Observable<void>;
+  /** Closes the channel and its peer connection. */
   close(): void;
 }
 
+/** Holds ICE candidates until the peer has a remote description. */
 interface IceHandle {
+  /** Adds every held candidate to the peer. */
   flush: () => void;
+  /** Stops listening for candidates. */
   dispose: () => void;
 }
 
+/** Time a peer connection has to open before the negotiation fails. */
 const CONNECT_TIMEOUT_MS = 30_000;
 
+/** Opens the data channels the transfer runs over. */
 @Injectable({ providedIn: 'root' })
 export class WebRtcService {
+  /** Signaling channel carrying SDP and ICE between the peers. */
   private readonly signaling = inject(SignalingService);
 
+  /**
+   * Opens the sender's data channel.
+   * @returns Observable emitting the open channel.
+   */
   openInitiator(): Observable<RtcChannel> {
     return defer(() => {
       const peer = new RTCPeerConnection(RTC_CONFIGURATION);
@@ -49,6 +64,8 @@ export class WebRtcService {
         ordered: true
       });
       const ice = this.attachIce(peer);
+      // The teardown cannot tell whether a value was emitted, so this flag
+      // marks the handover of the peer to the caller.
       let opened = false;
       return this.negotiateInitiator(peer, channel, ice).pipe(
         tap(() => {
@@ -62,6 +79,10 @@ export class WebRtcService {
     }).pipe(timeout(CONNECT_TIMEOUT_MS));
   }
 
+  /**
+   * Opens the receiver's data channel.
+   * @returns Observable emitting the channel the sender opened.
+   */
   openResponder(): Observable<RtcChannel> {
     return defer(() => {
       const peer = new RTCPeerConnection(RTC_CONFIGURATION);
@@ -71,6 +92,8 @@ export class WebRtcService {
         incoming.next(event.channel);
         incoming.complete();
       };
+      // The teardown cannot tell whether a value was emitted, so this flag
+      // marks the handover of the peer to the caller.
       let opened = false;
       return this.negotiateResponder(peer, incoming, ice).pipe(
         tap(() => {
@@ -84,6 +107,13 @@ export class WebRtcService {
     }).pipe(timeout(CONNECT_TIMEOUT_MS));
   }
 
+  /**
+   * Runs the offer side of the negotiation.
+   * @param peer Peer connection to negotiate on.
+   * @param channel Data channel created before the offer.
+   * @param ice Handle holding the peer's ICE candidates.
+   * @returns Observable emitting the open channel.
+   */
   private negotiateInitiator(
     peer: RTCPeerConnection,
     channel: RTCDataChannel,
@@ -105,6 +135,13 @@ export class WebRtcService {
     );
   }
 
+  /**
+   * Runs the answer side of the negotiation.
+   * @param peer Peer connection to negotiate on.
+   * @param incoming Channel the sender opens on this peer.
+   * @param ice Handle holding the peer's ICE candidates.
+   * @returns Observable emitting the open channel.
+   */
   private negotiateResponder(
     peer: RTCPeerConnection,
     incoming: Observable<RTCDataChannel>,
@@ -125,6 +162,11 @@ export class WebRtcService {
     );
   }
 
+  /**
+   * Bridges the peer's ICE candidates over signaling.
+   * @param peer Peer connection the candidates belong to.
+   * @returns Handle that flushes or disposes the held candidates.
+   */
   private attachIce(peer: RTCPeerConnection): IceHandle {
     const pending: RTCIceCandidateInit[] = [];
     peer.onicecandidate = (event) => {
@@ -155,6 +197,12 @@ export class WebRtcService {
     };
   }
 
+  /**
+   * Wraps a data channel as an RtcChannel once it opens.
+   * @param channel Channel created by either peer.
+   * @param peer Peer connection owning the channel.
+   * @returns Observable emitting the open channel.
+   */
   private openChannel(
     channel: RTCDataChannel,
     peer: RTCPeerConnection
@@ -195,6 +243,12 @@ export class WebRtcService {
     });
   }
 
+  /**
+   * Sends one buffer and completes once the channel has taken it.
+   * @param channel Open data channel.
+   * @param data Bytes to send.
+   * @returns Observable completing when the send buffer stays low.
+   */
   private sendData(
     channel: RTCDataChannel,
     data: ArrayBuffer
@@ -229,6 +283,11 @@ export class WebRtcService {
     });
   }
 
+  /**
+   * Waits until the channel's send buffer is empty.
+   * @param channel Open data channel.
+   * @returns Observable completing when the buffer reaches zero.
+   */
   private drain(channel: RTCDataChannel): Observable<void> {
     return new Observable<void>((subscriber) => {
       if (channel.readyState !== 'open') {
@@ -261,6 +320,11 @@ export class WebRtcService {
     });
   }
 
+  /**
+   * Sends one sealed signaling message, dropping failures.
+   * @param kind Sealed message kind.
+   * @param payload Message payload.
+   */
   private sendSignal(kind: SealedKind, payload: unknown): void {
     this.signaling
       .sendSealed(kind, payload)
