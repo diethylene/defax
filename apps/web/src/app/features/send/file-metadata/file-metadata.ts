@@ -1,4 +1,4 @@
-import type { FileMetadata } from '../../../shared/interfaces/file-metadata';
+import type { FileMetadata } from '@contract/signal/file-metadata.model';
 
 export function toFileMetadata(file: File): FileMetadata {
   return {

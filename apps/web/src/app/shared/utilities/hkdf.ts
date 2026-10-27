@@ -1,6 +1,6 @@
 import { bytesToNumberBE } from '@noble/curves/utils.js';
 import { utf8ToBytes } from '@noble/hashes/utils.js';
-import { PROTOCOL_VERSION } from '../constants/protocol-version';
+import { PROTOCOL_VERSION } from '@contract/signal/protocol-version.constant';
 
 const label = (value: string): Uint8Array<ArrayBuffer> =>
   utf8ToBytes(`defax-${PROTOCOL_VERSION} ${value}`);

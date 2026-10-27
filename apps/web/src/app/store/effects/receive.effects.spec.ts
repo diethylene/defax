@@ -4,8 +4,8 @@ import { provideEffects } from '@ngrx/effects';
 import { provideStore, Store } from '@ngrx/store';
 import { EMPTY, filter, firstValueFrom, of, take, throwError } from 'rxjs';
 import { SignalingService } from '../../core/services/signaling.service';
-import type { FileMetadata } from '../../shared/interfaces/file-metadata';
-import type { Identity } from '../../shared/interfaces/identity';
+import type { FileMetadata } from '@contract/signal/file-metadata.model';
+import type { Identity } from '@contract/signal/identity.model';
 import { receiveCodeEntered } from '../actions/receive.actions';
 import { receiveReducer } from '../reducers/receive.reducer';
 import {

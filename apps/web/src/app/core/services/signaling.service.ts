@@ -17,10 +17,10 @@ import {
   tap
 } from 'rxjs';
 import { match } from 'ts-pattern';
-import type { SealedKind } from '../../shared/constants/signal-message';
-import type { FileMetadata } from '../../shared/interfaces/file-metadata';
-import type { Identity } from '../../shared/interfaces/identity';
-import type { SignalMessage } from '../../shared/interfaces/signal-message';
+import type { SealedKind } from '@contract/signal/sealed-kind.model';
+import type { FileMetadata } from '@contract/signal/file-metadata.model';
+import type { Identity } from '@contract/signal/identity.model';
+import type { SignalMessage } from '../../shared/utilities/signal-message';
 import type { RoomId } from '../../shared/interfaces/signal-session';
 import { SignalTransport } from '../../shared/interfaces/signal-transport';
 import { open, type SignalRole, seal } from '../../shared/utilities/aead';
@@ -29,8 +29,8 @@ import {
   encodeBase64Url
 } from '../../shared/utilities/base64url';
 import { generatePassword } from '../../shared/utilities/password';
-import { parseFileMetadata } from '../../shared/validators/file-metadata';
-import { parseIdentity } from '../../shared/validators/identity';
+import { parseFileMetadata } from '../../shared/utilities/file-metadata';
+import { parseIdentity } from '../../shared/utilities/identity';
 import { HandshakeService, type InitiatorSession } from './handshake.service';
 
 export interface InitiatorConnection {

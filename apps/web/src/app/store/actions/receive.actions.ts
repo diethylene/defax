@@ -1,6 +1,6 @@
 import { createAction, props } from '@ngrx/store';
-import type { FileMetadata } from '../../shared/interfaces/file-metadata';
-import type { Identity } from '../../shared/interfaces/identity';
+import type { FileMetadata } from '@contract/signal/file-metadata.model';
+import type { Identity } from '@contract/signal/identity.model';
 
 export const receiveCodeEntered = createAction(
   '[Receive] Code Entered',
