@@ -1,6 +1,7 @@
 import { Injectable, inject } from '@angular/core';
 import { utf8ToBytes } from '@noble/hashes/utils.js';
 import * as Match from 'effect/Match';
+import * as Schema from 'effect/Schema';
 import {
   catchError,
   combineLatest,
@@ -20,6 +21,11 @@ import {
 import type { SealedKind } from '@contract/signal/sealed-kind.model';
 import type { FileMetadata } from '@contract/signal/file-metadata.model';
 import type { Identity } from '@contract/signal/identity.model';
+import {
+  DisconnectNotice as DisconnectNoticeSchema,
+  FileHash
+} from '@contract/signal/payload.model';
+import type { DisconnectNotice } from '@contract/signal/payload.model';
 import type { SignalMessage } from '../../shared/utilities/signal-message';
 import type { RoomId } from '../../shared/interfaces/signal-session';
 import { SignalTransport } from '../../shared/interfaces/signal-transport';
@@ -49,12 +55,6 @@ export interface ResponderConnection {
   peerIdentity: Identity;
   /** Metadata of the file the initiator is sending. */
   fileInfo: FileMetadata | null;
-}
-
-/** Notice a peer sends when it cancels the transfer. */
-export interface DisconnectNotice {
-  /** Side that cancelled the transfer. */
-  cancelledBy: 'sender' | 'receiver';
 }
 
 /** Sealed message carrying one kind of signalling payload. */
@@ -104,26 +104,16 @@ const decoder = new TextDecoder();
  * @param json Payload of the sealed disconnect message.
  * @returns The validated notice.
  */
-const parseDisconnect = (json: string): DisconnectNotice => {
-  const value = JSON.parse(json) as DisconnectNotice;
-  if (value.cancelledBy !== 'sender' && value.cancelledBy !== 'receiver') {
-    throw new Error('invalid disconnect notice');
-  }
-  return value;
-};
+const parseDisconnect = (json: string): DisconnectNotice =>
+  Schema.decodeUnknownSync(Schema.fromJsonString(DisconnectNoticeSchema))(json);
 
 /**
  * Parses a file digest received from the peer.
  * @param json Payload of the sealed file hash message.
  * @returns The validated digest.
  */
-const parseFileHash = (json: string): string => {
-  const value = JSON.parse(json) as { digest?: unknown };
-  if (typeof value.digest !== 'string' || value.digest.length === 0) {
-    throw new Error('invalid file hash');
-  }
-  return value.digest;
-};
+const parseFileHash = (json: string): string =>
+  Schema.decodeUnknownSync(Schema.fromJsonString(FileHash))(json).digest;
 
 /** Exchanges sealed signalling payloads over a transport. */
 @Injectable({ providedIn: 'root' })
