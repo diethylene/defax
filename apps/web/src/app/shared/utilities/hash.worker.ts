@@ -3,10 +3,19 @@ import { sha256 } from '@noble/hashes/sha2.js';
 import { bytesToHex } from '@noble/hashes/utils.js';
 import type { FileHashRequest, FileHashWorkerMessage } from './hash-protocol';
 
-function toErrorMessage(error: unknown): string {
-  return error instanceof Error ? error.message : 'File hashing failed';
-}
+/**
+ * Extracts a message from an unknown error value.
+ * @param error The thrown value to inspect.
+ * @returns The error's own message, or a generic fallback.
+ */
+const toErrorMessage = (error: unknown): string =>
+  error instanceof Error ? error.message : 'File hashing failed';
 
+/**
+ * Hashes a file, emitting progress as chunks arrive and the digest at the end.
+ * @param file File to hash.
+ * @returns Progress events, then either the digest or a failure.
+ */
 async function* streamHash(file: File): AsyncGenerator<FileHashWorkerMessage> {
   try {
     const hasher = sha256.create();
@@ -14,6 +23,7 @@ async function* streamHash(file: File): AsyncGenerator<FileHashWorkerMessage> {
     const total = file.size;
     let processed = 0;
 
+    // The reader is pulled one chunk at a time, so the loop stays imperative.
     while (true) {
       const result = await reader.read();
       if (result.done) break;
