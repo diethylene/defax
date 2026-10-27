@@ -1,8 +1,8 @@
 import { createReducer, on } from '@ngrx/store';
 import type { TransferRoute } from '../../core/interfaces/transfer.interface';
 import type { SendPhase } from '../../features/send/send-phase/send-phase';
-import type { FileMetadata } from '../../shared/interfaces/file-metadata';
-import type { Identity } from '../../shared/interfaces/identity';
+import type { FileMetadata } from '@contract/signal/file-metadata.model';
+import type { Identity } from '@contract/signal/identity.model';
 import type { RoomId } from '../../shared/interfaces/signal-session';
 import {
   sendDisconnect,

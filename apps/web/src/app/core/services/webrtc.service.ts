@@ -11,7 +11,7 @@ import {
   tap,
   timeout
 } from 'rxjs';
-import type { SealedKind } from '../../shared/constants/signal-message';
+import type { SealedKind } from '@contract/signal/sealed-kind.model';
 import {
   DATA_CHANNEL_BUFFER_LOW,
   DATA_CHANNEL_LABEL,
@@ -21,7 +21,7 @@ import {
   parseRtcAnswer,
   parseRtcIce,
   parseRtcOffer
-} from '../../shared/validators/transfer-message';
+} from '../../shared/utilities/transfer-message';
 import { SignalingService } from './signaling.service';
 
 export interface RtcChannel {

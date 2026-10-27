@@ -11,7 +11,7 @@ import {
   take,
   tap
 } from 'rxjs';
-import type { SignalMessage } from '../../shared/interfaces/signal-message';
+import type { SignalMessage } from '../../shared/utilities/signal-message';
 import type { RoomId, Sid } from '../../shared/interfaces/signal-session';
 import type { SignalTransport } from '../../shared/interfaces/signal-transport';
 import {

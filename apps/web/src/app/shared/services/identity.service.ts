@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { match } from 'ts-pattern';
-import type { Identity } from '../interfaces/identity';
+import type { Identity } from '@contract/signal/identity.model';
 
 const EDGE = /Edg\/(\d+)/;
 const CHROME = /Chrome\/(\d+)/;
