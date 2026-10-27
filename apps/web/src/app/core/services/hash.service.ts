@@ -1,13 +1,19 @@
 import { Injectable } from '@angular/core';
+import * as Match from 'effect/Match';
 import { Observable } from 'rxjs';
-import { match } from 'ts-pattern';
 import type {
   FileHashEvent,
   FileHashWorkerMessage
 } from '../../shared/utilities/hash-protocol';
 
+/** Hashes files in a worker and reports progress as an observable. */
 @Injectable({ providedIn: 'root' })
 export class HashService {
+  /**
+   * Hashes one file in a dedicated worker.
+   * @param file File to hash.
+   * @returns Observable of progress and completion events.
+   */
   hashFile(file: File): Observable<FileHashEvent> {
     return new Observable<FileHashEvent>((subscriber) => {
       const worker = new Worker(
@@ -15,21 +21,24 @@ export class HashService {
         { type: 'module' }
       );
 
+      /** Routes one worker message to the subscriber. */
       const onMessage = (event: MessageEvent<FileHashWorkerMessage>): void => {
-        match(event.data)
-          .with({ type: 'error' }, ({ message }) => {
+        Match.value(event.data).pipe(
+          Match.when({ type: 'error' }, ({ message }) => {
             subscriber.error(new Error(message));
-          })
-          .with({ type: 'progress' }, (message) => {
+          }),
+          Match.when({ type: 'progress' }, (message) => {
             subscriber.next(message);
-          })
-          .with({ type: 'complete' }, (message) => {
+          }),
+          Match.when({ type: 'complete' }, (message) => {
             subscriber.next(message);
             subscriber.complete();
-          })
-          .exhaustive();
+          }),
+          Match.exhaustive
+        );
       };
 
+      /** Fails the subscriber when the worker itself errors. */
       const onError = (event: ErrorEvent): void => {
         subscriber.error(new Error(event.message));
       };
