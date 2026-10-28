@@ -8,7 +8,8 @@ import { EMPTY, filter, firstValueFrom, of, take, throwError } from 'rxjs';
 import { describe, expect, it } from 'vitest';
 import { ReceiveActions } from './receive.actions';
 import { connect$, startTransfer$ } from './receive.effects';
-import { type ReceiveStatus, receiveFeature } from './receive.reducer';
+import { receiveFeature } from './receive.reducer';
+import type { ReceiveStatus } from './receive-transitions';
 
 const peerIdentity: Identity = {
   browser: 'Chrome 122',

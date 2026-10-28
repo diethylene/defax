@@ -1,6 +1,7 @@
 import { createSelector } from '@ngrx/store';
 import * as Match from 'effect/Match';
-import { type ReceiveErrorTag, receiveFeature } from './receive.reducer';
+import { receiveFeature } from './receive.reducer';
+import type { ReceiveErrorTag } from './receive-transitions';
 
 /** User-facing message for each receive failure. */
 export const receiveErrorMessages = {

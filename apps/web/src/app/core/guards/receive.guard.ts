@@ -7,7 +7,8 @@ import {
 import { Store } from '@ngrx/store';
 import { phaseForStatus, routeForPhase } from '@web/features/receive/receive-phase/receive-phase';
 import { ReceiveActions } from '@web/store/receive/receive.actions';
-import { type ReceiveStatus, receiveFeature } from '@web/store/receive/receive.reducer';
+import { receiveFeature } from '@web/store/receive/receive.reducer';
+import type { ReceiveStatus } from '@web/store/receive/receive-transitions';
 import * as Match from 'effect/Match';
 
 /** Warns the user that leaving cancels the transfer. */

@@ -1,4 +1,4 @@
-import type { ReceiveStatus } from '../../../store/receive/receive.reducer';
+import type { ReceiveStatus } from '../../../store/receive/receive-transitions';
 
 /** Page a receive status shows. */
 export type ReceivePhase =

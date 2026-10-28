@@ -27,7 +27,8 @@ import {
   withLatestFrom,
 } from 'rxjs';
 import { ReceiveActions } from './receive.actions';
-import { type ReceiveStatus, receiveFeature } from './receive.reducer';
+import { receiveFeature } from './receive.reducer';
+import type { ReceiveStatus } from './receive-transitions';
 
 /** A transfer event paired with the clock readings used to time the transfer. */
 interface TransferMoment {
