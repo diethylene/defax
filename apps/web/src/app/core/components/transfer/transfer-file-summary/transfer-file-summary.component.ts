@@ -39,7 +39,7 @@ import { FileSizePipe } from '../../../../shared/pipes/file-size.pipe';
 
       <ng-content select="[trailing]" />
     </div>
-  `
+  `,
 })
 export class TransferFileSummaryComponent {
   /** Name of the file. */

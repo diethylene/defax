@@ -1,9 +1,4 @@
-import {
-  ChangeDetectionStrategy,
-  Component,
-  computed,
-  input
-} from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, input } from '@angular/core';
 import { HlmSkeleton } from '@spartan-ng/helm/skeleton';
 import { CopyButtonComponent } from '../../../shared/components/copy-button/copy-button.component';
 import { chunk } from '../../../shared/utilities/chunk';
@@ -50,16 +45,14 @@ const GROUP_COUNT = 16;
         class="shrink-0"
       />
     </div>
-  `
+  `,
 })
 export class ShaChecksumComponent {
   /** Checksum to show, or none while the file is still hashing. */
   readonly checksum = input.required<string | undefined>();
 
   /** Checksum split into readable groups. */
-  protected readonly groups = computed(() =>
-    chunk(this.checksum() ?? '', GROUP_SIZE)
-  );
+  protected readonly groups = computed(() => chunk(this.checksum() ?? '', GROUP_SIZE));
 
   /** Placeholder widths shown while the checksum is unknown. */
   protected readonly skeletonGroups = Array.from({ length: GROUP_COUNT });

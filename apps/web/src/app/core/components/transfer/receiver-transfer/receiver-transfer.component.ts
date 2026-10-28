@@ -1,6 +1,6 @@
+import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
 import type { FileMetadata } from '@contract/signal/file-metadata.model';
 import type { Identity } from '@contract/signal/identity.model';
-import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
 import { Store } from '@ngrx/store';
 import { HlmButton } from '@spartan-ng/helm/button';
 import type { TransferSnapshot } from '@web/core/interfaces/transfer.interface';
@@ -65,8 +65,7 @@ const peerOf = (status: ReceiveStatus): Identity | undefined =>
  * @param status Current receive status.
  * @returns True while the file is being verified.
  */
-const verifyingOf = (status: ReceiveStatus): boolean =>
-  activeOf(status)?._tag === 'Verifying';
+const verifyingOf = (status: ReceiveStatus): boolean => activeOf(status)?._tag === 'Verifying';
 
 /** Transfer screen shown to the receiver. */
 @Component({

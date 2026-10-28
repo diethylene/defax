@@ -18,12 +18,12 @@ export const applicationConfigFeature = createFeature({
   name: 'applicationConfig',
   reducer: createReducer(
     initialApplicationConfigState,
+    on(ApplicationConfigActions.setMode, (_, { mode }): ApplicationConfigState => ({ mode })),
     on(
-      ApplicationConfigActions.setMode,
-      (_, { mode }): ApplicationConfigState => ({ mode }),
+      ApplicationConfigActions.toggleMode,
+      (state): ApplicationConfigState => ({
+        mode: state.mode === 'light' ? 'dark' : 'light',
+      }),
     ),
-    on(ApplicationConfigActions.toggleMode, (state): ApplicationConfigState => ({
-      mode: state.mode === 'light' ? 'dark' : 'light',
-    })),
   ),
 });

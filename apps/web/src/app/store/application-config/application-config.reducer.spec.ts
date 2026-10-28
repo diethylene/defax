@@ -31,10 +31,7 @@ describe('applicationConfigFeature.reducer', () => {
         ApplicationConfigActions.setMode({ mode: 'dark' }),
       );
 
-      const next = applicationConfigFeature.reducer(
-        dark,
-        ApplicationConfigActions.toggleMode(),
-      );
+      const next = applicationConfigFeature.reducer(dark, ApplicationConfigActions.toggleMode());
 
       expect(next).toEqual({ mode: 'light' });
     });

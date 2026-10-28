@@ -4,7 +4,6 @@
     "includes": [
       "**",
       "!libs/ui",
-      "!apps/web",
       "!dist",
       "!.nx",
       "!.angular",

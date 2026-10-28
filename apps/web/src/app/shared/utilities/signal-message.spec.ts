@@ -10,40 +10,42 @@ describe('parseSignalMessage', () => {
     it('parses a join message', () => {
       expect(parseSignalMessage({ type: 'join', protocol: 1 })).toEqual({
         type: 'join',
-        protocol: 1
+        protocol: 1,
       });
     });
 
     it('parses a pake message', () => {
       expect(parseSignalMessage({ type: 'pake', y: pakeY })).toEqual({
         type: 'pake',
-        y: pakeY
+        y: pakeY,
       });
     });
 
     it('parses a sealed message', () => {
-      expect(
-        parseSignalMessage({ type: 'sealed', kind: 'peer-info', ct: 'abc' })
-      ).toEqual({ type: 'sealed', kind: 'peer-info', ct: 'abc' });
+      expect(parseSignalMessage({ type: 'sealed', kind: 'peer-info', ct: 'abc' })).toEqual({
+        type: 'sealed',
+        kind: 'peer-info',
+        ct: 'abc',
+      });
     });
 
     it('parses a joined message', () => {
       expect(parseSignalMessage({ type: 'joined', sid })).toEqual({
         type: 'joined',
-        sid
+        sid,
       });
     });
 
     it('parses a peer-joined message', () => {
       expect(parseSignalMessage({ type: 'peer-joined' })).toEqual({
-        type: 'peer-joined'
+        type: 'peer-joined',
       });
     });
 
     it('parses an error message', () => {
       expect(parseSignalMessage({ type: 'error', code: 'room-full' })).toEqual({
         type: 'error',
-        code: 'room-full'
+        code: 'room-full',
       });
     });
   });
@@ -67,9 +69,7 @@ describe('parseSignalMessage', () => {
     });
 
     it('returns null for a bad sealed kind', () => {
-      expect(
-        parseSignalMessage({ type: 'sealed', kind: 'nope', ct: 'abc' })
-      ).toBeNull();
+      expect(parseSignalMessage({ type: 'sealed', kind: 'nope', ct: 'abc' })).toBeNull();
     });
 
     it('returns null for a bad error code', () => {

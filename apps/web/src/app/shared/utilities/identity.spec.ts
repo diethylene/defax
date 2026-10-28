@@ -4,7 +4,7 @@ const identity = {
   browser: 'Firefox 142',
   os: 'Linux',
   timeZone: 'Europe/Berlin',
-  language: 'en-US'
+  language: 'en-US',
 };
 
 describe('parseIdentity', () => {
@@ -20,15 +20,11 @@ describe('parseIdentity', () => {
     });
 
     it('throws on an empty browser', () => {
-      expect(() =>
-        parseIdentity(JSON.stringify({ ...identity, browser: '' }))
-      ).toThrow();
+      expect(() => parseIdentity(JSON.stringify({ ...identity, browser: '' }))).toThrow();
     });
 
     it('throws when a field is missing', () => {
-      expect(() =>
-        parseIdentity(JSON.stringify({ browser: 'Firefox 142' }))
-      ).toThrow();
+      expect(() => parseIdentity(JSON.stringify({ browser: 'Firefox 142' }))).toThrow();
     });
   });
 });

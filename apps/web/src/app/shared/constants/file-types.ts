@@ -41,7 +41,7 @@ export const FILE_TYPE_LABELS: Record<string, string> = {
   // executables and disk images
   exe: 'Executable',
   dmg: 'Disk image',
-  iso: 'Disk image'
+  iso: 'Disk image',
 };
 
 export const DEFAULT_FILE_TYPE_LABEL = 'File';

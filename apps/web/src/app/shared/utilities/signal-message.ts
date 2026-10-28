@@ -1,13 +1,13 @@
-import * as Option from 'effect/Option';
-import * as Schema from 'effect/Schema';
 import {
   ErrorMessage,
-  JoinMessage,
   JoinedMessage,
+  JoinMessage,
   PakeMessage,
   PeerJoinedMessage,
-  SealedMessage
+  SealedMessage,
 } from '@contract/signal/message.model';
+import * as Option from 'effect/Option';
+import * as Schema from 'effect/Schema';
 
 /** Wire message exchanged between a peer and the relay. */
 export type SignalMessage =
@@ -25,7 +25,7 @@ const signalMessageSchema = Schema.Union([
   SealedMessage,
   JoinedMessage,
   PeerJoinedMessage,
-  ErrorMessage
+  ErrorMessage,
 ]);
 
 /**

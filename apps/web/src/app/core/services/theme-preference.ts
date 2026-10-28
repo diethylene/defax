@@ -13,10 +13,8 @@ export const resolveInitialMode = (): ThemeMode =>
     Match.when('light', () => 'light' as const),
     Match.when('dark', () => 'dark' as const),
     Match.orElse(() =>
-      window.matchMedia('(prefers-color-scheme: dark)').matches
-        ? 'dark'
-        : 'light'
-    )
+      window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light',
+    ),
   );
 
 /**

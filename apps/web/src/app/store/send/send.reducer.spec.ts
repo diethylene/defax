@@ -2,13 +2,13 @@ import type { FileMetadata } from '@contract/signal/file-metadata.model';
 import type { Identity } from '@contract/signal/identity.model';
 import { describe, expect, it } from 'vitest';
 import { SendActions } from './send.actions';
-import { initialSendState, sendFeature, type SendState } from './send.reducer';
+import { initialSendState, type SendState, sendFeature } from './send.reducer';
 
 const peerIdentity: Identity = {
   browser: 'Firefox 121',
   os: 'Windows',
   timeZone: 'Europe/London',
-  language: 'en-GB'
+  language: 'en-GB',
 };
 
 const metadata: FileMetadata = {
@@ -16,12 +16,12 @@ const metadata: FileMetadata = {
   size: 3,
   mime: 'application/pdf',
   extension: 'pdf',
-  lastModified: 1_700_000_000_000
+  lastModified: 1_700_000_000_000,
 };
 
 const file = new File(['abc'], 'report.pdf', {
   type: 'application/pdf',
-  lastModified: 1_700_000_000_000
+  lastModified: 1_700_000_000_000,
 });
 
 const reduce = (state: SendState, ...actions: Parameters<typeof sendFeature.reducer>[1][]) =>
@@ -31,12 +31,12 @@ const awaiting: SendState = reduce(
   initialSendState,
   SendActions.fileSelected({ file, metadata }),
   SendActions.roomCreated({ roomId: 'room-1' }),
-  SendActions.passwordGenerated({ password: 'pw' })
+  SendActions.passwordGenerated({ password: 'pw' }),
 );
 
 const approved: SendState = reduce(
   awaiting,
-  SendActions.sasComputed({ sas: '123456', peerIdentity })
+  SendActions.sasComputed({ sas: '123456', peerIdentity }),
 );
 
 describe('sendFeature.reducer', () => {
@@ -44,7 +44,7 @@ describe('sendFeature.reducer', () => {
     it('moves to AwaitingPeer when a file is selected', () => {
       const next = sendFeature.reducer(
         initialSendState,
-        SendActions.fileSelected({ file, metadata })
+        SendActions.fileSelected({ file, metadata }),
       );
 
       expect(next.status).toEqual({
@@ -53,7 +53,7 @@ describe('sendFeature.reducer', () => {
         metadata,
         roomId: '',
         password: '',
-        hash: { _tag: 'Idle' }
+        hash: { _tag: 'Idle' },
       });
     });
 
@@ -61,7 +61,7 @@ describe('sendFeature.reducer', () => {
       expect(awaiting.status).toMatchObject({
         _tag: 'AwaitingPeer',
         roomId: 'room-1',
-        password: 'pw'
+        password: 'pw',
       });
     });
 
@@ -71,7 +71,7 @@ describe('sendFeature.reducer', () => {
         sas: '123456',
         peerIdentity,
         file,
-        metadata
+        metadata,
       });
     });
 
@@ -79,15 +79,15 @@ describe('sendFeature.reducer', () => {
       const hashing = reduce(
         awaiting,
         SendActions.hashStarted(),
-        SendActions.hashProgress({ processed: 2 })
+        SendActions.hashProgress({ processed: 2 }),
       );
       const complete = reduce(hashing, SendActions.hashComplete({ digest: 'abc' }));
 
       expect(hashing.status).toMatchObject({
-        hash: { _tag: 'Hashing', progress: 2 }
+        hash: { _tag: 'Hashing', progress: 2 },
       });
       expect(complete.status).toMatchObject({
-        hash: { _tag: 'Complete', digest: 'abc' }
+        hash: { _tag: 'Complete', digest: 'abc' },
       });
     });
 
@@ -96,7 +96,7 @@ describe('sendFeature.reducer', () => {
         approved,
         SendActions.hashComplete({ digest: 'abc' }),
         SendActions.transferStarted({ total: 3 }),
-        SendActions.transferProgress({ sent: 3 })
+        SendActions.transferProgress({ sent: 3 }),
       );
       const verifying = reduce(transferring, SendActions.transferComplete());
       const done = reduce(verifying, SendActions.transferVerified({ elapsed: 1500 }));
@@ -105,14 +105,14 @@ describe('sendFeature.reducer', () => {
         _tag: 'Transferring',
         sent: 3,
         total: 3,
-        hash: { _tag: 'Complete', digest: 'abc' }
+        hash: { _tag: 'Complete', digest: 'abc' },
       });
       expect(verifying.status._tag).toBe('Verifying');
       expect(done.status).toMatchObject({
         _tag: 'Done',
         sent: 3,
         total: 3,
-        durationMs: 1500
+        durationMs: 1500,
       });
     });
   });
@@ -121,7 +121,7 @@ describe('sendFeature.reducer', () => {
     it('ignores a room created before a file is selected', () => {
       const next = sendFeature.reducer(
         initialSendState,
-        SendActions.roomCreated({ roomId: 'room-1' })
+        SendActions.roomCreated({ roomId: 'room-1' }),
       );
 
       expect(next).toEqual(initialSendState);
@@ -132,7 +132,7 @@ describe('sendFeature.reducer', () => {
 
       expect(next.status).toEqual({
         _tag: 'Failed',
-        error: 'handshake-failed'
+        error: 'handshake-failed',
       });
     });
 
@@ -143,14 +143,11 @@ describe('sendFeature.reducer', () => {
     });
 
     it('moves to Failed with the transfer tag', () => {
-      const next = reduce(
-        approved,
-        SendActions.transferFailed({ error: 'transfer-failed' })
-      );
+      const next = reduce(approved, SendActions.transferFailed({ error: 'transfer-failed' }));
 
       expect(next.status).toEqual({
         _tag: 'Failed',
-        error: 'transfer-failed'
+        error: 'transfer-failed',
       });
     });
 

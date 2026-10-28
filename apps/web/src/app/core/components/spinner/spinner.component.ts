@@ -14,7 +14,7 @@ import { HlmSpinner } from '@spartan-ng/helm/spinner';
         <p class="text-sm text-muted-foreground">{{ subheading() }}</p>
       </div>
     </div>
-  `
+  `,
 })
 export class SpinnerComponent {
   /** Main line of text. */

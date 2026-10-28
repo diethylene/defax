@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import type { DropzoneValidator } from './dropzone.model';
 import { parseDropzoneConfig } from './dropzone.config';
+import type { DropzoneValidator } from './dropzone.model';
 
 describe('parseDropzoneConfig', () => {
   afterEach(() => {
@@ -42,7 +42,7 @@ describe('parseDropzoneConfig', () => {
         rejectionMode: 'partial',
         noClick: false,
         noKeyboard: false,
-        disabled: false
+        disabled: false,
       });
     });
 
@@ -51,16 +51,14 @@ describe('parseDropzoneConfig', () => {
     });
 
     it('falls back to the defaults and logs when the input is invalid', () => {
-      const consoleError = vi
-        .spyOn(console, 'error')
-        .mockImplementation(() => undefined);
+      const consoleError = vi.spyOn(console, 'error').mockImplementation(() => undefined);
 
       const config = parseDropzoneConfig({ maxFiles: -1 });
 
       expect(config.maxFiles).toBe(1);
       expect(consoleError).toHaveBeenCalledWith(
         '[app-dropzone] invalid config:',
-        expect.any(String)
+        expect.any(String),
       );
     });
   });

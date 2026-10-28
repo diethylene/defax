@@ -5,7 +5,7 @@ import {
   type ApplicationConfig,
   inject,
   isDevMode,
-  provideBrowserGlobalErrorListeners
+  provideBrowserGlobalErrorListeners,
 } from '@angular/core';
 import { provideAnimationsAsync } from '@angular/platform-browser/animations/async';
 import { provideRouter, withViewTransitions } from '@angular/router';
@@ -17,16 +17,13 @@ import { routes } from './app.routes';
 import { BroadcastChannelTransport } from './core/services/broadcast-channel-transport';
 import { navDirection } from './core/services/navigation-direction';
 import { ServerTransport } from './core/services/server-transport';
-import {
-  applyMode,
-  resolveInitialMode
-} from './core/services/theme-preference';
+import { applyMode, resolveInitialMode } from './core/services/theme-preference';
 import { SignalTransport } from './shared/interfaces/signal-transport';
 import { provideMaskedUrls } from './shared/services/masking-location-strategy';
 import { ApplicationConfigActions } from './store/application-config/application-config.actions';
 import {
   applyThemeMode$,
-  persistThemeMode$
+  persistThemeMode$,
 } from './store/application-config/application-config.effects';
 import { applicationConfigFeature } from './store/application-config/application-config.reducer';
 import {
@@ -36,7 +33,7 @@ import {
   fileHash$ as fileHashReceive$,
   peerDisconnected$ as peerDisconnectedReceive$,
   routeToPhase$ as routeToReceivePhase$,
-  startTransfer$ as startReceiveTransfer$
+  startTransfer$ as startReceiveTransfer$,
 } from './store/receive/receive.effects';
 import { receiveFeature } from './store/receive/receive.reducer';
 import { sendEffects } from './store/send/send.effects';
@@ -50,40 +47,33 @@ export const appConfig: ApplicationConfig = {
       applicationConfig: applicationConfigFeature.reducer,
       send: sendFeature.reducer,
       receive: receiveFeature.reducer,
-      router: routerReducer
+      router: routerReducer,
     }),
-    provideEffects(
-      { applyThemeMode$, persistThemeMode$ },
-      sendEffects,
-      {
-        routeToPhase: routeToReceivePhase$,
-        connect: connectReceive$,
-        closeRoom: closeReceiveRoom$,
-        disconnect: disconnectReceive$,
-        peerDisconnected: peerDisconnectedReceive$,
-        fileHash: fileHashReceive$,
-        startTransfer: startReceiveTransfer$
-      }
-    ),
+    provideEffects({ applyThemeMode$, persistThemeMode$ }, sendEffects, {
+      routeToPhase: routeToReceivePhase$,
+      connect: connectReceive$,
+      closeRoom: closeReceiveRoom$,
+      disconnect: disconnectReceive$,
+      peerDisconnected: peerDisconnectedReceive$,
+      fileHash: fileHashReceive$,
+      startTransfer: startReceiveTransfer$,
+    }),
     provideRouter(
       routes,
       withViewTransitions({
         skipInitialTransition: true,
         onViewTransitionCreated: ({ from, to }) => {
           const document = inject(DOCUMENT);
-          document.documentElement.setAttribute(
-            'data-nav-direction',
-            navDirection(from, to)
-          );
-        }
-      })
+          document.documentElement.setAttribute('data-nav-direction', navDirection(from, to));
+        },
+      }),
     ),
     provideMaskedUrls('/send', '/receive'),
     provideRouterStore(),
     provideSpartanHlm(),
     {
       provide: SignalTransport,
-      useClass: isDevMode() ? BroadcastChannelTransport : ServerTransport
+      useClass: isDevMode() ? BroadcastChannelTransport : ServerTransport,
     },
     { provide: Directionality, useClass: Directionality },
     {
@@ -95,7 +85,7 @@ export const appConfig: ApplicationConfig = {
           applyMode(mode);
           store.dispatch(ApplicationConfigActions.setMode({ mode }));
         },
-      multi: true
-    }
-  ]
+      multi: true,
+    },
+  ],
 };

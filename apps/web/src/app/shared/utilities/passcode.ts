@@ -59,9 +59,7 @@ const isPgpPair = (password: string): boolean => {
  * @param code Passcode typed or pasted by the user.
  * @returns The room id and password.
  */
-export const parsePasscode = (
-  code: string
-): { roomId: RoomId; password: string } => {
+export const parsePasscode = (code: string): { roomId: RoomId; password: string } => {
   const parts = splitCode(normalizePassword(code));
   if (!parts) {
     throw new Error('passcode must be <roomId>-<password>');
@@ -79,7 +77,5 @@ export const parseReceiveCode = (input: string): ReceiveCode | null => {
   const parts = splitCode(normalizePassword(input));
   if (!parts) return null;
   const [roomId, password] = parts;
-  return isRoomId(roomId) && isPgpPair(password)
-    ? { roomId, password }
-    : null;
+  return isRoomId(roomId) && isPgpPair(password) ? { roomId, password } : null;
 };

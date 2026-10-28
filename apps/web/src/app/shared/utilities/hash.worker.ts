@@ -16,11 +16,13 @@ const toErrorMessage = (error: unknown): string =>
  * @param file File to hash.
  * @returns Progress events, then either the digest or a failure.
  */
+// biome-ignore lint/plugin: a generator cannot be an arrow function
 async function* streamHash(file: File): AsyncGenerator<FileHashWorkerMessage> {
   try {
     const hasher = sha256.create();
     const reader = file.stream().getReader();
     const total = file.size;
+    // biome-ignore lint/plugin: the pull-based reader keeps its own running total
     let processed = 0;
 
     // The reader is pulled one chunk at a time, so the loop stays imperative.

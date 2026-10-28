@@ -1,4 +1,5 @@
 import { Injectable, inject } from '@angular/core';
+import type { SealedKind } from '@contract/signal/sealed-kind.model';
 import {
   catchError,
   defer,
@@ -9,18 +10,17 @@ import {
   ReplaySubject,
   switchMap,
   tap,
-  timeout
+  timeout,
 } from 'rxjs';
-import type { SealedKind } from '@contract/signal/sealed-kind.model';
 import {
   DATA_CHANNEL_BUFFER_LOW,
   DATA_CHANNEL_LABEL,
-  RTC_CONFIGURATION
+  RTC_CONFIGURATION,
 } from '../../shared/constants/transfer-protocol';
 import {
   parseRtcAnswer,
   parseRtcIce,
-  parseRtcOffer
+  parseRtcOffer,
 } from '../../shared/utilities/transfer-message';
 import { SignalingService } from './signaling.service';
 
@@ -61,20 +61,14 @@ export class WebRtcService {
     return defer(() => {
       const peer = new RTCPeerConnection(RTC_CONFIGURATION);
       const channel = peer.createDataChannel(DATA_CHANNEL_LABEL, {
-        ordered: true
+        ordered: true,
       });
       const ice = this.attachIce(peer);
-      // The teardown cannot tell whether a value was emitted, so this flag
-      // marks the handover of the peer to the caller.
-      let opened = false;
       return this.negotiateInitiator(peer, channel, ice).pipe(
-        tap(() => {
-          opened = true;
-        }),
         finalize(() => {
           ice.dispose();
-          if (!opened) peer.close();
-        })
+          if (channel.readyState !== 'open') peer.close();
+        }),
       );
     }).pipe(timeout(CONNECT_TIMEOUT_MS));
   }
@@ -92,17 +86,13 @@ export class WebRtcService {
         incoming.next(event.channel);
         incoming.complete();
       };
-      // The teardown cannot tell whether a value was emitted, so this flag
-      // marks the handover of the peer to the caller.
-      let opened = false;
+      // The teardown cannot see the channel, so the peer's own state marks
+      // the handover of the peer to the caller.
       return this.negotiateResponder(peer, incoming, ice).pipe(
-        tap(() => {
-          opened = true;
-        }),
         finalize(() => {
           ice.dispose();
-          if (!opened) peer.close();
-        })
+          if (peer.connectionState !== 'connected') peer.close();
+        }),
       );
     }).pipe(timeout(CONNECT_TIMEOUT_MS));
   }
@@ -117,21 +107,15 @@ export class WebRtcService {
   private negotiateInitiator(
     peer: RTCPeerConnection,
     channel: RTCDataChannel,
-    ice: IceHandle
+    ice: IceHandle,
   ): Observable<RtcChannel> {
     return from(peer.createOffer()).pipe(
       switchMap((offer) => from(peer.setLocalDescription(offer))),
-      tap(() =>
-        this.sendSignal('rtc-offer', { sdp: peer.localDescription?.sdp ?? '' })
-      ),
-      switchMap(() =>
-        this.signaling.receiveSealed('rtc-answer', parseRtcAnswer)
-      ),
-      switchMap((answer) =>
-        from(peer.setRemoteDescription({ type: 'answer', sdp: answer.sdp }))
-      ),
+      tap(() => this.sendSignal('rtc-offer', { sdp: peer.localDescription?.sdp ?? '' })),
+      switchMap(() => this.signaling.receiveSealed('rtc-answer', parseRtcAnswer)),
+      switchMap((answer) => from(peer.setRemoteDescription({ type: 'answer', sdp: answer.sdp }))),
       tap(() => ice.flush()),
-      switchMap(() => this.openChannel(channel, peer))
+      switchMap(() => this.openChannel(channel, peer)),
     );
   }
 
@@ -145,20 +129,16 @@ export class WebRtcService {
   private negotiateResponder(
     peer: RTCPeerConnection,
     incoming: Observable<RTCDataChannel>,
-    ice: IceHandle
+    ice: IceHandle,
   ): Observable<RtcChannel> {
     return this.signaling.receiveSealed('rtc-offer', parseRtcOffer).pipe(
-      switchMap((offer) =>
-        from(peer.setRemoteDescription({ type: 'offer', sdp: offer.sdp }))
-      ),
+      switchMap((offer) => from(peer.setRemoteDescription({ type: 'offer', sdp: offer.sdp }))),
       tap(() => ice.flush()),
       switchMap(() => from(peer.createAnswer())),
       switchMap((answer) => from(peer.setLocalDescription(answer))),
-      tap(() =>
-        this.sendSignal('rtc-answer', { sdp: peer.localDescription?.sdp ?? '' })
-      ),
+      tap(() => this.sendSignal('rtc-answer', { sdp: peer.localDescription?.sdp ?? '' })),
       switchMap(() => incoming),
-      switchMap((channel) => this.openChannel(channel, peer))
+      switchMap((channel) => this.openChannel(channel, peer)),
     );
   }
 
@@ -173,7 +153,7 @@ export class WebRtcService {
       this.sendSignal('rtc-ice', {
         candidate: event.candidate?.candidate ?? null,
         sdpMid: event.candidate?.sdpMid ?? null,
-        sdpMLineIndex: event.candidate?.sdpMLineIndex ?? null
+        sdpMLineIndex: event.candidate?.sdpMLineIndex ?? null,
       });
     };
     const sub = this.signaling
@@ -193,7 +173,7 @@ export class WebRtcService {
           void peer.addIceCandidate(init).catch(() => undefined);
         }
       },
-      dispose: () => sub.unsubscribe()
+      dispose: () => sub.unsubscribe(),
     };
   }
 
@@ -203,10 +183,7 @@ export class WebRtcService {
    * @param peer Peer connection owning the channel.
    * @returns Observable emitting the open channel.
    */
-  private openChannel(
-    channel: RTCDataChannel,
-    peer: RTCPeerConnection
-  ): Observable<RtcChannel> {
+  private openChannel(channel: RTCDataChannel, peer: RTCPeerConnection): Observable<RtcChannel> {
     return new Observable<RtcChannel>((subscriber) => {
       const messages = new ReplaySubject<ArrayBuffer>();
       channel.binaryType = 'arraybuffer';
@@ -219,7 +196,7 @@ export class WebRtcService {
         close: () => {
           channel.close();
           peer.close();
-        }
+        },
       };
 
       const open = (): void => {
@@ -249,10 +226,7 @@ export class WebRtcService {
    * @param data Bytes to send.
    * @returns Observable completing when the send buffer stays low.
    */
-  private sendData(
-    channel: RTCDataChannel,
-    data: ArrayBuffer
-  ): Observable<void> {
+  private sendData(channel: RTCDataChannel, data: ArrayBuffer): Observable<void> {
     return new Observable<void>((subscriber) => {
       if (channel.readyState !== 'open') {
         subscriber.error(new Error('data channel not open'));

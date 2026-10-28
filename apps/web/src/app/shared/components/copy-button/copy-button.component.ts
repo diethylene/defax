@@ -5,7 +5,7 @@ import {
   effect,
   inject,
   input,
-  viewChild
+  viewChild,
 } from '@angular/core';
 import { NgIcon, provideIcons } from '@ng-icons/core';
 import { lucideCheck, lucideCopy } from '@ng-icons/lucide';
@@ -52,7 +52,7 @@ const COPIED_CLASSES =
         <span>{{ label() }}</span>
       }
     </button>
-  `
+  `,
 })
 export class CopyButtonComponent {
   /** Host directive that performs the copy and exposes the copied state. */
@@ -74,13 +74,9 @@ export class CopyButtonComponent {
   /** Whether no visible label is rendered. */
   protected readonly iconOnly = computed(() => this.label() === '');
   /** Button size chosen from the label state. */
-  protected readonly size = computed(() =>
-    this.iconOnly() ? 'icon' : 'default'
-  );
+  protected readonly size = computed(() => (this.iconOnly() ? 'icon' : 'default'));
   /** Accessible label, present only for the icon-only button. */
-  protected readonly ariaLabelValue = computed(() =>
-    this.iconOnly() ? this.ariaLabel() : null
-  );
+  protected readonly ariaLabelValue = computed(() => (this.iconOnly() ? this.ariaLabel() : null));
 
   /** Keeps the button classes in sync with the copied state. */
   constructor() {

@@ -6,7 +6,7 @@ import {
   lucideArrowLeftRight,
   lucideDownload,
   lucideHelpCircle,
-  lucideUpload
+  lucideUpload,
 } from '@ng-icons/lucide';
 import { getRouterSelectors } from '@ngrx/router-store';
 import { Store } from '@ngrx/store';
@@ -27,11 +27,11 @@ const { selectUrl } = getRouterSelectors();
       lucideArrowLeftRight,
       lucideUpload,
       lucideDownload,
-      lucideHelpCircle
-    })
+      lucideHelpCircle,
+    }),
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
-  templateUrl: './navbar.component.html'
+  templateUrl: './navbar.component.html',
 })
 export class NavbarComponent {
   /** Global store. */
@@ -40,13 +40,13 @@ export class NavbarComponent {
   /** URL the router is showing, used to highlight the active item. */
   protected readonly activeRoute = toSignal(
     this.store.select(selectUrl).pipe(map((url) => url ?? '')),
-    { initialValue: '' }
+    { initialValue: '' },
   );
 
   /** Primary navigation items. */
   protected readonly primaryItems: NavItem[] = [
     { label: 'Send', route: '/send', icon: 'lucideUpload' },
-    { label: 'Receive', route: '/receive', icon: 'lucideDownload' }
+    { label: 'Receive', route: '/receive', icon: 'lucideDownload' },
   ];
 
   /** Secondary navigation items. */
@@ -55,7 +55,7 @@ export class NavbarComponent {
       label: 'How it works',
       route: '/help',
       icon: 'lucideHelpCircle',
-      hideLabelOnMobile: true
-    }
+      hideLabelOnMobile: true,
+    },
   ];
 }

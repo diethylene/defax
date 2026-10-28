@@ -15,7 +15,7 @@ import { CopyButtonComponent } from '../../../shared/components/copy-button/copy
       }}</span>
       <app-copy-button [value]="code()" />
     </div>
-  `
+  `,
 })
 export class SendCodeFieldComponent {
   /** Code the user shares with the receiver. */

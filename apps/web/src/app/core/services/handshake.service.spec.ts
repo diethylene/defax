@@ -3,13 +3,13 @@ import { open, seal } from '../../shared/utilities/aead';
 import { BroadcastChannelTransport } from './broadcast-channel-transport';
 import { type HandshakeResult, HandshakeService } from './handshake.service';
 
-async function runHandshakePair(
+const runHandshakePair = async (
   initiatorPassword: string,
-  responderPassword: string
+  responderPassword: string,
 ): Promise<{
   initiatorResult: HandshakeResult;
   responderResult: HandshakeResult;
-}> {
+}> => {
   const initiatorTransport = new BroadcastChannelTransport();
   const responderTransport = new BroadcastChannelTransport();
   const initiator = new HandshakeService();
@@ -21,19 +21,14 @@ async function runHandshakePair(
       initiator.runAsInitiator(initiatorTransport, {
         roomId,
         sid,
-        password: initiatorPassword
-      })
+        password: initiatorPassword,
+      }),
     ),
-    firstValueFrom(
-      responder.runAsResponder(
-        responderTransport,
-        `${roomId}-${responderPassword}`
-      )
-    )
+    firstValueFrom(responder.runAsResponder(responderTransport, `${roomId}-${responderPassword}`)),
   ]);
 
   return { initiatorResult, responderResult };
-}
+};
 
 describe('HandshakeService', () => {
   it('derives the same sas and room id on both sides', async () => {
@@ -51,14 +46,9 @@ describe('HandshakeService', () => {
       pair.responderResult.signalingKey,
       new TextEncoder().encode('hello defax'),
       roomId,
-      'responder'
+      'responder',
     );
-    const opened = await open(
-      pair.initiatorResult.signalingKey,
-      sealed,
-      roomId,
-      'responder'
-    );
+    const opened = await open(pair.initiatorResult.signalingKey, sealed, roomId, 'responder');
 
     expect(new TextDecoder().decode(opened)).toBe('hello defax');
   });

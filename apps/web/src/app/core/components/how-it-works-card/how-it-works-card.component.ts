@@ -1,10 +1,6 @@
 import { ChangeDetectionStrategy, Component, input } from '@angular/core';
 import { HlmBadge } from '@spartan-ng/helm/badge';
-import {
-  HlmCard,
-  HlmCardDescription,
-  HlmCardTitle
-} from '@spartan-ng/helm/card';
+import { HlmCard, HlmCardDescription, HlmCardTitle } from '@spartan-ng/helm/card';
 
 /** Numbered card that explains one step of the flow. */
 @Component({
@@ -26,7 +22,7 @@ import {
         <ng-content />
       </p>
     </div>
-  `
+  `,
 })
 export class HowItWorksCardComponent {
   /** Step number shown in the badge. */

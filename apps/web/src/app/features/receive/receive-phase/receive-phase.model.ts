@@ -44,6 +44,4 @@ export const phaseForStatus = (status: ReceiveStatus): ReceivePhase => receivePh
  * @param phase Page to show.
  * @returns URL of that page.
  */
-export function routeForPhase(phase: ReceivePhase): string {
-  return receivePhaseRoutes[phase];
-}
+export const routeForPhase = (phase: ReceivePhase): string => receivePhaseRoutes[phase];

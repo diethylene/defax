@@ -4,7 +4,7 @@ import type {
   DropzoneReason,
   DropzoneResult,
   DropzoneValidator,
-  RejectedFile
+  RejectedFile,
 } from './dropzone.model';
 import { matchesAccept } from './dropzone-accept.util';
 
@@ -14,7 +14,7 @@ import { matchesAccept } from './dropzone-accept.util';
  * @param config Resolved dropzone config.
  * @returns Reasons the file fails, empty when it passes.
  */
-function perFileReasons(file: File, config: DropzoneConfig): DropzoneReason[] {
+const perFileReasons = (file: File, config: DropzoneConfig): DropzoneReason[] => {
   const reasons: DropzoneReason[] = [];
   if (!matchesAccept(file, config.accept)) reasons.push('file-type');
   if (config.maxFileSize !== null && file.size > config.maxFileSize) {
@@ -23,7 +23,7 @@ function perFileReasons(file: File, config: DropzoneConfig): DropzoneReason[] {
   if (file.size < config.minFileSize) reasons.push('file-too-small');
   reasons.push(...customReasons(file, config.validator));
   return reasons;
-}
+};
 
 /**
  * Runs the caller's validator and normalizes its result to a list.
@@ -31,14 +31,11 @@ function perFileReasons(file: File, config: DropzoneConfig): DropzoneReason[] {
  * @param validator Caller validator, when present.
  * @returns Reasons reported by the validator.
  */
-function customReasons(
-  file: File,
-  validator: DropzoneValidator | null
-): DropzoneReason[] {
+const customReasons = (file: File, validator: DropzoneValidator | null): DropzoneReason[] => {
   const outcome = validator?.(file);
   if (!outcome) return [];
   return Array.isArray(outcome) ? outcome : [outcome];
-}
+};
 
 /**
  * Tells whether a file is already in the selection.
@@ -46,14 +43,13 @@ function customReasons(
  * @param seen Files already selected.
  * @returns True for a name, size, and modification time match.
  */
-function isDuplicate(file: File, seen: File[]): boolean {
-  return seen.some(
+const isDuplicate = (file: File, seen: File[]): boolean =>
+  seen.some(
     (existing) =>
       existing.name === file.name &&
       existing.size === file.size &&
-      existing.lastModified === file.lastModified
+      existing.lastModified === file.lastModified,
   );
-}
 
 /**
  * Wraps a file and its reasons.
@@ -61,9 +57,7 @@ function isDuplicate(file: File, seen: File[]): boolean {
  * @param reasons Reasons it failed.
  * @returns Rejection record.
  */
-function toRejected(file: File, reasons: DropzoneReason[]): RejectedFile {
-  return { file, reasons };
-}
+const toRejected = (file: File, reasons: DropzoneReason[]): RejectedFile => ({ file, reasons });
 
 /**
  * Evaluates one drop or picker selection.
@@ -73,28 +67,20 @@ function toRejected(file: File, reasons: DropzoneReason[]): RejectedFile {
  * @param config Resolved dropzone config.
  * @returns Accepted and rejected files.
  */
-export function evaluateFiles(
+export const evaluateFiles = (
   incoming: File[],
   directories: File[],
   existing: File[],
-  config: DropzoneConfig
-): DropzoneResult {
-  const entries = incoming.map((file) =>
-    toRejected(file, perFileReasons(file, config))
-  );
-  const directoryRejections = directories.map((file) =>
-    toRejected(file, ['directory'])
-  );
+  config: DropzoneConfig,
+): DropzoneResult => {
+  const entries = incoming.map((file) => toRejected(file, perFileReasons(file, config)));
+  const directoryRejections = directories.map((file) => toRejected(file, ['directory']));
   return Match.value(config.rejectionMode).pipe(
-    Match.when('all', () =>
-      evaluateAll(entries, directoryRejections, existing, config)
-    ),
-    Match.when('partial', () =>
-      evaluatePartial(entries, directoryRejections, existing, config)
-    ),
-    Match.exhaustive
+    Match.when('all', () => evaluateAll(entries, directoryRejections, existing, config)),
+    Match.when('partial', () => evaluatePartial(entries, directoryRejections, existing, config)),
+    Match.exhaustive,
   );
-}
+};
 
 /**
  * Accepts the files that pass and rejects the rest.
@@ -104,12 +90,12 @@ export function evaluateFiles(
  * @param config Resolved dropzone config.
  * @returns Accepted and rejected files.
  */
-function evaluatePartial(
+const evaluatePartial = (
   entries: RejectedFile[],
   directoryRejections: RejectedFile[],
   existing: File[],
-  config: DropzoneConfig
-): DropzoneResult {
+  config: DropzoneConfig,
+): DropzoneResult => {
   const candidates: File[] = [];
   const rejected: RejectedFile[] = [...directoryRejections];
   const seen = [...existing];
@@ -130,12 +116,12 @@ function evaluatePartial(
       accepted: [],
       rejected: [
         ...directoryRejections,
-        ...entries.map((entry) => toRejected(entry.file, [reason]))
-      ]
+        ...entries.map((entry) => toRejected(entry.file, [reason])),
+      ],
     })),
-    Match.exhaustive
+    Match.exhaustive,
   );
-}
+};
 
 /**
  * Combines per-file reasons with the duplicate check.
@@ -143,14 +129,11 @@ function evaluatePartial(
  * @param seen Files already selected.
  * @returns Reasons that still apply.
  */
-function perFileRejectionReasons(
-  entry: RejectedFile,
-  seen: File[]
-): DropzoneReason[] {
+const perFileRejectionReasons = (entry: RejectedFile, seen: File[]): DropzoneReason[] => {
   if (entry.reasons.length > 0) return entry.reasons;
   if (isDuplicate(entry.file, seen)) return ['duplicate'];
   return [];
-}
+};
 
 /** Result of the capacity check. */
 type CapacityResult =
@@ -164,26 +147,24 @@ type CapacityResult =
  * @param config Resolved dropzone config.
  * @returns Whether the batch fits.
  */
-function evaluateCapacity(
+const evaluateCapacity = (
   candidates: File[],
   existing: File[],
-  config: DropzoneConfig
-): CapacityResult {
-  const remainingSlots =
-    config.maxFiles === null ? Infinity : config.maxFiles - existing.length;
+  config: DropzoneConfig,
+): CapacityResult => {
+  const remainingSlots = config.maxFiles === null ? Infinity : config.maxFiles - existing.length;
   if (candidates.length > remainingSlots) {
     return { kind: 'reject', reason: 'too-many-files' };
   }
-  if (config.maxTotalSize !== null) {
-    const totalSize =
-      existing.reduce((sum, file) => sum + file.size, 0) +
-      candidates.reduce((sum, file) => sum + file.size, 0);
-    if (totalSize > config.maxTotalSize) {
-      return { kind: 'reject', reason: 'total-size-exceeded' };
-    }
+  const totalSize =
+    existing.reduce((sum, file) => sum + file.size, 0) +
+    candidates.reduce((sum, file) => sum + file.size, 0);
+  const exceedsTotal = config.maxTotalSize !== null && totalSize > config.maxTotalSize;
+  if (exceedsTotal) {
+    return { kind: 'reject', reason: 'total-size-exceeded' };
   }
   return { kind: 'ok' };
-}
+};
 
 /**
  * Rejects the whole batch when any file fails.
@@ -193,29 +174,23 @@ function evaluateCapacity(
  * @param config Resolved dropzone config.
  * @returns Accepted and rejected files.
  */
-function evaluateAll(
+const evaluateAll = (
   entries: RejectedFile[],
   directoryRejections: RejectedFile[],
   existing: File[],
-  config: DropzoneConfig
-): DropzoneResult {
+  config: DropzoneConfig,
+): DropzoneResult => {
   const anyFailure =
-    entries.some((entry) => entry.reasons.length > 0) ||
-    directoryRejections.length > 0;
+    entries.some((entry) => entry.reasons.length > 0) || directoryRejections.length > 0;
   if (anyFailure) {
     return { accepted: [], rejected: [...directoryRejections, ...entries] };
   }
-  const partial = evaluatePartial(
-    entries,
-    directoryRejections,
-    existing,
-    config
-  );
+  const partial = evaluatePartial(entries, directoryRejections, existing, config);
   if (partial.rejected.length === 0) return partial;
   const batch = entries.map(
     (entry) =>
       partial.rejected.find((rejected) => rejected.file === entry.file) ??
-      toRejected(entry.file, [])
+      toRejected(entry.file, []),
   );
   return { accepted: [], rejected: [...directoryRejections, ...batch] };
-}
+};

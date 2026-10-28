@@ -6,6 +6,6 @@ import { RouterOutlet } from '@angular/router';
   selector: 'app-send-layout',
   imports: [RouterOutlet],
   changeDetection: ChangeDetectionStrategy.OnPush,
-  template: '<div class="page-transition"><router-outlet /></div>'
+  template: '<div class="page-transition"><router-outlet /></div>',
 })
 export class SendLayoutComponent {}

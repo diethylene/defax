@@ -5,9 +5,7 @@ import type { ControlValueAccessor } from '@angular/forms';
  * value representation and push new values to the form with `commit` and
  * report interaction with `markTouched`.
  */
-export abstract class AbstractControlValueAccessor<T>
-  implements ControlValueAccessor
-{
+export abstract class AbstractControlValueAccessor<T> implements ControlValueAccessor {
   protected value: T | null = null;
 
   private onChange: (value: T | null) => void = () => {};

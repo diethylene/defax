@@ -1,9 +1,4 @@
-import {
-  ChangeDetectionStrategy,
-  Component,
-  computed,
-  input
-} from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, input } from '@angular/core';
 import { HlmBadge } from '@spartan-ng/helm/badge';
 import { StatusLightComponent } from '../../../shared/components/status-light/status-light.component';
 import { type StatusBarStatus, statusStates } from './status-state.model';
@@ -20,7 +15,7 @@ import { type StatusBarStatus, statusStates } from './status-state.model';
         <span class="sm:hidden">{{ state().labelMobile }}</span>
       </app-status-light>
     </span>
-  `
+  `,
 })
 export class StatusPillComponent {
   /** Connection status to present. */

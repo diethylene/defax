@@ -9,27 +9,24 @@ import {
   type Observable,
   switchMap,
   take,
-  tap
+  tap,
 } from 'rxjs';
-import type { SignalMessage } from '../../shared/utilities/signal-message';
 import type { RoomId, Sid } from '../../shared/interfaces/signal-session';
 import type { SignalTransport } from '../../shared/interfaces/signal-transport';
-import {
-  decodeBase64Url,
-  encodeBase64Url
-} from '../../shared/utilities/base64url';
+import { decodeBase64Url, encodeBase64Url } from '../../shared/utilities/base64url';
 import {
   deriveGeneratorString,
   derivePublicKey,
   deriveSharedSecret,
   isValidPublicKey,
   mapToGroup,
-  secretFromBytes
+  secretFromBytes,
 } from '../../shared/utilities/cpace';
 import { deriveSessionKeys } from '../../shared/utilities/hkdf';
 import { deriveIsk } from '../../shared/utilities/isk';
 import { parsePasscode } from '../../shared/utilities/passcode';
 import { normalizePassword } from '../../shared/utilities/password';
+import type { SignalMessage } from '../../shared/utilities/signal-message';
 
 /** Keys and code both peers hold after the handshake. */
 export interface HandshakeResult {
@@ -68,19 +65,17 @@ export class HandshakeService {
    */
   runAsInitiator(
     transport: SignalTransport,
-    session: InitiatorSession
+    session: InitiatorSession,
   ): Observable<HandshakeResult> {
     const { roomId, sid, password } = session;
     const { secret, publicKey } = this.deriveKeyPair(sid, password);
 
     return this.peerJoined(transport).pipe(
-      tap(() =>
-        transport.send({ type: 'pake', y: encodeBase64Url(publicKey) })
-      ),
+      tap(() => transport.send({ type: 'pake', y: encodeBase64Url(publicKey) })),
       switchMap(() => this.peerKey(transport)),
       switchMap((peerPublicKey) =>
-        this.finish(secret, publicKey, peerPublicKey, sid, roomId, true)
-      )
+        this.finish(secret, publicKey, peerPublicKey, sid, roomId, true),
+      ),
     );
   }
 
@@ -90,28 +85,18 @@ export class HandshakeService {
    * @param code Passcode carrying the room id and password.
    * @returns Observable of the signalling key, sas, and room id.
    */
-  runAsResponder(
-    transport: SignalTransport,
-    code: string
-  ): Observable<HandshakeResult> {
+  runAsResponder(transport: SignalTransport, code: string): Observable<HandshakeResult> {
     const { roomId, password } = parsePasscode(code);
 
     return combineLatest([
       this.peerKey(transport),
-      defer(() => from(transport.joinRoom(roomId)))
+      defer(() => from(transport.joinRoom(roomId))),
     ]).pipe(
       switchMap(([peerPublicKey, sid]) => {
         const { secret, publicKey } = this.deriveKeyPair(sid, password);
         transport.send({ type: 'pake', y: encodeBase64Url(publicKey) });
-        return this.finish(
-          secret,
-          publicKey,
-          peerPublicKey,
-          sid,
-          roomId,
-          false
-        );
-      })
+        return this.finish(secret, publicKey, peerPublicKey, sid, roomId, false);
+      }),
     );
   }
 
@@ -121,12 +106,9 @@ export class HandshakeService {
    * @param password Password both peers share.
    * @returns The secret scalar and the public key.
    */
-  private deriveKeyPair(
-    sid: Sid,
-    password: string
-  ): { secret: bigint; publicKey: Uint8Array } {
+  private deriveKeyPair(sid: Sid, password: string): { secret: bigint; publicKey: Uint8Array } {
     const generator = mapToGroup(
-      deriveGeneratorString(sid, utf8ToBytes(normalizePassword(password)))
+      deriveGeneratorString(sid, utf8ToBytes(normalizePassword(password))),
     );
     const secret = this.generateSecret();
     return { secret, publicKey: derivePublicKey(secret, generator) };
@@ -150,15 +132,10 @@ export class HandshakeService {
    * @param transport Transport carrying the handshake messages.
    * @returns Observable of the join announcement.
    */
-  private peerJoined(
-    transport: SignalTransport
-  ): Observable<PeerJoinedMessage> {
+  private peerJoined(transport: SignalTransport): Observable<PeerJoinedMessage> {
     return transport.messages$.pipe(
-      filter(
-        (message): message is PeerJoinedMessage =>
-          message.type === 'peer-joined'
-      ),
-      take(1)
+      filter((message): message is PeerJoinedMessage => message.type === 'peer-joined'),
+      take(1),
     );
   }
 
@@ -171,7 +148,7 @@ export class HandshakeService {
     return transport.messages$.pipe(
       filter((message): message is PakeMessage => message.type === 'pake'),
       map((message) => this.decodePeerKey(message.y)),
-      take(1)
+      take(1),
     );
   }
 
@@ -204,13 +181,9 @@ export class HandshakeService {
     peerPublicKey: Uint8Array,
     sid: Sid,
     roomId: RoomId,
-    ownIsInitiator: boolean
+    ownIsInitiator: boolean,
   ): Observable<HandshakeResult> {
-    const sharedSecret = deriveSharedSecret(
-      secret,
-      peerPublicKey,
-      ownPublicKey
-    );
+    const sharedSecret = deriveSharedSecret(secret, peerPublicKey, ownPublicKey);
     const yInitiator = ownIsInitiator ? ownPublicKey : peerPublicKey;
     const yResponder = ownIsInitiator ? peerPublicKey : ownPublicKey;
     const isk = deriveIsk(sid, sharedSecret, yInitiator, yResponder);
@@ -218,10 +191,7 @@ export class HandshakeService {
 
     // Noble types widen to ArrayBufferLike; WebCrypto requires ArrayBuffer.
     return from(
-      deriveSessionKeys(
-        isk as Uint8Array<ArrayBuffer>,
-        sid as Uint8Array<ArrayBuffer>
-      )
+      deriveSessionKeys(isk as Uint8Array<ArrayBuffer>, sid as Uint8Array<ArrayBuffer>),
     ).pipe(map(({ signalingKey, sas }) => ({ signalingKey, sas, roomId })));
   }
 }

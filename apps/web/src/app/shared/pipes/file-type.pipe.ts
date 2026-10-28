@@ -1,8 +1,5 @@
 import { Pipe, type PipeTransform } from '@angular/core';
-import {
-  DEFAULT_FILE_TYPE_LABEL,
-  FILE_TYPE_LABELS
-} from '../constants/file-types';
+import { DEFAULT_FILE_TYPE_LABEL, FILE_TYPE_LABELS } from '../constants/file-types';
 
 @Pipe({ name: 'fileType' })
 export class FileTypePipe implements PipeTransform {
