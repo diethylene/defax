@@ -1,23 +1,38 @@
+/** One falling drop in the drag animation. */
 export interface Drop {
+  /** Horizontal position in pixels. */
   x: number;
+  /** Vertical position in pixels. */
   y: number;
+  /** Horizontal drift direction. */
   dx: number;
+  /** Vertical drift direction. */
   dy: number;
+  /** Animation delay. */
   delay: string;
 }
 
+/** Tuning for the drop layout. */
 export interface DropLayoutOptions {
+  /** Distance between drop columns in pixels. */
   columnSpacing?: number;
+  /** Drops per column. */
   perColumn?: number;
+  /** Ripple amount along the perimeter. */
   ripple?: number;
+  /** Animation duration in seconds. */
   duration?: number;
 }
 
+/** One straight or curved piece of the perimeter. */
 interface Segment {
+  /** Length of the segment. */
   length: number;
+  /** Position and outward normal at a distance along the segment. */
   at: (t: number) => [number, number, number, number];
 }
 
+/** Default layout tuning. */
 const defaults: Required<DropLayoutOptions> = {
   columnSpacing: 4,
   perColumn: 2,
@@ -25,9 +40,17 @@ const defaults: Required<DropLayoutOptions> = {
   duration: 2.4
 };
 
+/**
+ * Builds the rounded-rectangle perimeter from lines and quarter arcs.
+ * @param width Frame width in pixels.
+ * @param height Frame height in pixels.
+ * @param radius Corner radius in pixels.
+ * @returns Perimeter segments in draw order.
+ */
 function perimeter(width: number, height: number, radius: number): Segment[] {
   const segments: Segment[] = [];
 
+  /** Adds a straight perimeter segment. */
   const line = (
     x0: number,
     y0: number,
@@ -50,6 +73,7 @@ function perimeter(width: number, height: number, radius: number): Segment[] {
     }
   };
 
+  /** Adds a quarter-circle perimeter segment. */
   const arc = (cx: number, cy: number, a0: number): void => {
     if (radius <= 0) return;
     const length = (Math.PI / 2) * radius;
@@ -76,6 +100,13 @@ function perimeter(width: number, height: number, radius: number): Segment[] {
   return segments;
 }
 
+/**
+ * Computes a smooth ripple along the perimeter.
+ * @param offset Distance along the perimeter in pixels.
+ * @param total Perimeter length in pixels.
+ * @param amount Ripple amplitude.
+ * @returns Ripple offset.
+ */
 function ripple(offset: number, total: number, amount: number): number {
   const k1 = Math.max(1, Math.round(total / 173));
   const k2 = Math.max(1, Math.round(total / 61));
@@ -83,6 +114,14 @@ function ripple(offset: number, total: number, amount: number): number {
   return amount * (0.6 * Math.sin(k1 * u) + 0.4 * Math.sin(k2 * u + 1.3));
 }
 
+/**
+ * Places the falling drops around a rounded rectangle.
+ * @param width Frame width in pixels.
+ * @param height Frame height in pixels.
+ * @param radius Corner radius in pixels.
+ * @param options Layout tuning.
+ * @returns Drops in animation order.
+ */
 export function computeDrops(
   width: number,
   height: number,
