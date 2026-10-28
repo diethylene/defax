@@ -5,7 +5,6 @@ import {
   computed,
   inject
 } from '@angular/core';
-import { toSignal } from '@angular/core/rxjs-interop';
 import { Router } from '@angular/router';
 import { NgIcon, provideIcons } from '@ng-icons/core';
 import { lucideFile } from '@ng-icons/lucide';
@@ -14,17 +13,16 @@ import { HlmButton } from '@spartan-ng/helm/button';
 import { HlmCard, HlmCardContent } from '@spartan-ng/helm/card';
 import { HlmSeparator } from '@spartan-ng/helm/separator';
 import { HlmSkeleton } from '@spartan-ng/helm/skeleton';
+import * as Match from 'effect/Match';
 import { ShaChecksumComponent } from '../../../core/components/sha-checksum/sha-checksum';
 import { SpinnerComponent } from '../../../core/components/spinner/spinner';
 import { FileSizePipe } from '../../../shared/pipes/file-size.pipe';
 import { FileTypePipe } from '../../../shared/pipes/file-type.pipe';
-import { sendDisconnect } from '../../../store/actions/send.actions';
+import { SendActions } from '../../../store/send/send.actions';
 import {
-  selectSendHashDigest,
-  selectSendMetadata,
-  selectSendPassword,
-  selectSendRoomId
-} from '../../../store/selectors/send.selectors';
+  hashDigestOf,
+  selectSendStatus
+} from '../../../store/send/send.selectors';
 import { SendCodeFieldComponent } from './send-code-field';
 
 @Component({
@@ -50,16 +48,21 @@ import { SendCodeFieldComponent } from './send-code-field';
 export class SendCodeComponent {
   private readonly store = inject(Store);
   private readonly router = inject(Router);
+  private readonly status = this.store.selectSignal(selectSendStatus);
 
-  protected readonly roomId = toSignal(this.store.select(selectSendRoomId), {
-    initialValue: null
-  });
+  private readonly awaiting = computed(() =>
+    Match.value(this.status()).pipe(
+      Match.tag('AwaitingPeer', (status) => status),
+      Match.orElse(() => null)
+    )
+  );
 
-  protected readonly password = toSignal(
-    this.store.select(selectSendPassword),
-    {
-      initialValue: null
-    }
+  protected readonly roomId = computed(
+    () => this.awaiting()?.roomId || null
+  );
+
+  protected readonly password = computed(
+    () => this.awaiting()?.password || null
   );
 
   protected readonly passcode = computed(() => {
@@ -68,22 +71,14 @@ export class SendCodeComponent {
     return roomId && password ? `${roomId}-${password}` : '';
   });
 
-  protected readonly metadata = toSignal(
-    this.store.select(selectSendMetadata),
-    {
-      initialValue: null
-    }
+  protected readonly metadata = computed(
+    () => this.awaiting()?.metadata ?? null
   );
 
-  protected readonly digest = toSignal(
-    this.store.select(selectSendHashDigest),
-    {
-      initialValue: null
-    }
-  );
+  protected readonly digest = computed(() => hashDigestOf(this.status()));
 
   protected cancel(): void {
-    this.store.dispatch(sendDisconnect());
+    this.store.dispatch(SendActions.disconnect());
     this.router.navigate(['/send']);
   }
 }

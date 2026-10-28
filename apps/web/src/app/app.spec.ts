@@ -6,7 +6,7 @@ import { provideStore } from '@ngrx/store';
 import { App } from './app';
 import { ApplicationConfigEffects } from './store/effects/application-config.effects';
 import { applicationConfigReducer } from './store/reducers/application-config.reducer';
-import { sendReducer } from './store/reducers/send.reducer';
+import { sendFeature } from './store/send/send.reducer';
 
 describe('App', () => {
   beforeEach(async () => {
@@ -16,7 +16,7 @@ describe('App', () => {
         provideRouter([]),
         provideStore({
           applicationConfig: applicationConfigReducer,
-          send: sendReducer,
+          send: sendFeature.reducer,
           router: routerReducer
         }),
         provideEffects(ApplicationConfigEffects),

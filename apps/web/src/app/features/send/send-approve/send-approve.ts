@@ -4,24 +4,22 @@ import {
   computed,
   inject
 } from '@angular/core';
-import { toSignal } from '@angular/core/rxjs-interop';
 import { Store } from '@ngrx/store';
 import { HlmButton } from '@spartan-ng/helm/button';
 import { HlmCard, HlmCardContent } from '@spartan-ng/helm/card';
 import { HlmSpinner } from '@spartan-ng/helm/spinner';
+import * as Match from 'effect/Match';
 import {
   type FileSummary,
   FingerprintCardComponent
 } from '../../../core/components/fingerprint-card/fingerprint-card';
 import { PageShellComponent } from '../../../core/components/page-shell/page-shell';
 import { SasNumberComponent } from '../../../core/components/sas-number/sas-number';
-import { sendDisconnect } from '../../../store/actions/send.actions';
+import { SendActions } from '../../../store/send/send.actions';
 import {
-  selectSendHashDigest,
-  selectSendMetadata,
-  selectSendPeerIdentity,
-  selectSendSas
-} from '../../../store/selectors/send.selectors';
+  hashDigestOf,
+  selectSendStatus
+} from '../../../store/send/send.selectors';
 
 @Component({
   selector: 'app-send-approve',
@@ -40,25 +38,26 @@ import {
 })
 export class SendApproveComponent {
   private readonly store = inject(Store);
+  private readonly status = this.store.selectSignal(selectSendStatus);
 
-  protected readonly sas = toSignal(this.store.select(selectSendSas), {
-    initialValue: null
-  });
-
-  protected readonly peerIdentity = toSignal(
-    this.store.select(selectSendPeerIdentity),
-    { initialValue: null }
+  private readonly confirming = computed(() =>
+    Match.value(this.status()).pipe(
+      Match.tag('SasConfirm', (status) => status),
+      Match.orElse(() => null)
+    )
   );
 
-  protected readonly metadata = toSignal(
-    this.store.select(selectSendMetadata),
-    { initialValue: null }
+  protected readonly sas = computed(() => this.confirming()?.sas ?? null);
+
+  protected readonly peerIdentity = computed(
+    () => this.confirming()?.peerIdentity ?? null
   );
 
-  protected readonly digest = toSignal(
-    this.store.select(selectSendHashDigest),
-    { initialValue: null }
+  protected readonly metadata = computed(
+    () => this.confirming()?.metadata ?? null
   );
+
+  protected readonly digest = computed(() => hashDigestOf(this.status()));
 
   protected readonly fileSummary = computed<FileSummary | null>(() => {
     const metadata = this.metadata();
@@ -66,6 +65,6 @@ export class SendApproveComponent {
   });
 
   protected cancel(): void {
-    this.store.dispatch(sendDisconnect());
+    this.store.dispatch(SendActions.disconnect());
   }
 }

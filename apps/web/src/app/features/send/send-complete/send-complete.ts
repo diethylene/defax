@@ -4,16 +4,14 @@ import {
   computed,
   inject
 } from '@angular/core';
-import { toSignal } from '@angular/core/rxjs-interop';
 import { Store } from '@ngrx/store';
+import * as Match from 'effect/Match';
 import { TransferCompleteComponent } from '../../../core/components/transfer/transfer-complete/transfer-complete';
-import { sendReset } from '../../../store/actions/send.actions';
+import { SendActions } from '../../../store/send/send.actions';
 import {
-  selectSendHashDigest,
-  selectSendMetadata,
-  selectSendPeerIdentity,
-  selectSendTransferDurationMs
-} from '../../../store/selectors/send.selectors';
+  hashDigestOf,
+  selectSendStatus
+} from '../../../store/send/send.selectors';
 
 @Component({
   selector: 'app-send-complete',
@@ -34,40 +32,35 @@ import {
 })
 export class SendCompleteComponent {
   private readonly store = inject(Store);
+  private readonly status = this.store.selectSignal(selectSendStatus);
 
-  private readonly metadata = toSignal(this.store.select(selectSendMetadata), {
-    initialValue: null
-  });
-
-  private readonly peerIdentity = toSignal(
-    this.store.select(selectSendPeerIdentity),
-    { initialValue: null }
+  private readonly done = computed(() =>
+    Match.value(this.status()).pipe(
+      Match.tag('Done', (status) => status),
+      Match.orElse(() => null)
+    )
   );
 
-  protected readonly digest = toSignal(
-    this.store.select(selectSendHashDigest),
-    {
-      initialValue: null
-    }
-  );
+  protected readonly digest = computed(() => hashDigestOf(this.status()));
 
-  private readonly durationMs = toSignal(
-    this.store.select(selectSendTransferDurationMs),
-    { initialValue: null }
+  protected readonly fileName = computed(
+    () => this.done()?.metadata.name ?? ''
   );
-
-  protected readonly fileName = computed(() => this.metadata()?.name ?? '');
-  protected readonly fileSize = computed(() => this.metadata()?.size ?? 0);
+  protected readonly fileSize = computed(
+    () => this.done()?.metadata.size ?? 0
+  );
   protected readonly peerBrowser = computed(
-    () => this.peerIdentity()?.browser ?? ''
+    () => this.done()?.peerIdentity.browser ?? ''
   );
-  protected readonly peerOs = computed(() => this.peerIdentity()?.os ?? '');
+  protected readonly peerOs = computed(
+    () => this.done()?.peerIdentity.os ?? ''
+  );
   protected readonly timeTaken = computed(() => {
-    const ms = this.durationMs();
-    return ms === null ? null : ms / 1000;
+    const durationMs = this.done()?.durationMs;
+    return durationMs === undefined ? null : durationMs / 1000;
   });
 
   protected onRestart(): void {
-    this.store.dispatch(sendReset());
+    this.store.dispatch(SendActions.reset());
   }
 }

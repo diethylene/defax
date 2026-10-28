@@ -26,10 +26,10 @@ import { provideMaskedUrls } from './shared/services/masking-location-strategy';
 import { setMode } from './store/actions/application-config.actions';
 import { ApplicationConfigEffects } from './store/effects/application-config.effects';
 import { ReceiveEffects } from './store/effects/receive.effects';
-import { SendEffects } from './store/effects/send.effects';
 import { applicationConfigReducer } from './store/reducers/application-config.reducer';
 import { receiveReducer } from './store/reducers/receive.reducer';
-import { sendReducer } from './store/reducers/send.reducer';
+import { sendEffects } from './store/send/send.effects';
+import { sendFeature } from './store/send/send.reducer';
 
 export const appConfig: ApplicationConfig = {
   providers: [
@@ -37,11 +37,11 @@ export const appConfig: ApplicationConfig = {
     provideAnimationsAsync(),
     provideStore({
       applicationConfig: applicationConfigReducer,
-      send: sendReducer,
+      send: sendFeature.reducer,
       receive: receiveReducer,
       router: routerReducer
     }),
-    provideEffects(ApplicationConfigEffects, SendEffects, ReceiveEffects),
+    provideEffects(ApplicationConfigEffects, sendEffects, ReceiveEffects),
     provideRouter(
       routes,
       withViewTransitions({
