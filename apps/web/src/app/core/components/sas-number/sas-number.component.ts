@@ -5,6 +5,7 @@ import {
   input
 } from '@angular/core';
 
+/** Shows the short authentication string as two digit groups. */
 @Component({
   selector: 'app-sas-number',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -37,8 +38,10 @@ import {
   `
 })
 export class SasNumberComponent {
+  /** Short authentication string both peers compare. */
   readonly sas = input.required<string>();
 
+  /** Digits split into the two groups shown on screen. */
   protected readonly groups = computed(() => {
     const value = this.sas();
     const midpoint = Math.ceil(value.length / 2);

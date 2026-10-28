@@ -13,6 +13,7 @@ import {
   selectSendStatus
 } from '../../../store/send/send.selectors';
 
+/** Shows how far the file hash has progressed. */
 @Component({
   selector: 'app-hash-progress-toast',
   imports: [HlmProgressImports],
@@ -34,9 +35,12 @@ import {
   `
 })
 export class HashProgressToastComponent {
+  /** Global store. */
   private readonly store = inject(Store);
+  /** The latest send status. */
   private readonly status = this.store.selectSignal(selectSendStatus);
 
+  /** Bytes hashed so far. */
   private readonly processed = computed(() =>
     Match.value(hashOf(this.status())).pipe(
       Match.tag('Hashing', ({ progress }) => progress),
@@ -44,10 +48,12 @@ export class HashProgressToastComponent {
     )
   );
 
+  /** Size of the file being hashed, or zero when unknown. */
   private readonly total = computed(
     () => metadataOf(this.status())?.size ?? 0
   );
 
+  /** Share of the file hashed, as a whole percentage. */
   protected readonly percent = computed(() =>
     this.total() > 0
       ? Math.round((this.processed() / this.total()) * 100)

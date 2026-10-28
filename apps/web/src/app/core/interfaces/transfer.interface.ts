@@ -10,8 +10,8 @@ export interface TransferSnapshot {
   transferred: number;
   /** Total bytes to transfer. */
   total: number;
-  /** Negotiated transfer route, or null before it is known. */
-  route: TransferRoute | null;
+  /** Negotiated transfer route, or undefined before it is known. */
+  route: TransferRoute | undefined;
   /** Whether the receiver confirmed the file hash. */
   verified: boolean;
 }

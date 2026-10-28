@@ -9,14 +9,21 @@ import type { Identity } from '@contract/signal/identity.model';
 import { FileSizePipe } from '../../../shared/pipes/file-size.pipe';
 import { chunk } from '../../../shared/utilities/chunk';
 
+/** Name and size of the file being verified. */
 export interface FileSummary {
+  /** File name shown to the user. */
   name: string;
+  /** File size in bytes. */
   size: number;
 }
 
+/** Digits shown per checksum group. */
 const GROUP_SIZE = 4;
+
+/** Placeholder groups shown while the checksum is unknown. */
 const SKELETON_GROUPS = 16;
 
+/** Shows the peer identity, file and checksum being compared before a transfer. */
 @Component({
   selector: 'app-fingerprint-card',
   imports: [FileSizePipe, HlmSkeleton],
@@ -69,10 +76,14 @@ const SKELETON_GROUPS = 16;
   `
 })
 export class FingerprintCardComponent {
-  readonly identity = input.required<Identity | null>();
-  readonly file = input.required<FileSummary | null>();
-  readonly checksum = input<string | null>(null);
+  /** Peer details to show, or none before the handshake completes. */
+  readonly identity = input.required<Identity | undefined>();
+  /** File to show, or none before metadata arrives. */
+  readonly file = input.required<FileSummary | undefined>();
+  /** Checksum to show, or none while the file is still hashing. */
+  readonly checksum = input<string | undefined>(undefined);
 
+  /** Identity rows shown above the file row. */
   protected readonly rows = computed(() => {
     const identity = this.identity();
     return [
@@ -82,9 +93,11 @@ export class FingerprintCardComponent {
     ];
   });
 
+  /** Checksum split into readable groups. */
   protected readonly checksumGroups = computed(() =>
     chunk(this.checksum() ?? '', GROUP_SIZE)
   );
 
+  /** Placeholder widths shown while the checksum is unknown. */
   protected readonly skeletonGroups = Array.from({ length: SKELETON_GROUPS });
 }

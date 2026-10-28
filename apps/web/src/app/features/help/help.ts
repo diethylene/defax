@@ -1,8 +1,8 @@
 import { ChangeDetectionStrategy, Component } from '@angular/core';
-import { HowItWorksCard } from '../../core/components/how-it-works-card/how-it-works-card';
-import { ListCard } from '../../core/components/list-card/list-card';
-import { PageShellComponent } from '../../core/components/page-shell/page-shell';
-import { VerificationCard } from '../../core/components/verification-card/verification-card';
+import { HowItWorksCardComponent } from '../../core/components/how-it-works-card/how-it-works-card.component';
+import { ListCardComponent } from '../../core/components/list-card/list-card.component';
+import { PageShellComponent } from '../../core/components/page-shell/page-shell.component';
+import { VerificationCardComponent } from '../../core/components/verification-card/verification-card.component';
 
 interface ListCardData {
   title: string;
@@ -11,7 +11,12 @@ interface ListCardData {
 
 @Component({
   selector: 'app-help',
-  imports: [PageShellComponent, HowItWorksCard, ListCard, VerificationCard],
+  imports: [
+    PageShellComponent,
+    HowItWorksCardComponent,
+    ListCardComponent,
+    VerificationCardComponent
+  ],
   host: { class: 'page-transition block' },
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './help.html'

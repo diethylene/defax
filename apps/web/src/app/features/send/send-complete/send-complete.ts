@@ -6,7 +6,7 @@ import {
 } from '@angular/core';
 import { Store } from '@ngrx/store';
 import * as Match from 'effect/Match';
-import { TransferCompleteComponent } from '../../../core/components/transfer/transfer-complete/transfer-complete';
+import { TransferCompleteComponent } from '../../../core/components/transfer/transfer-complete/transfer-complete.component';
 import { SendActions } from '../../../store/send/send.actions';
 import {
   hashDigestOf,
@@ -57,7 +57,7 @@ export class SendCompleteComponent {
   );
   protected readonly timeTaken = computed(() => {
     const durationMs = this.done()?.durationMs;
-    return durationMs === undefined ? null : durationMs / 1000;
+    return durationMs === undefined ? undefined : durationMs / 1000;
   });
 
   protected onRestart(): void {

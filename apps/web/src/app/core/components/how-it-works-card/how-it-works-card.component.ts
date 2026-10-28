@@ -6,6 +6,7 @@ import {
   HlmCardTitle
 } from '@spartan-ng/helm/card';
 
+/** Numbered card that explains one step of the flow. */
 @Component({
   selector: 'app-how-it-works-card',
   imports: [HlmBadge, HlmCard, HlmCardTitle, HlmCardDescription],
@@ -27,7 +28,9 @@ import {
     </div>
   `
 })
-export class HowItWorksCard {
+export class HowItWorksCardComponent {
+  /** Step number shown in the badge. */
   readonly step = input.required<number>();
+  /** Card title. */
   readonly title = input.required<string>();
 }

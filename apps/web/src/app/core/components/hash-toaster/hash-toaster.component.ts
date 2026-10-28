@@ -11,10 +11,12 @@ import { HlmToasterImports } from '@spartan-ng/helm/sonner';
 import { toast } from '@spartan-ng/brain/sonner';
 import * as Match from 'effect/Match';
 import { hashOf, selectSendStatus } from '../../../store/send/send.selectors';
-import { HashProgressToastComponent } from './hash-progress-toast';
+import { HashProgressToastComponent } from './hash-progress-toast.component';
 
+/** Toast ID reused while the hash is running. */
 const HASH_PROGRESS_TOAST_ID = 'file-hash-progress';
 
+/** Shows the file hash progress and its result as toasts. */
 @Component({
   selector: 'app-hash-toaster',
   imports: [HlmToasterImports],
@@ -22,10 +24,14 @@ const HASH_PROGRESS_TOAST_ID = 'file-hash-progress';
   template: '<hlm-toaster />'
 })
 export class HashToasterComponent {
+  /** Global store. */
   private readonly store = inject(Store);
+  /** The latest send status. */
   private readonly status = this.store.selectSignal(selectSendStatus);
+  /** Tag of the hash carried by the latest send status. */
   private readonly hashTag = computed(() => hashOf(this.status())._tag);
 
+  /** Keeps the hash toast in step with the hash status. */
   constructor() {
     effect(() => {
       this.hashTag();

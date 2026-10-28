@@ -4,6 +4,7 @@ import { lucideFile } from '@ng-icons/lucide';
 import { DurationPipe } from '../../../../shared/pipes/duration.pipe';
 import { FileSizePipe } from '../../../../shared/pipes/file-size.pipe';
 
+/** Summary of the file with its destination peer. */
 @Component({
   selector: 'app-transfer-file-summary',
   imports: [NgIcon, FileSizePipe, DurationPipe],
@@ -41,9 +42,14 @@ import { FileSizePipe } from '../../../../shared/pipes/file-size.pipe';
   `
 })
 export class TransferFileSummaryComponent {
+  /** Name of the file. */
   readonly name = input.required<string>();
-  readonly size = input<number | null>(null);
+  /** Size of the file in bytes, or undefined when unknown. */
+  readonly size = input<number | undefined>(undefined);
+  /** Browser of the peer. */
   readonly peerBrowser = input('');
+  /** Operating system of the peer. */
   readonly peerOs = input('');
-  readonly timeTaken = input<number | null>(null);
+  /** Seconds the transfer took, or undefined when unknown. */
+  readonly timeTaken = input<number | undefined>(undefined);
 }

@@ -12,6 +12,7 @@ import { HlmButton } from '@spartan-ng/helm/button';
 import { ApplicationConfigActions } from '../../../store/application-config/application-config.actions';
 import { applicationConfigFeature } from '../../../store/application-config/application-config.reducer';
 
+/** Button that switches between the light and dark themes. */
 @Component({
   selector: 'app-theme-toggle',
   imports: [NgIcon, HlmButton],
@@ -27,13 +28,15 @@ import { applicationConfigFeature } from '../../../store/application-config/appl
       [attr.aria-label]="label()"
       (click)="toggle()"
     >
-      <ng-icon [name]="isDark() ? 'lucideSun' : 'lucideMoon'" size="16px" />
+      <ng-icon [name]="icon()" size="16px" />
     </button>
   `
 })
-export class ThemeToggle {
+export class ThemeToggleComponent {
+  /** Global store. */
   private readonly store = inject(Store);
 
+  /** Theme mode from the store. */
   private readonly mode = toSignal(
     this.store.select(applicationConfigFeature.selectMode),
     {
@@ -41,11 +44,18 @@ export class ThemeToggle {
     }
   );
 
+  /** Whether the dark theme is active. */
   protected readonly isDark = computed(() => this.mode() === 'dark');
+  /** Icon that shows the theme the button switches to. */
+  protected readonly icon = computed(() =>
+    this.isDark() ? 'lucideSun' : 'lucideMoon'
+  );
+  /** Accessible label for the action the button performs. */
   protected readonly label = computed(() =>
     this.isDark() ? 'Switch to light mode' : 'Switch to dark mode'
   );
 
+  /** Switches the theme mode. */
   protected toggle(): void {
     this.store.dispatch(ApplicationConfigActions.toggleMode());
   }

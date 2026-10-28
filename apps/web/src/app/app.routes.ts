@@ -1,6 +1,6 @@
 import type { Routes } from '@angular/router';
-import { ReceiverTransferComponent } from './core/components/transfer/receiver-transfer/receiver-transfer';
-import { SenderTransferComponent } from './core/components/transfer/sender-transfer/sender-transfer';
+import { ReceiverTransferComponent } from './core/components/transfer/receiver-transfer/receiver-transfer.component';
+import { SenderTransferComponent } from './core/components/transfer/sender-transfer/sender-transfer.component';
 import {
   receiveCanActivate,
   receiveCanDeactivate
@@ -20,6 +20,7 @@ import { SendFailedComponent } from './features/send/send-failed/send-failed';
 import { SendIdleComponent } from './features/send/send-idle/send-idle';
 import { SendLayoutComponent } from './features/send/send-layout/send-layout';
 
+/** Application routes for the send, receive and help pages. */
 export const routes: Routes = [
   { path: '', redirectTo: 'send', pathMatch: 'full' },
   {

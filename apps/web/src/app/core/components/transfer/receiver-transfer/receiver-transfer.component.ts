@@ -9,9 +9,9 @@ import { receiveFeature } from '@web/store/receive/receive.reducer';
 import type { ReceiveStatus } from '@web/store/receive/receive-transitions';
 import * as Match from 'effect/Match';
 import { map } from 'rxjs';
-import { PageShellComponent } from '../../page-shell/page-shell';
-import { ProgressTransferComponent } from '../progress-transfer/progress-transfer';
-import { TransferComponent } from '../transfer.abstract';
+import { PageShellComponent } from '../../page-shell/page-shell.component';
+import { ProgressTransferComponent } from '../progress-transfer/progress-transfer.component';
+import { TransferComponent } from '../transfer.component';
 import { TransferMetricsStore } from '../transfer-metrics.store';
 
 /** Statuses that show a transfer in flight. */
@@ -39,7 +39,7 @@ const snapshotOf = (status: ReceiveStatus): TransferSnapshot => {
   return {
     transferred: progress?.received ?? 0,
     total: progress?.total ?? 0,
-    route: progress?.route ?? null,
+    route: progress?.route ?? undefined,
     verified: false,
   };
 };
@@ -47,18 +47,18 @@ const snapshotOf = (status: ReceiveStatus): TransferSnapshot => {
 /**
  * Reads the file a running transfer carries.
  * @param status Current receive status.
- * @returns Metadata of the file, or null when no transfer is running.
+ * @returns Metadata of the file, or undefined when no transfer is running.
  */
-const fileOf = (status: ReceiveStatus): FileMetadata | null =>
-  activeOf(status)?.file ?? null;
+const fileOf = (status: ReceiveStatus): FileMetadata | undefined =>
+  activeOf(status)?.file ?? undefined;
 
 /**
  * Reads the peer a running transfer carries.
  * @param status Current receive status.
- * @returns Identity of the sender, or null when no transfer is running.
+ * @returns Identity of the sender, or undefined when no transfer is running.
  */
-const peerOf = (status: ReceiveStatus): Identity | null =>
-  activeOf(status)?.peerIdentity ?? null;
+const peerOf = (status: ReceiveStatus): Identity | undefined =>
+  activeOf(status)?.peerIdentity ?? undefined;
 
 /**
  * Tells whether a status is checking the arrived file.
@@ -68,15 +68,17 @@ const peerOf = (status: ReceiveStatus): Identity | null =>
 const verifyingOf = (status: ReceiveStatus): boolean =>
   activeOf(status)?._tag === 'Verifying';
 
+/** Transfer screen shown to the receiver. */
 @Component({
   selector: 'app-receiver-transfer',
   imports: [PageShellComponent, ProgressTransferComponent, HlmButton],
   providers: [TransferMetricsStore],
   host: { class: 'block' },
   changeDetection: ChangeDetectionStrategy.OnPush,
-  templateUrl: './receiver-transfer.html',
+  templateUrl: './receiver-transfer.component.html',
 })
 export class ReceiverTransferComponent extends TransferComponent {
+  /** Follows the receive status to build the progress view. */
   constructor() {
     const store = inject(Store);
     const status$ = store.select(receiveFeature.selectStatus);
@@ -88,6 +90,7 @@ export class ReceiverTransferComponent extends TransferComponent {
     );
   }
 
+  /** Stops receiving and leaves the room. */
   protected cancel(): void {
     this.store.dispatch(ReceiveActions.disconnect());
   }

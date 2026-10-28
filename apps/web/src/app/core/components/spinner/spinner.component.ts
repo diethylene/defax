@@ -1,6 +1,7 @@
 import { ChangeDetectionStrategy, Component, input } from '@angular/core';
 import { HlmSpinner } from '@spartan-ng/helm/spinner';
 
+/** Spinner with a heading and a subheading for work in progress. */
 @Component({
   selector: 'app-spinner',
   imports: [HlmSpinner],
@@ -16,6 +17,8 @@ import { HlmSpinner } from '@spartan-ng/helm/spinner';
   `
 })
 export class SpinnerComponent {
+  /** Main line of text. */
   readonly heading = input.required<string>();
+  /** Supporting line of text. */
   readonly subheading = input.required<string>();
 }

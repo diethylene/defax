@@ -12,9 +12,9 @@ import * as Match from 'effect/Match';
 import {
   type FileSummary,
   FingerprintCardComponent
-} from '../../../core/components/fingerprint-card/fingerprint-card';
-import { PageShellComponent } from '../../../core/components/page-shell/page-shell';
-import { SasNumberComponent } from '../../../core/components/sas-number/sas-number';
+} from '../../../core/components/fingerprint-card/fingerprint-card.component';
+import { PageShellComponent } from '../../../core/components/page-shell/page-shell.component';
+import { SasNumberComponent } from '../../../core/components/sas-number/sas-number.component';
 import { SendActions } from '../../../store/send/send.actions';
 import {
   hashDigestOf,
@@ -47,21 +47,19 @@ export class SendApproveComponent {
     )
   );
 
-  protected readonly sas = computed(() => this.confirming()?.sas ?? null);
+  protected readonly sas = computed(() => this.confirming()?.sas);
 
   protected readonly peerIdentity = computed(
-    () => this.confirming()?.peerIdentity ?? null
+    () => this.confirming()?.peerIdentity
   );
 
-  protected readonly metadata = computed(
-    () => this.confirming()?.metadata ?? null
-  );
+  protected readonly metadata = computed(() => this.confirming()?.metadata);
 
   protected readonly digest = computed(() => hashDigestOf(this.status()));
 
-  protected readonly fileSummary = computed<FileSummary | null>(() => {
+  protected readonly fileSummary = computed<FileSummary | undefined>(() => {
     const metadata = this.metadata();
-    return metadata ? { name: metadata.name, size: metadata.size } : null;
+    return metadata ? { name: metadata.name, size: metadata.size } : undefined;
   });
 
   protected cancel(): void {

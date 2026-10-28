@@ -17,8 +17,10 @@ describe('selectSendErrorMessage', () => {
   });
 
   describe('invariants', () => {
-    it('returns null while the send has not failed', () => {
-      expect(selectSendErrorMessage.projector({ _tag: 'Idle' })).toBeNull();
+    it('returns undefined while the send has not failed', () => {
+      expect(
+        selectSendErrorMessage.projector({ _tag: 'Idle' })
+      ).toBeUndefined();
     });
 
     it('has a message for every failure tag', () => {

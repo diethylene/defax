@@ -13,13 +13,15 @@ import { Store } from '@ngrx/store';
 import { map } from 'rxjs';
 import { NavComponent } from '../../../shared/components/nav/nav';
 import type { NavItem } from '../../../shared/components/nav/nav-item';
-import { ThemeToggle } from '../theme-toggle/theme-toggle';
+import { ThemeToggleComponent } from '../theme-toggle/theme-toggle.component';
 
+/** Router selectors shared by the navbar. */
 const { selectUrl } = getRouterSelectors();
 
+/** Top navigation with the primary routes and the theme toggle. */
 @Component({
   selector: 'app-navbar',
-  imports: [RouterLink, NgIcon, NavComponent, ThemeToggle],
+  imports: [RouterLink, NgIcon, NavComponent, ThemeToggleComponent],
   providers: [
     provideIcons({
       lucideArrowLeftRight,
@@ -29,21 +31,25 @@ const { selectUrl } = getRouterSelectors();
     })
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
-  templateUrl: './navbar.html'
+  templateUrl: './navbar.component.html'
 })
-export class Navbar {
+export class NavbarComponent {
+  /** Global store. */
   private readonly store = inject(Store);
 
+  /** URL the router is showing, used to highlight the active item. */
   protected readonly activeRoute = toSignal(
     this.store.select(selectUrl).pipe(map((url) => url ?? '')),
     { initialValue: '' }
   );
 
+  /** Primary navigation items. */
   protected readonly primaryItems: NavItem[] = [
     { label: 'Send', route: '/send', icon: 'lucideUpload' },
     { label: 'Receive', route: '/receive', icon: 'lucideDownload' }
   ];
 
+  /** Secondary navigation items. */
   protected readonly secondaryItems: NavItem[] = [
     {
       label: 'How it works',

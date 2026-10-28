@@ -12,7 +12,7 @@ import * as Match from 'effect/Match';
 import {
   PageShellComponent,
   type PageStep,
-} from '../../../core/components/page-shell/page-shell';
+} from '../../../core/components/page-shell/page-shell.component';
 import { ReceiveCodeFormComponent } from '../receive-code-form/receive-code-form';
 
 @Component({

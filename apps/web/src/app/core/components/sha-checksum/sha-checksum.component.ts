@@ -8,9 +8,13 @@ import { HlmSkeleton } from '@spartan-ng/helm/skeleton';
 import { CopyButtonComponent } from '../../../shared/components/copy-button/copy-button';
 import { chunk } from '../../../shared/utilities/chunk';
 
+/** Digits shown per checksum group. */
 const GROUP_SIZE = 4;
+
+/** Placeholder groups shown while the checksum is unknown. */
 const GROUP_COUNT = 16;
 
+/** Shows a SHA-256 checksum with a copy button and a loading state. */
 @Component({
   selector: 'app-sha-checksum',
   imports: [CopyButtonComponent, HlmSkeleton],
@@ -49,11 +53,14 @@ const GROUP_COUNT = 16;
   `
 })
 export class ShaChecksumComponent {
-  readonly checksum = input.required<string | null>();
+  /** Checksum to show, or none while the file is still hashing. */
+  readonly checksum = input.required<string | undefined>();
 
+  /** Checksum split into readable groups. */
   protected readonly groups = computed(() =>
     chunk(this.checksum() ?? '', GROUP_SIZE)
   );
 
+  /** Placeholder widths shown while the checksum is unknown. */
   protected readonly skeletonGroups = Array.from({ length: GROUP_COUNT });
 }
