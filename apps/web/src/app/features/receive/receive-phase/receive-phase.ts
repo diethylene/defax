@@ -10,6 +10,7 @@ export type ReceivePhase =
   | 'done'
   | 'failed';
 
+/** Route that shows each receive phase. */
 const receivePhaseRoutes: Record<ReceivePhase, string> = {
   idle: '/receive',
   connecting: '/receive',
@@ -20,7 +21,7 @@ const receivePhaseRoutes: Record<ReceivePhase, string> = {
   failed: '/receive/failed',
 };
 
-/** Page that shows each receive status. */
+/** Phase that shows each receive status. */
 const receivePhases: Record<ReceiveStatus['_tag'], ReceivePhase> = {
   Idle: 'idle',
   Connecting: 'connecting',

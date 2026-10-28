@@ -4,11 +4,15 @@ import { ListCardComponent } from '../../core/components/list-card/list-card.com
 import { PageShellComponent } from '../../core/components/page-shell/page-shell.component';
 import { VerificationCardComponent } from '../../core/components/verification-card/verification-card.component';
 
+/** Content of one help list card. */
 interface ListCardData {
+  /** Card heading. */
   title: string;
+  /** Lines listed under the heading. */
   items: string[];
 }
 
+/** Explains how a transfer works and what the server can see. */
 @Component({
   selector: 'app-help',
   imports: [
@@ -19,9 +23,10 @@ interface ListCardData {
   ],
   host: { class: 'page-transition block' },
   changeDetection: ChangeDetectionStrategy.OnPush,
-  templateUrl: './help.html'
+  templateUrl: './help.component.html'
 })
-export class HelpFeature {
+export class HelpComponent {
+  /** Server visibility cards shown at the bottom. */
   protected readonly serverCards: ListCardData[] = [
     {
       title: 'What our server sees',

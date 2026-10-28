@@ -1,3 +1,4 @@
+/** Page a send status shows. */
 export type SendPhase =
   | 'idle'
   | 'awaitingPeer'
@@ -7,6 +8,7 @@ export type SendPhase =
   | 'done'
   | 'failed';
 
+/** Route that shows each send phase. */
 const sendPhaseRoutes: Record<SendPhase, string> = {
   idle: '/send',
   awaitingPeer: '/send/code',
@@ -17,6 +19,11 @@ const sendPhaseRoutes: Record<SendPhase, string> = {
   failed: '/send/failed'
 };
 
+/**
+ * Reads the route that shows a send phase.
+ * @param phase Page to show.
+ * @returns URL of that page.
+ */
 export function routeForPhase(phase: SendPhase): string {
   return sendPhaseRoutes[phase];
 }

@@ -1,6 +1,6 @@
 <app-page-shell
-  heading="Is this the transfer you expect?"
-  subheading="Only accept files from someone you know. Nothing downloads until you say yes."
+  heading="Receiver connected"
+  subheading="They are checking the details before accepting. Nothing has been sent yet."
 >
   <section hlmCard class="w-full">
     <div hlmCardContent class="flex flex-col items-center gap-4 text-center">
@@ -9,13 +9,14 @@
           Verification number
         </h2>
         <p class="text-sm text-muted-foreground">
-          The sender sees the same number. If they read you a different one,
-          decline.
+          The receiver sees the same number. If they read you a different one,
+          cancel.
         </p>
       </div>
 
-      @if (sas(); as value) {
-        <app-sas-number [sas]="value" />
+      @let sasValue = sas();
+      @if (sasValue) {
+        <app-sas-number [sas]="sasValue" />
       }
     </div>
   </section>
@@ -31,28 +32,24 @@
   </section>
 
   <div
-    class="flex w-full flex-col gap-4 sm:flex-row sm:items-center sm:justify-end"
+    class="flex w-full flex-col gap-4 sm:flex-row sm:items-center sm:justify-between"
   >
+    <div class="flex items-center gap-3">
+      <hlm-spinner class="text-xl" />
+      <p class="text-sm font-medium text-foreground">
+        Waiting for the receiver to accept...
+      </p>
+    </div>
+
     <button
       type="button"
       hlmBtn
       variant="outline"
       size="lg"
       class="w-full sm:w-auto"
-      (click)="decline()"
+      (click)="cancel()"
     >
-      No, decline
-    </button>
-
-    <button
-      type="button"
-      hlmBtn
-      size="lg"
-      class="w-full sm:w-auto"
-      [disabled]="!digest()"
-      (click)="accept()"
-    >
-      Yes, receive file
+      Cancel
     </button>
   </div>
 </app-page-shell>
