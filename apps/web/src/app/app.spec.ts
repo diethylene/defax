@@ -9,7 +9,7 @@ import {
   persistThemeMode$
 } from './store/application-config/application-config.effects';
 import { applicationConfigFeature } from './store/application-config/application-config.reducer';
-import { sendReducer } from './store/reducers/send.reducer';
+import { sendFeature } from './store/send/send.reducer';
 
 describe('App', () => {
   beforeEach(async () => {
@@ -19,7 +19,7 @@ describe('App', () => {
         provideRouter([]),
         provideStore({
           applicationConfig: applicationConfigFeature.reducer,
-          send: sendReducer,
+          send: sendFeature.reducer,
           router: routerReducer
         }),
         provideEffects({ applyThemeMode$, persistThemeMode$ }),

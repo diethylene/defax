@@ -30,9 +30,9 @@ import {
 } from './store/application-config/application-config.effects';
 import { applicationConfigFeature } from './store/application-config/application-config.reducer';
 import { ReceiveEffects } from './store/effects/receive.effects';
-import { SendEffects } from './store/effects/send.effects';
 import { receiveReducer } from './store/reducers/receive.reducer';
-import { sendReducer } from './store/reducers/send.reducer';
+import { sendEffects } from './store/send/send.effects';
+import { sendFeature } from './store/send/send.reducer';
 
 export const appConfig: ApplicationConfig = {
   providers: [
@@ -40,13 +40,13 @@ export const appConfig: ApplicationConfig = {
     provideAnimationsAsync(),
     provideStore({
       applicationConfig: applicationConfigFeature.reducer,
-      send: sendReducer,
+      send: sendFeature.reducer,
       receive: receiveReducer,
       router: routerReducer
     }),
     provideEffects(
       { applyThemeMode$, persistThemeMode$ },
-      SendEffects,
+      sendEffects,
       ReceiveEffects
     ),
     provideRouter(

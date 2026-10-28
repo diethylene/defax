@@ -4,14 +4,14 @@ import {
   computed,
   inject
 } from '@angular/core';
-import { toSignal } from '@angular/core/rxjs-interop';
 import { Store } from '@ngrx/store';
 import { HlmProgressImports } from '@spartan-ng/helm/progress';
-import { map } from 'rxjs';
+import * as Match from 'effect/Match';
 import {
-  selectSendHashProgress,
-  selectSendMetadata
-} from '../../../store/selectors/send.selectors';
+  hashOf,
+  metadataOf,
+  selectSendStatus
+} from '../../../store/send/send.selectors';
 
 @Component({
   selector: 'app-hash-progress-toast',
@@ -35,18 +35,22 @@ import {
 })
 export class HashProgressToastComponent {
   private readonly store = inject(Store);
+  private readonly status = this.store.selectSignal(selectSendStatus);
 
-  private readonly processed = toSignal(
-    this.store.select(selectSendHashProgress),
-    { initialValue: 0 }
+  private readonly processed = computed(() =>
+    Match.value(hashOf(this.status())).pipe(
+      Match.tag('Hashing', ({ progress }) => progress),
+      Match.orElse(() => 0)
+    )
   );
 
-  private readonly total = toSignal(
-    this.store.select(selectSendMetadata).pipe(map((m) => m?.size ?? 0)),
-    { initialValue: 0 }
+  private readonly total = computed(
+    () => metadataOf(this.status())?.size ?? 0
   );
 
   protected readonly percent = computed(() =>
-    this.total() > 0 ? Math.round((this.processed() / this.total()) * 100) : 0
+    this.total() > 0
+      ? Math.round((this.processed() / this.total()) * 100)
+      : 0
   );
 }
