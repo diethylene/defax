@@ -205,7 +205,9 @@ export class BroadcastChannelTransport extends SignalTransport {
   private acceptJoin(phase: HostWaitingPhase): void {
     this.phase = { _tag: 'host-joined', sid: phase.sid };
     this.messages.next({ type: 'peer-joined' });
-    phase.outgoing.forEach((message) => this.post(message));
+    phase.outgoing.forEach((message) => {
+      this.post(message);
+    });
     this.post({
       type: 'joined',
       sid: Option.getOrThrow(decodeWireSid(encodeSid(phase.sid))),

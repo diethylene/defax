@@ -24,13 +24,13 @@ describe('NavComponent', () => {
    * @param activeRoute Route the nav should treat as current.
    * @returns Rendered host element.
    */
-  function render(activeRoute: string): HTMLElement {
+  const render = (activeRoute: string): HTMLElement => {
     const fixture = TestBed.createComponent(NavComponent);
     fixture.componentRef.setInput('items', items);
     fixture.componentRef.setInput('activeRoute', activeRoute);
     fixture.detectChanges();
     return fixture.nativeElement;
-  }
+  };
 
   it('renders a link per item', () => {
     const element = render('/send');

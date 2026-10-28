@@ -29,7 +29,7 @@ const file: FileMetadata = {
   lastModified: 1700000000000,
 };
 
-function createSignaling(transport: SignalTransport): SignalingService {
+const createSignaling = (transport: SignalTransport): SignalingService => {
   return Injector.create({
     providers: [
       { provide: SignalTransport, useValue: transport },
@@ -37,7 +37,7 @@ function createSignaling(transport: SignalTransport): SignalingService {
       { provide: SignalingService, useClass: SignalingService },
     ],
   }).get(SignalingService);
-}
+};
 
 describe('SignalingService', () => {
   it('establishes a connection and exchanges peer info', async () => {

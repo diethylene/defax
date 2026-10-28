@@ -58,21 +58,21 @@ const EMPTY_DROP: ExtractedDrop = { files: [], directories: [] };
  * @param item Item from the drag data transfer.
  * @returns Extracted file or directory placeholder.
  */
-function classifyDropItem(item: DataTransferItem): ExtractedDrop {
+const classifyDropItem = (item: DataTransferItem): ExtractedDrop => {
   const entry = item.webkitGetAsEntry();
   if (entry?.isDirectory) {
     return { files: [], directories: [new File([], entry.name, { type: '' })] };
   }
   const file = item.getAsFile();
   return file ? { files: [file], directories: [] } : EMPTY_DROP;
-}
+};
 
 /**
  * Extracts files and directories from a data transfer.
  * @param dataTransfer Transfer from the drop event.
  * @returns Files and directories in the transfer.
  */
-function extractDrop(dataTransfer: DataTransfer | null): ExtractedDrop {
+const extractDrop = (dataTransfer: DataTransfer | null): ExtractedDrop => {
   const items = dataTransfer?.items ? Array.from(dataTransfer.items) : [];
   if (items.length === 0) {
     return { files: Array.from(dataTransfer?.files ?? []), directories: [] };
@@ -82,7 +82,7 @@ function extractDrop(dataTransfer: DataTransfer | null): ExtractedDrop {
     files: classified.flatMap((part) => part.files),
     directories: classified.flatMap((part) => part.directories),
   };
-}
+};
 
 /**
  * Applies one drag event to the drag depth.
@@ -90,14 +90,13 @@ function extractDrop(dataTransfer: DataTransfer | null): ExtractedDrop {
  * @param delta Drag event kind.
  * @returns New drag depth.
  */
-function reduceDepth(depth: number, delta: DragDelta): number {
-  return Match.value(delta.kind).pipe(
+const reduceDepth = (depth: number, delta: DragDelta): number =>
+  Match.value(delta.kind).pipe(
     Match.when('enter', () => depth + 1),
     Match.when('leave', () => Math.max(0, depth - 1)),
     Match.when('reset', () => 0),
     Match.exhaustive,
   );
-}
 
 /**
  * Infers the drag state from the dragged data.
@@ -105,7 +104,7 @@ function reduceDepth(depth: number, delta: DragDelta): number {
  * @param accept Normalized accept entries.
  * @returns Whether the drag is valid, invalid, or unknown.
  */
-function dragStateFor(transfer: DataTransfer | null, accept: readonly string[]): DragState {
+const dragStateFor = (transfer: DataTransfer | null, accept: readonly string[]): DragState => {
   const types = transfer ? Array.from(transfer.types) : [];
   if (!types.includes('Files')) return 'invalid';
   if (accept.length === 0) return 'valid';
@@ -116,7 +115,7 @@ function dragStateFor(transfer: DataTransfer | null, accept: readonly string[]):
   if (known.every((type) => matchesMimeType(type, accept))) return 'valid';
   if (known.some((type) => !matchesMimeType(type, accept))) return 'invalid';
   return 'unknown';
-}
+};
 
 /** Drag-and-drop file picker that binds to a form control. */
 @Directive({
@@ -260,15 +259,14 @@ export class DropzoneDirective extends AbstractControlValueAccessor<File[]> impl
    */
   validate(): ValidationErrors | null {
     const error = this.store.error();
-    if (error && error.length > 0) {
-      return {
-        dropzone: error.map((rejection) => ({
-          name: rejection.file.name,
-          reasons: rejection.reasons,
-        })),
-      };
-    }
-    return null;
+    if (error === null) return null;
+    if (error.length === 0) return null;
+    return {
+      dropzone: error.map((rejection) => ({
+        name: rejection.file.name,
+        reasons: rejection.reasons,
+      })),
+    };
   }
 
   /**

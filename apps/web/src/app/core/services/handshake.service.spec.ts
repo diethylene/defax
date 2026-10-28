@@ -3,13 +3,13 @@ import { open, seal } from '../../shared/utilities/aead';
 import { BroadcastChannelTransport } from './broadcast-channel-transport';
 import { type HandshakeResult, HandshakeService } from './handshake.service';
 
-async function runHandshakePair(
+const runHandshakePair = async (
   initiatorPassword: string,
   responderPassword: string,
 ): Promise<{
   initiatorResult: HandshakeResult;
   responderResult: HandshakeResult;
-}> {
+}> => {
   const initiatorTransport = new BroadcastChannelTransport();
   const responderTransport = new BroadcastChannelTransport();
   const initiator = new HandshakeService();
@@ -28,7 +28,7 @@ async function runHandshakePair(
   ]);
 
   return { initiatorResult, responderResult };
-}
+};
 
 describe('HandshakeService', () => {
   it('derives the same sas and room id on both sides', async () => {

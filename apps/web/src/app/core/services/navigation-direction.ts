@@ -66,11 +66,8 @@ const routeStep = (snapshot: ActivatedRouteSnapshot): RouteStep | null => {
  * @param to Step the transition enters.
  * @returns True when both steps share a flow and the target is earlier.
  */
-const isBackward = (from: RouteStep | null, to: RouteStep | null): boolean => {
-  if (!from || !to) return false;
-  if (from.flow !== to.flow) return false;
-  return to.step < from.step;
-};
+const isBackward = (from: RouteStep | null, to: RouteStep | null): boolean =>
+  from !== null && to !== null && from.flow === to.flow && to.step < from.step;
 
 /**
  * Derives the animation direction between two snapshots.

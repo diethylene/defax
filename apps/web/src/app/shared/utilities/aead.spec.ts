@@ -3,9 +3,8 @@ import { open, seal } from './aead';
 const encoder = new TextEncoder();
 const decoder = new TextDecoder();
 
-async function testKey(): Promise<CryptoKey> {
-  return crypto.subtle.generateKey({ name: 'AES-GCM', length: 256 }, true, ['encrypt', 'decrypt']);
-}
+const testKey = async (): Promise<CryptoKey> =>
+  crypto.subtle.generateKey({ name: 'AES-GCM', length: 256 }, true, ['encrypt', 'decrypt']);
 
 describe('aead', () => {
   it('seals and opens a message', async () => {
