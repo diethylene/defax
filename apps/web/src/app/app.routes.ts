@@ -1,25 +1,26 @@
 import type { Routes } from '@angular/router';
-import { ReceiverTransferComponent } from './core/components/transfer/receiver-transfer/receiver-transfer';
-import { SenderTransferComponent } from './core/components/transfer/sender-transfer/sender-transfer';
+import { ReceiverTransferComponent } from './core/components/transfer/receiver-transfer/receiver-transfer.component';
+import { SenderTransferComponent } from './core/components/transfer/sender-transfer/sender-transfer.component';
 import {
   receiveCanActivate,
   receiveCanDeactivate
 } from './core/guards/receive.guard';
 import { sendCanActivate, sendCanDeactivate } from './core/guards/send.guard';
-import { HelpFeature } from './features/help/help';
-import { ReceiveCompleteComponent } from './features/receive/receive-complete/receive-complete';
-import { ReceiveConfirmComponent } from './features/receive/receive-confirm/receive-confirm';
-import { ReceiveFailedComponent } from './features/receive/receive-failed/receive-failed';
-import { ReceiveIdleComponent } from './features/receive/receive-idle/receive-idle';
-import { ReceiveLayoutComponent } from './features/receive/receive-layout/receive-layout';
-import { RelayHelpFeature } from './features/relay-help/relay-help';
-import { SendApproveComponent } from './features/send/send-approve/send-approve';
-import { SendCodeComponent } from './features/send/send-code/send-code';
-import { SendCompleteComponent } from './features/send/send-complete/send-complete';
-import { SendFailedComponent } from './features/send/send-failed/send-failed';
-import { SendIdleComponent } from './features/send/send-idle/send-idle';
-import { SendLayoutComponent } from './features/send/send-layout/send-layout';
+import { HelpComponent } from './features/help/help.component';
+import { ReceiveCompleteComponent } from './features/receive/receive-complete/receive-complete.component';
+import { ReceiveConfirmComponent } from './features/receive/receive-confirm/receive-confirm.component';
+import { ReceiveFailedComponent } from './features/receive/receive-failed/receive-failed.component';
+import { ReceiveIdleComponent } from './features/receive/receive-idle/receive-idle.component';
+import { ReceiveLayoutComponent } from './features/receive/receive-layout/receive-layout.component';
+import { RelayHelpComponent } from './features/relay-help/relay-help.component';
+import { SendApproveComponent } from './features/send/send-approve/send-approve.component';
+import { SendCodeComponent } from './features/send/send-code/send-code.component';
+import { SendCompleteComponent } from './features/send/send-complete/send-complete.component';
+import { SendFailedComponent } from './features/send/send-failed/send-failed.component';
+import { SendIdleComponent } from './features/send/send-idle/send-idle.component';
+import { SendLayoutComponent } from './features/send/send-layout/send-layout.component';
 
+/** Application routes for the send, receive and help pages. */
 export const routes: Routes = [
   { path: '', redirectTo: 'send', pathMatch: 'full' },
   {
@@ -100,6 +101,6 @@ export const routes: Routes = [
       }
     ]
   },
-  { path: 'help', component: HelpFeature },
-  { path: 'relay-help', component: RelayHelpFeature }
+  { path: 'help', component: HelpComponent },
+  { path: 'relay-help', component: RelayHelpComponent }
 ];

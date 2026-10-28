@@ -31,7 +31,7 @@ import {
 import {
   routeForPhase,
   type SendPhase
-} from '../../features/send/send-phase/send-phase';
+} from '../../features/send/send-phase/send-phase.model';
 import { IdentityService } from '../../shared/services/identity.service';
 import type { FileHashEvent } from '../../shared/utilities/hash-protocol';
 import { SendActions } from './send.actions';

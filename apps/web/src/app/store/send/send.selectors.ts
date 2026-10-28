@@ -2,7 +2,7 @@ import type { FileMetadata } from '@contract/signal/file-metadata.model';
 import type { Identity } from '@contract/signal/identity.model';
 import { createSelector } from '@ngrx/store';
 import * as Match from 'effect/Match';
-import type { SendPhase } from '../../features/send/send-phase/send-phase';
+import type { SendPhase } from '../../features/send/send-phase/send-phase.model';
 import { sendFeature } from './send.reducer';
 import type { HashStatus, SendErrorTag, SendStatus } from './send-transitions';
 
@@ -34,13 +34,13 @@ export const sendErrorMessages = {
   'verification-failed': 'receiver verification failed'
 } satisfies Record<SendErrorTag, string>;
 
-/** Message for the current send failure, or null when there is none. */
+/** Message for the current send failure, or undefined when there is none. */
 export const selectSendErrorMessage = createSelector(
   selectSendStatus,
-  (status) =>
+  (status): string | undefined =>
     Match.value(status).pipe(
       Match.tag('Failed', ({ error }) => sendErrorMessages[error]),
-      Match.orElse(() => null)
+      Match.orElse(() => undefined)
     )
 );
 
@@ -65,20 +65,20 @@ export const hashOf = (status: SendStatus): HashStatus =>
 /**
  * Digest carried by the current status.
  * @param status Current send status.
- * @returns The digest, or null until the hash completes.
+ * @returns The digest, or undefined until the hash completes.
  */
-export const hashDigestOf = (status: SendStatus): string | null =>
+export const hashDigestOf = (status: SendStatus): string | undefined =>
   Match.value(hashOf(status)).pipe(
     Match.tag('Complete', ({ digest }) => digest),
-    Match.orElse(() => null)
+    Match.orElse(() => undefined)
   );
 
 /**
  * File metadata carried by the current status.
  * @param status Current send status.
- * @returns The metadata, or null before a file is chosen.
+ * @returns The metadata, or undefined before a file is chosen.
  */
-export const metadataOf = (status: SendStatus): FileMetadata | null =>
+export const metadataOf = (status: SendStatus): FileMetadata | undefined =>
   Match.value(status).pipe(
     Match.tag(
       'AwaitingPeer',
@@ -88,15 +88,15 @@ export const metadataOf = (status: SendStatus): FileMetadata | null =>
       'Done',
       ({ metadata }) => metadata
     ),
-    Match.orElse(() => null)
+    Match.orElse(() => undefined)
   );
 
 /**
  * Peer details carried by the current status.
  * @param status Current send status.
- * @returns The peer identity, or null before the handshake completes.
+ * @returns The peer identity, or undefined before the handshake completes.
  */
-export const peerIdentityOf = (status: SendStatus): Identity | null =>
+export const peerIdentityOf = (status: SendStatus): Identity | undefined =>
   Match.value(status).pipe(
     Match.tag(
       'SasConfirm',
@@ -105,17 +105,17 @@ export const peerIdentityOf = (status: SendStatus): Identity | null =>
       'Done',
       ({ peerIdentity }) => peerIdentity
     ),
-    Match.orElse(() => null)
+    Match.orElse(() => undefined)
   );
 
 /**
  * Bytes moved by the current transfer.
  * @param status Current send status.
- * @returns The sent and total bytes, or null before the transfer starts.
+ * @returns The sent and total bytes, or undefined before the transfer starts.
  */
 export const transferProgressOf = (
   status: SendStatus
-): { readonly sent: number; readonly total: number } | null =>
+): { readonly sent: number; readonly total: number } | undefined =>
   Match.value(status).pipe(
     Match.tag(
       'Transferring',
@@ -123,7 +123,7 @@ export const transferProgressOf = (
       'Done',
       ({ sent, total }) => ({ sent, total })
     ),
-    Match.orElse(() => null)
+    Match.orElse(() => undefined)
   );
 
 /**
