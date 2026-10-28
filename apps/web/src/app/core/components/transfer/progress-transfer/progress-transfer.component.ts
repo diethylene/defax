@@ -8,7 +8,7 @@ import { HlmBadge } from '@spartan-ng/helm/badge';
 import { HlmCard, HlmCardContent } from '@spartan-ng/helm/card';
 import { HlmProgressImports } from '@spartan-ng/helm/progress';
 import * as Match from 'effect/Match';
-import { StatusLightComponent } from '../../../../shared/components/status-light/status-light';
+import { StatusLightComponent } from '../../../../shared/components/status-light/status-light.component';
 import { DurationPipe } from '../../../../shared/pipes/duration.pipe';
 import { FileSizePipe } from '../../../../shared/pipes/file-size.pipe';
 import type {

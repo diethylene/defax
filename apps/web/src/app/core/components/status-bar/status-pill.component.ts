@@ -5,7 +5,7 @@ import {
   input
 } from '@angular/core';
 import { HlmBadge } from '@spartan-ng/helm/badge';
-import { StatusLightComponent } from '../../../shared/components/status-light/status-light';
+import { StatusLightComponent } from '../../../shared/components/status-light/status-light.component';
 import { type StatusBarStatus, statusStates } from './status-state.model';
 
 /** Badge that shows the connection status with a coloured light. */

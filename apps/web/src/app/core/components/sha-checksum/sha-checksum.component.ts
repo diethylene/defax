@@ -5,7 +5,7 @@ import {
   input
 } from '@angular/core';
 import { HlmSkeleton } from '@spartan-ng/helm/skeleton';
-import { CopyButtonComponent } from '../../../shared/components/copy-button/copy-button';
+import { CopyButtonComponent } from '../../../shared/components/copy-button/copy-button.component';
 import { chunk } from '../../../shared/utilities/chunk';
 
 /** Digits shown per checksum group. */
