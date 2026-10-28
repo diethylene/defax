@@ -2,9 +2,10 @@ import { TestBed } from '@angular/core/testing';
 import { provideRouter } from '@angular/router';
 import { provideIcons } from '@ng-icons/core';
 import { lucideDownload, lucideUpload } from '@ng-icons/lucide';
-import { NavComponent } from './nav';
-import type { NavItem } from './nav-item';
+import type { NavItem } from './nav-item.model';
+import { NavComponent } from './nav.component';
 
+/** Links shared by the nav tests. */
 const items: NavItem[] = [
   { label: 'Send', route: '/send', icon: 'lucideUpload' },
   { label: 'Receive', route: '/receive', icon: 'lucideDownload' }
@@ -21,12 +22,17 @@ describe('NavComponent', () => {
     }).compileComponents();
   });
 
+  /**
+   * Renders the nav for one active route.
+   * @param activeRoute Route the nav should treat as current.
+   * @returns Rendered host element.
+   */
   function render(activeRoute: string): HTMLElement {
     const fixture = TestBed.createComponent(NavComponent);
     fixture.componentRef.setInput('items', items);
     fixture.componentRef.setInput('activeRoute', activeRoute);
     fixture.detectChanges();
-    return fixture.nativeElement as HTMLElement;
+    return fixture.nativeElement;
   }
 
   it('renders a link per item', () => {

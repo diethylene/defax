@@ -12,9 +12,11 @@ import { lucideCheck, lucideCopy } from '@ng-icons/lucide';
 import { HlmButton } from '@spartan-ng/helm/button';
 import { CopyDirective } from '../../directives/copy.directive';
 
+/** Classes applied to the button while the copied confirmation shows. */
 const COPIED_CLASSES =
   'bg-success text-success-foreground hover:bg-success hover:text-success-foreground dark:hover:bg-success dark:hover:text-success-foreground';
 
+/** Copy-to-clipboard button with a brief success state. */
 @Component({
   selector: 'app-copy-button',
   imports: [NgIcon, HlmButton],
@@ -53,23 +55,34 @@ const COPIED_CLASSES =
   `
 })
 export class CopyButtonComponent {
+  /** Host directive that performs the copy and exposes the copied state. */
   private readonly copyDirective = inject(CopyDirective, { host: true });
+  /** Button element whose success classes are swapped. */
   private readonly button = viewChild(HlmButton);
 
+  /** Button variant. */
   readonly variant = input<'default' | 'ghost'>('default');
+  /** Visible label; an empty label renders an icon-only button. */
   readonly label = input('Copy code');
+  /** Accessible label used when the button is icon-only. */
   readonly ariaLabel = input('Copy');
+  /** Whether the button is disabled. */
   readonly disabled = input(false);
 
+  /** Whether the last copy succeeded within the reset window. */
   protected readonly copied = this.copyDirective.copied;
+  /** Whether no visible label is rendered. */
   protected readonly iconOnly = computed(() => this.label() === '');
+  /** Button size chosen from the label state. */
   protected readonly size = computed(() =>
     this.iconOnly() ? 'icon' : 'default'
   );
+  /** Accessible label, present only for the icon-only button. */
   protected readonly ariaLabelValue = computed(() =>
     this.iconOnly() ? this.ariaLabel() : null
   );
 
+  /** Keeps the button classes in sync with the copied state. */
   constructor() {
     effect(() => {
       const classes = this.copyDirective.copied() ? COPIED_CLASSES : '';
