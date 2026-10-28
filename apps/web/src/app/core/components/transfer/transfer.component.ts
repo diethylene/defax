@@ -9,8 +9,10 @@ import type { TransferSnapshot } from '../../interfaces/transfer.interface';
 import type { ProgressTransfer } from './progress-transfer/progress-transfer.component';
 import { TransferMetricsStore } from './transfer-metrics.store';
 
+/** Interval at which the transferred byte count is sampled for the speed. */
 const SAMPLE_INTERVAL_MS = 1000;
 
+/** Snapshot shown before a transfer reports its first byte. */
 const EMPTY_SNAPSHOT: TransferSnapshot = {
   transferred: 0,
   total: 0,
@@ -18,17 +20,33 @@ const EMPTY_SNAPSHOT: TransferSnapshot = {
   verified: false
 };
 
+/** Base for the transfer screens; turns transfer streams into progress values. */
 export abstract class TransferComponent {
+  /** Global store, used by subclasses to cancel the transfer. */
   protected readonly store = inject(Store);
+  /** Speed sampler shared by the progress view. */
   private readonly metrics = inject(TransferMetricsStore);
 
+  /** Latest transfer snapshot. */
   private readonly liveTransfer: Signal<TransferSnapshot>;
+  /** Snapshot sampled at a steady interval for the speed and time left. */
   private readonly sampledTransfer: Signal<TransferSnapshot>;
+  /** File being moved, or undefined before metadata arrives. */
   private readonly file: Signal<FileMetadata | undefined>;
+  /** Peer receiving or sending the file, or undefined before the handshake. */
   private readonly peer: Signal<Identity | undefined>;
+  /** Whether the arrived file is being verified. */
   private readonly verifying: Signal<boolean>;
+  /** Values the progress view shows. */
   protected readonly progress: Signal<ProgressTransfer>;
 
+  /**
+   * Wires the transfer streams into the progress view.
+   * @param transfer$ Transfer snapshots from the store.
+   * @param file$ File being moved, or undefined when none is known.
+   * @param peer$ Peer identity, or undefined when none is known.
+   * @param verifying$ Whether the file is being verified.
+   */
   constructor(
     transfer$: Observable<TransferSnapshot>,
     file$: Observable<FileMetadata | undefined>,
@@ -82,5 +100,6 @@ export abstract class TransferComponent {
     });
   }
 
+  /** Cancels the transfer. */
   protected abstract cancel(): void;
 }

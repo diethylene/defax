@@ -1,6 +1,7 @@
 import { ChangeDetectionStrategy, Component, input } from '@angular/core';
 import { HlmCard, HlmCardTitle } from '@spartan-ng/helm/card';
 
+/** Card listing short labelled points. */
 @Component({
   selector: 'app-list-card',
   imports: [HlmCard, HlmCardTitle],
@@ -18,6 +19,8 @@ import { HlmCard, HlmCardTitle } from '@spartan-ng/helm/card';
   `
 })
 export class ListCardComponent {
+  /** Card title. */
   readonly title = input.required<string>();
+  /** Points shown in the list. */
   readonly items = input.required<string[]>();
 }

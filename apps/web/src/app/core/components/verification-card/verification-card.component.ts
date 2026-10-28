@@ -8,6 +8,7 @@ import {
   HlmCardTitle
 } from '@spartan-ng/helm/card';
 
+/** Card that explains how transfers are verified. */
 @Component({
   selector: 'app-verification-card',
   imports: [RouterLink, NgIcon, HlmCard, HlmCardTitle, HlmCardDescription],
@@ -35,8 +36,12 @@ import {
   `
 })
 export class VerificationCardComponent {
+  /** Card title. */
   readonly title = input.required<string>();
+  /** Card body. */
   readonly description = input.required<string>();
+  /** Text of the link at the bottom. */
   readonly linkText = input.required<string>();
+  /** Route the link opens. */
   readonly linkRoute = input.required<string>();
 }

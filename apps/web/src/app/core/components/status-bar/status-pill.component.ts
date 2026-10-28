@@ -8,6 +8,7 @@ import { HlmBadge } from '@spartan-ng/helm/badge';
 import { StatusLightComponent } from '../../../shared/components/status-light/status-light';
 import { type StatusBarStatus, statusStates } from './status-state.model';
 
+/** Badge that shows the connection status with a coloured light. */
 @Component({
   selector: 'app-status-pill',
   imports: [StatusLightComponent, HlmBadge],
@@ -22,7 +23,9 @@ import { type StatusBarStatus, statusStates } from './status-state.model';
   `
 })
 export class StatusPillComponent {
+  /** Connection status to present. */
   readonly status = input.required<StatusBarStatus>();
 
+  /** Copy for the current status. */
   protected readonly state = computed(() => statusStates[this.status()]);
 }

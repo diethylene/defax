@@ -68,6 +68,7 @@ const peerOf = (status: ReceiveStatus): Identity | undefined =>
 const verifyingOf = (status: ReceiveStatus): boolean =>
   activeOf(status)?._tag === 'Verifying';
 
+/** Transfer screen shown to the receiver. */
 @Component({
   selector: 'app-receiver-transfer',
   imports: [PageShellComponent, ProgressTransferComponent, HlmButton],
@@ -77,6 +78,7 @@ const verifyingOf = (status: ReceiveStatus): boolean =>
   templateUrl: './receiver-transfer.component.html',
 })
 export class ReceiverTransferComponent extends TransferComponent {
+  /** Follows the receive status to build the progress view. */
   constructor() {
     const store = inject(Store);
     const status$ = store.select(receiveFeature.selectStatus);
@@ -88,6 +90,7 @@ export class ReceiverTransferComponent extends TransferComponent {
     );
   }
 
+  /** Stops receiving and leaves the room. */
   protected cancel(): void {
     this.store.dispatch(ReceiveActions.disconnect());
   }

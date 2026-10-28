@@ -1,13 +1,19 @@
 import type { StatusLightVariant } from '../../../shared/components/status-light/status-light';
 
+/** Connection statuses the bar can show. */
 export type StatusBarStatus = Exclude<StatusLightVariant, 'info'>;
 
+/** Copy shown for one connection status. */
 export interface StatusState {
+  /** Label on wide screens. */
   label: string;
+  /** Shorter label on narrow screens. */
   labelMobile: string;
+  /** One-line explanation. */
   description: string;
 }
 
+/** Copy for every connection status. */
 export const statusStates: Record<StatusBarStatus, StatusState> = {
   neutral: {
     label: 'Checking your network',

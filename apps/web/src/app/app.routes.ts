@@ -20,6 +20,7 @@ import { SendFailedComponent } from './features/send/send-failed/send-failed';
 import { SendIdleComponent } from './features/send/send-idle/send-idle';
 import { SendLayoutComponent } from './features/send/send-layout/send-layout';
 
+/** Application routes for the send, receive and help pages. */
 export const routes: Routes = [
   { path: '', redirectTo: 'send', pathMatch: 'full' },
   {

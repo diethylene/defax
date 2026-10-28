@@ -17,6 +17,7 @@ import { ProgressTransferComponent } from '../progress-transfer/progress-transfe
 import { TransferComponent } from '../transfer.component';
 import { TransferMetricsStore } from '../transfer-metrics.store';
 
+/** Snapshot shown before the send reports progress. */
 const EMPTY_TRANSFER: TransferSnapshot = {
   transferred: 0,
   total: 0,
@@ -40,6 +41,7 @@ const snapshotOf = (status: SendStatus): TransferSnapshot => {
   };
 };
 
+/** Transfer screen shown to the sender. */
 @Component({
   selector: 'app-sender-transfer',
   imports: [PageShellComponent, ProgressTransferComponent, HlmButton],
@@ -49,6 +51,7 @@ const snapshotOf = (status: SendStatus): TransferSnapshot => {
   templateUrl: './sender-transfer.component.html'
 })
 export class SenderTransferComponent extends TransferComponent {
+  /** Follows the send status to build the progress view. */
   constructor() {
     const store = inject(Store);
     const status$ = store.select(selectSendStatus);
@@ -60,6 +63,7 @@ export class SenderTransferComponent extends TransferComponent {
     );
   }
 
+  /** Stops sending and leaves the room. */
   protected cancel(): void {
     this.store.dispatch(SendActions.disconnect());
   }
