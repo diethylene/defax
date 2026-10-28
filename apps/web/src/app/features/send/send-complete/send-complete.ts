@@ -57,7 +57,7 @@ export class SendCompleteComponent {
   );
   protected readonly timeTaken = computed(() => {
     const durationMs = this.done()?.durationMs;
-    return durationMs === undefined ? null : durationMs / 1000;
+    return durationMs === undefined ? undefined : durationMs / 1000;
   });
 
   protected onRestart(): void {

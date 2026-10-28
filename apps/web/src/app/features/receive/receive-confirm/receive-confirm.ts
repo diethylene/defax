@@ -43,19 +43,19 @@ export class ReceiveConfirmComponent {
     ),
   );
 
-  protected readonly sas = computed(() => this.confirming()?.sas ?? null);
+  protected readonly sas = computed(() => this.confirming()?.sas);
 
   protected readonly peerIdentity = computed(
-    () => this.confirming()?.peerIdentity ?? null,
+    () => this.confirming()?.peerIdentity,
   );
 
-  protected readonly file = computed(() => this.confirming()?.file ?? null);
+  protected readonly file = computed(() => this.confirming()?.file);
 
-  protected readonly digest = computed(() => this.confirming()?.digest ?? null);
+  protected readonly digest = computed(() => this.confirming()?.digest);
 
-  protected readonly fileSummary = computed<FileSummary | null>(() => {
+  protected readonly fileSummary = computed<FileSummary | undefined>(() => {
     const file = this.file();
-    return file ? { name: file.name, size: file.size } : null;
+    return file ? { name: file.name, size: file.size } : undefined;
   });
 
   protected decline(): void {

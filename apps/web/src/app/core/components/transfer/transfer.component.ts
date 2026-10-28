@@ -14,7 +14,7 @@ const SAMPLE_INTERVAL_MS = 1000;
 const EMPTY_SNAPSHOT: TransferSnapshot = {
   transferred: 0,
   total: 0,
-  route: null,
+  route: undefined,
   verified: false
 };
 
@@ -24,15 +24,15 @@ export abstract class TransferComponent {
 
   private readonly liveTransfer: Signal<TransferSnapshot>;
   private readonly sampledTransfer: Signal<TransferSnapshot>;
-  private readonly file: Signal<FileMetadata | null>;
-  private readonly peer: Signal<Identity | null>;
+  private readonly file: Signal<FileMetadata | undefined>;
+  private readonly peer: Signal<Identity | undefined>;
   private readonly verifying: Signal<boolean>;
   protected readonly progress: Signal<ProgressTransfer>;
 
   constructor(
     transfer$: Observable<TransferSnapshot>,
-    file$: Observable<FileMetadata | null>,
-    peer$: Observable<Identity | null>,
+    file$: Observable<FileMetadata | undefined>,
+    peer$: Observable<Identity | undefined>,
     verifying$: Observable<boolean>
   ) {
     this.liveTransfer = toSignal(transfer$, { initialValue: EMPTY_SNAPSHOT });
@@ -45,8 +45,8 @@ export abstract class TransferComponent {
       ),
       { initialValue: EMPTY_SNAPSHOT }
     );
-    this.file = toSignal(file$, { initialValue: null });
-    this.peer = toSignal(peer$, { initialValue: null });
+    this.file = toSignal(file$, { initialValue: undefined });
+    this.peer = toSignal(peer$, { initialValue: undefined });
     this.verifying = toSignal(verifying$, { initialValue: false });
 
     effect(() => this.metrics.sample(this.sampledTransfer().transferred));
@@ -65,7 +65,7 @@ export abstract class TransferComponent {
         )
       );
       const remaining = sampled.total - sampled.transferred;
-      const timeLeft = speed > 0 ? remaining / speed : null;
+      const timeLeft = speed > 0 ? remaining / speed : undefined;
 
       return {
         fileName: file?.name ?? '',

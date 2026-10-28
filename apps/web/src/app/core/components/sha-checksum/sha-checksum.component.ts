@@ -49,7 +49,7 @@ const GROUP_COUNT = 16;
   `
 })
 export class ShaChecksumComponent {
-  readonly checksum = input.required<string | null>();
+  readonly checksum = input.required<string | undefined>();
 
   protected readonly groups = computed(() =>
     chunk(this.checksum() ?? '', GROUP_SIZE)

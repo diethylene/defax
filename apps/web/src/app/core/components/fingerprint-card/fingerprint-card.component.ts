@@ -69,9 +69,9 @@ const SKELETON_GROUPS = 16;
   `
 })
 export class FingerprintCardComponent {
-  readonly identity = input.required<Identity | null>();
-  readonly file = input.required<FileSummary | null>();
-  readonly checksum = input<string | null>(null);
+  readonly identity = input.required<Identity | undefined>();
+  readonly file = input.required<FileSummary | undefined>();
+  readonly checksum = input<string | undefined>(undefined);
 
   protected readonly rows = computed(() => {
     const identity = this.identity();

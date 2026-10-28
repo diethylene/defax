@@ -20,7 +20,7 @@ import { TransferMetricsStore } from '../transfer-metrics.store';
 const EMPTY_TRANSFER: TransferSnapshot = {
   transferred: 0,
   total: 0,
-  route: null,
+  route: undefined,
   verified: false
 };
 

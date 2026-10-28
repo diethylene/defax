@@ -42,8 +42,8 @@ import { FileSizePipe } from '../../../../shared/pipes/file-size.pipe';
 })
 export class TransferFileSummaryComponent {
   readonly name = input.required<string>();
-  readonly size = input<number | null>(null);
+  readonly size = input<number | undefined>(undefined);
   readonly peerBrowser = input('');
   readonly peerOs = input('');
-  readonly timeTaken = input<number | null>(null);
+  readonly timeTaken = input<number | undefined>(undefined);
 }

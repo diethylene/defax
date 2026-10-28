@@ -39,7 +39,7 @@ export class ReceiveCompleteComponent {
     ),
   );
 
-  protected readonly digest = computed(() => this.done()?.digest ?? null);
+  protected readonly digest = computed(() => this.done()?.digest);
 
   protected readonly fileName = computed(() => this.done()?.file.name ?? '');
   protected readonly fileSize = computed(() => this.done()?.file.size ?? 0);
@@ -49,7 +49,7 @@ export class ReceiveCompleteComponent {
   protected readonly peerOs = computed(() => this.done()?.peerIdentity.os ?? '');
   protected readonly timeTaken = computed(() => {
     const done = this.done();
-    return done === undefined ? null : done.elapsedMs / 1000;
+    return done === undefined ? undefined : done.elapsedMs / 1000;
   });
 
   protected onRestart(): void {

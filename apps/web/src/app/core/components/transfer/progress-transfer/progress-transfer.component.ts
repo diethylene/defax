@@ -25,7 +25,7 @@ export interface ProgressTransfer {
   sent: number;
   total: number;
   speed: number;
-  timeLeft: number | null;
+  timeLeft: number | undefined;
   route: TransferRoute;
   verifying: boolean;
 }

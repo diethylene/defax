@@ -54,8 +54,8 @@ export class TransferCompleteComponent {
   readonly fileSize = input.required<number>();
   readonly peerBrowser = input.required<string>();
   readonly peerOs = input.required<string>();
-  readonly timeTaken = input<number | null>(null);
-  readonly checksum = input<string | null>(null);
+  readonly timeTaken = input<number | undefined>(undefined);
+  readonly checksum = input<string | undefined>(undefined);
   readonly restart = output<void>();
 
   protected readonly copy = computed(() => copyFor(this.mode()));
