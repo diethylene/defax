@@ -10,13 +10,28 @@ import { lucideCheck } from '@ng-icons/lucide';
 import { HlmButton } from '@spartan-ng/helm/button';
 import { HlmCard, HlmCardContent } from '@spartan-ng/helm/card';
 import { HlmSeparator } from '@spartan-ng/helm/separator';
-import { match } from 'ts-pattern';
+import * as Match from 'effect/Match';
 import { chunk } from '../../../../shared/utilities/chunk';
 import type { TransferMode } from '../../../interfaces/transfer.interface';
 import { PageShellComponent } from '../../page-shell/page-shell.component';
 import { TransferFileSummaryComponent } from '../transfer-file-summary/transfer-file-summary.component';
 
 const CHECKSUM_GROUP_SIZE = 4;
+
+/** Heading, subheading and action label shown per transfer direction. */
+const copyFor = Match.type<TransferMode>().pipe(
+  Match.when('send', () => ({
+    heading: 'Delivered',
+    subheading: 'The receiver has the file and confirmed it arrived intact.',
+    actionLabel: 'Send another file'
+  })),
+  Match.when('receive', () => ({
+    heading: 'Received',
+    subheading: 'The file is saved and confirmed intact.',
+    actionLabel: 'Receive another file'
+  })),
+  Match.exhaustive
+);
 
 @Component({
   selector: 'app-transfer-complete',
@@ -43,29 +58,7 @@ export class TransferCompleteComponent {
   readonly checksum = input<string | null>(null);
   readonly restart = output<void>();
 
-  protected readonly heading = computed(() =>
-    match(this.mode())
-      .with('send', () => 'Delivered')
-      .with('receive', () => 'Received')
-      .exhaustive()
-  );
-
-  protected readonly subheading = computed(() =>
-    match(this.mode())
-      .with(
-        'send',
-        () => 'The receiver has the file and confirmed it arrived intact.'
-      )
-      .with('receive', () => 'The file is saved and confirmed intact.')
-      .exhaustive()
-  );
-
-  protected readonly actionLabel = computed(() =>
-    match(this.mode())
-      .with('send', () => 'Send another file')
-      .with('receive', () => 'Receive another file')
-      .exhaustive()
-  );
+  protected readonly copy = computed(() => copyFor(this.mode()));
 
   protected readonly checksumGroups = computed(() =>
     chunk(this.checksum() ?? '', CHECKSUM_GROUP_SIZE)

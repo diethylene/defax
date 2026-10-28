@@ -1,4 +1,4 @@
-<app-page-shell [heading]="heading()" [subheading]="subheading()">
+<app-page-shell [heading]="copy().heading" [subheading]="copy().subheading">
   <section hlmCard class="w-full">
     <div hlmCardContent class="flex flex-col gap-6">
       <app-transfer-file-summary
@@ -37,6 +37,6 @@
     class="w-full sm:w-auto"
     (click)="restart.emit()"
   >
-    {{ actionLabel() }}
+    {{ copy().actionLabel }}
   </button>
 </app-page-shell>

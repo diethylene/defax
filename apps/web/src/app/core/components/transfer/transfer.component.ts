@@ -2,7 +2,7 @@ import { computed, effect, inject, type Signal } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { Store } from '@ngrx/store';
 import { type Observable, throttleTime } from 'rxjs';
-import { match } from 'ts-pattern';
+import * as Match from 'effect/Match';
 import type { FileMetadata } from '@contract/signal/file-metadata.model';
 import type { Identity } from '@contract/signal/identity.model';
 import type { TransferSnapshot } from '../../interfaces/transfer.interface';
@@ -57,12 +57,13 @@ export abstract class TransferComponent {
       const file = this.file();
       const peer = this.peer();
       const speed = this.metrics.speed();
-      const percent = match(live)
-        .with({ verified: true }, () => 100)
-        .with({ total: 0 }, () => 0)
-        .otherwise(({ total, transferred }) =>
+      const percent = Match.value(live).pipe(
+        Match.when({ verified: true }, () => 100),
+        Match.when({ total: 0 }, () => 0),
+        Match.orElse(({ total, transferred }) =>
           Math.min(99, Math.round((transferred / total) * 100))
-        );
+        )
+      );
       const remaining = sampled.total - sampled.transferred;
       const timeLeft = speed > 0 ? remaining / speed : null;
 

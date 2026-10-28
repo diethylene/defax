@@ -7,7 +7,7 @@ import {
 import { HlmBadge } from '@spartan-ng/helm/badge';
 import { HlmCard, HlmCardContent } from '@spartan-ng/helm/card';
 import { HlmProgressImports } from '@spartan-ng/helm/progress';
-import { match } from 'ts-pattern';
+import * as Match from 'effect/Match';
 import { StatusLightComponent } from '../../../../shared/components/status-light/status-light';
 import { DurationPipe } from '../../../../shared/pipes/duration.pipe';
 import { FileSizePipe } from '../../../../shared/pipes/file-size.pipe';
@@ -51,24 +51,28 @@ export class ProgressTransferComponent {
   readonly progress = input.required<ProgressTransfer>();
 
   protected readonly sentLabel = computed(() =>
-    match(this.mode())
-      .with('send', () => 'Sent')
-      .with('receive', () => 'Received')
-      .exhaustive()
+    Match.value(this.mode()).pipe(
+      Match.when('send', () => 'Sent'),
+      Match.when('receive', () => 'Received'),
+      Match.exhaustive
+    )
   );
 
-  protected readonly statusLabel = computed(() => {
-    if (this.progress().verifying) return 'Verifying...';
-    return match(this.mode())
-      .with('send', () => 'Transmitting...')
-      .with('receive', () => 'Receiving...')
-      .exhaustive();
-  });
+  protected readonly statusLabel = computed(() =>
+    this.progress().verifying
+      ? 'Verifying...'
+      : Match.value(this.mode()).pipe(
+          Match.when('send', () => 'Transmitting...'),
+          Match.when('receive', () => 'Receiving...'),
+          Match.exhaustive
+        )
+  );
 
   protected readonly route = computed(() =>
-    match(this.progress().route)
-      .with('direct', () => ({ variant: 'positive', label: 'Direct' }) as const)
-      .with('relay', () => ({ variant: 'warning', label: 'Relay' }) as const)
-      .exhaustive()
+    Match.value(this.progress().route).pipe(
+      Match.when('direct', () => ({ variant: 'positive', label: 'Direct' }) as const),
+      Match.when('relay', () => ({ variant: 'warning', label: 'Relay' }) as const),
+      Match.exhaustive
+    )
   );
 }
