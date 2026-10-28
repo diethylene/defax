@@ -9,6 +9,6 @@ import { StatusBarComponent } from './core/components/status-bar/status-bar.comp
   imports: [RouterOutlet, NavbarComponent, StatusBarComponent, HashToasterComponent],
   selector: 'app-root',
   styleUrl: './app.css',
-  templateUrl: './app.html'
+  templateUrl: './app.html',
 })
 export class App {}

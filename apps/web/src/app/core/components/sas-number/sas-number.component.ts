@@ -1,9 +1,4 @@
-import {
-  ChangeDetectionStrategy,
-  Component,
-  computed,
-  input
-} from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, input } from '@angular/core';
 
 /** Shows the short authentication string as two digit groups. */
 @Component({
@@ -35,7 +30,7 @@ import {
         </span>
       }
     </div>
-  `
+  `,
 })
 export class SasNumberComponent {
   /** Short authentication string both peers compare. */
@@ -45,9 +40,6 @@ export class SasNumberComponent {
   protected readonly groups = computed(() => {
     const value = this.sas();
     const midpoint = Math.ceil(value.length / 2);
-    return [
-      value.slice(0, midpoint).split(''),
-      value.slice(midpoint).split('')
-    ];
+    return [value.slice(0, midpoint).split(''), value.slice(midpoint).split('')];
   });
 }

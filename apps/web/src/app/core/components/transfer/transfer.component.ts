@@ -1,10 +1,10 @@
 import { computed, effect, inject, type Signal } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
-import { Store } from '@ngrx/store';
-import { type Observable, throttleTime } from 'rxjs';
-import * as Match from 'effect/Match';
 import type { FileMetadata } from '@contract/signal/file-metadata.model';
 import type { Identity } from '@contract/signal/identity.model';
+import { Store } from '@ngrx/store';
+import * as Match from 'effect/Match';
+import { type Observable, throttleTime } from 'rxjs';
 import type { TransferSnapshot } from '../../interfaces/transfer.interface';
 import type { ProgressTransfer } from './progress-transfer/progress-transfer.component';
 import { TransferMetricsStore } from './transfer-metrics.store';
@@ -17,7 +17,7 @@ const EMPTY_SNAPSHOT: TransferSnapshot = {
   transferred: 0,
   total: 0,
   route: undefined,
-  verified: false
+  verified: false,
 };
 
 /** Base for the transfer screens; turns transfer streams into progress values. */
@@ -51,17 +51,17 @@ export abstract class TransferComponent {
     transfer$: Observable<TransferSnapshot>,
     file$: Observable<FileMetadata | undefined>,
     peer$: Observable<Identity | undefined>,
-    verifying$: Observable<boolean>
+    verifying$: Observable<boolean>,
   ) {
     this.liveTransfer = toSignal(transfer$, { initialValue: EMPTY_SNAPSHOT });
     this.sampledTransfer = toSignal(
       transfer$.pipe(
         throttleTime(SAMPLE_INTERVAL_MS, undefined, {
           leading: true,
-          trailing: true
-        })
+          trailing: true,
+        }),
       ),
-      { initialValue: EMPTY_SNAPSHOT }
+      { initialValue: EMPTY_SNAPSHOT },
     );
     this.file = toSignal(file$, { initialValue: undefined });
     this.peer = toSignal(peer$, { initialValue: undefined });
@@ -79,8 +79,8 @@ export abstract class TransferComponent {
         Match.when({ verified: true }, () => 100),
         Match.when({ total: 0 }, () => 0),
         Match.orElse(({ total, transferred }) =>
-          Math.min(99, Math.round((transferred / total) * 100))
-        )
+          Math.min(99, Math.round((transferred / total) * 100)),
+        ),
       );
       const remaining = sampled.total - sampled.transferred;
       const timeLeft = speed > 0 ? remaining / speed : undefined;
@@ -95,7 +95,7 @@ export abstract class TransferComponent {
         speed,
         timeLeft,
         route: sampled.route ?? 'direct',
-        verifying: this.verifying()
+        verifying: this.verifying(),
       };
     });
   }

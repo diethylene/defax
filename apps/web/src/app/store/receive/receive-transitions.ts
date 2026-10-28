@@ -165,10 +165,13 @@ export const progressed = (status: ReceiveStatus, received: number): ReceiveStat
  */
 export const completed = (status: ReceiveStatus): ReceiveStatus =>
   Match.value(status).pipe(
-    Match.when({ _tag: 'Transferring' }, (active): ReceiveStatus => ({
-      ...active,
-      _tag: 'Verifying',
-    })),
+    Match.when(
+      { _tag: 'Transferring' },
+      (active): ReceiveStatus => ({
+        ...active,
+        _tag: 'Verifying',
+      }),
+    ),
     Match.orElse(() => status),
   );
 
@@ -180,12 +183,15 @@ export const completed = (status: ReceiveStatus): ReceiveStatus =>
  */
 export const verified = (status: ReceiveStatus, elapsedMs: number): ReceiveStatus =>
   Match.value(status).pipe(
-    Match.when({ _tag: 'Verifying' }, (active): ReceiveStatus => ({
-      _tag: 'Done',
-      file: active.file,
-      peerIdentity: active.peerIdentity,
-      digest: active.digest,
-      elapsedMs,
-    })),
+    Match.when(
+      { _tag: 'Verifying' },
+      (active): ReceiveStatus => ({
+        _tag: 'Done',
+        file: active.file,
+        peerIdentity: active.peerIdentity,
+        digest: active.digest,
+        elapsedMs,
+      }),
+    ),
     Match.orElse(() => status),
   );

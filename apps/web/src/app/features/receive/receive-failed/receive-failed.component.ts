@@ -14,7 +14,7 @@ import { selectReceiveErrorMessage } from '@web/store/receive/receive.selectors'
         <p class="mt-2 text-sm text-muted-foreground">{{ message }}</p>
       }
     </div>
-  `
+  `,
 })
 export class ReceiveFailedComponent {
   /** Global store. */

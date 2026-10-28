@@ -1,17 +1,11 @@
 import { computed } from '@angular/core';
-import {
-  patchState,
-  signalStore,
-  withComputed,
-  withMethods,
-  withState
-} from '@ngrx/signals';
+import { patchState, signalStore, withComputed, withMethods, withState } from '@ngrx/signals';
 import type {
   DragState,
   DropzoneInteraction,
   DropzonePhase,
   DropzoneResult,
-  RejectedFile
+  RejectedFile,
 } from './dropzone.model';
 
 /** State held by the dropzone signal store. */
@@ -34,7 +28,7 @@ const initialState: DropzoneStoreState = {
   dragState: null,
   disabled: false,
   files: [],
-  error: null
+  error: null,
 };
 
 /** Component-level state for the dropzone directive and component. */
@@ -42,9 +36,7 @@ export const DropzoneStore = signalStore(
   withState(initialState),
   withComputed((store) => ({
     /** Interaction with the disabled flag applied. */
-    phase: computed<DropzonePhase>(() =>
-      store.disabled() ? 'disabled' : store.interaction()
-    )
+    phase: computed<DropzonePhase>(() => (store.disabled() ? 'disabled' : store.interaction())),
   })),
   withMethods((store) => ({
     /**
@@ -82,7 +74,7 @@ export const DropzoneStore = signalStore(
     applyResult(result: DropzoneResult): void {
       patchState(store, {
         files: result.accepted,
-        error: result.rejected.length > 0 ? result.rejected : null
+        error: result.rejected.length > 0 ? result.rejected : null,
       });
     },
     /** Clears the stored rejections. */
@@ -96,6 +88,6 @@ export const DropzoneStore = signalStore(
     /** Restores the initial state. */
     reset(): void {
       patchState(store, initialState);
-    }
-  }))
+    },
+  })),
 );

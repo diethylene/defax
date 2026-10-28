@@ -2,16 +2,16 @@ import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
 import { Store } from '@ngrx/store';
 import { HlmButton } from '@spartan-ng/helm/button';
 import { map } from 'rxjs';
-import type { TransferSnapshot } from '../../../interfaces/transfer.interface';
 import { SendActions } from '../../../../store/send/send.actions';
-import type { SendStatus } from '../../../../store/send/send-transitions';
 import {
   isVerifying,
   metadataOf,
   peerIdentityOf,
   selectSendStatus,
-  transferProgressOf
+  transferProgressOf,
 } from '../../../../store/send/send.selectors';
+import type { SendStatus } from '../../../../store/send/send-transitions';
+import type { TransferSnapshot } from '../../../interfaces/transfer.interface';
 import { PageShellComponent } from '../../page-shell/page-shell.component';
 import { ProgressTransferComponent } from '../progress-transfer/progress-transfer.component';
 import { TransferComponent } from '../transfer.component';
@@ -22,7 +22,7 @@ const EMPTY_TRANSFER: TransferSnapshot = {
   transferred: 0,
   total: 0,
   route: undefined,
-  verified: false
+  verified: false,
 };
 
 /**
@@ -37,7 +37,7 @@ const snapshotOf = (status: SendStatus): TransferSnapshot => {
     transferred: progress.sent,
     total: progress.total,
     route: 'direct',
-    verified: status._tag === 'Done'
+    verified: status._tag === 'Done',
   };
 };
 
@@ -48,7 +48,7 @@ const snapshotOf = (status: SendStatus): TransferSnapshot => {
   providers: [TransferMetricsStore],
   host: { class: 'block' },
   changeDetection: ChangeDetectionStrategy.OnPush,
-  templateUrl: './sender-transfer.component.html'
+  templateUrl: './sender-transfer.component.html',
 })
 export class SenderTransferComponent extends TransferComponent {
   /** Follows the send status to build the progress view. */
@@ -59,7 +59,7 @@ export class SenderTransferComponent extends TransferComponent {
       status$.pipe(map(snapshotOf)),
       status$.pipe(map(metadataOf)),
       status$.pipe(map(peerIdentityOf)),
-      status$.pipe(map(isVerifying))
+      status$.pipe(map(isVerifying)),
     );
   }
 

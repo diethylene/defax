@@ -1,9 +1,4 @@
-import {
-  ChangeDetectionStrategy,
-  Component,
-  computed,
-  inject
-} from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, inject } from '@angular/core';
 import { Store } from '@ngrx/store';
 import { HlmButton } from '@spartan-ng/helm/button';
 import { HlmCard, HlmCardContent } from '@spartan-ng/helm/card';
@@ -11,15 +6,12 @@ import { HlmSpinner } from '@spartan-ng/helm/spinner';
 import * as Match from 'effect/Match';
 import {
   type FileSummary,
-  FingerprintCardComponent
+  FingerprintCardComponent,
 } from '../../../core/components/fingerprint-card/fingerprint-card.component';
 import { PageShellComponent } from '../../../core/components/page-shell/page-shell.component';
 import { SasNumberComponent } from '../../../core/components/sas-number/sas-number.component';
 import { SendActions } from '../../../store/send/send.actions';
-import {
-  hashDigestOf,
-  selectSendStatus
-} from '../../../store/send/send.selectors';
+import { hashDigestOf, selectSendStatus } from '../../../store/send/send.selectors';
 
 /** Waits while the receiver checks the sender and the file. */
 @Component({
@@ -31,11 +23,11 @@ import {
     HlmButton,
     HlmCard,
     HlmCardContent,
-    HlmSpinner
+    HlmSpinner,
   ],
   host: { class: 'block' },
   changeDetection: ChangeDetectionStrategy.OnPush,
-  templateUrl: './send-approve.component.html'
+  templateUrl: './send-approve.component.html',
 })
 export class SendApproveComponent {
   /** Global store. */
@@ -48,17 +40,15 @@ export class SendApproveComponent {
   private readonly confirming = computed(() =>
     Match.value(this.status()).pipe(
       Match.tag('SasConfirm', (status) => status),
-      Match.orElse(() => undefined)
-    )
+      Match.orElse(() => undefined),
+    ),
   );
 
   /** Verification number both screens show. */
   protected readonly sas = computed(() => this.confirming()?.sas);
 
   /** Identity of the receiving peer. */
-  protected readonly peerIdentity = computed(
-    () => this.confirming()?.peerIdentity
-  );
+  protected readonly peerIdentity = computed(() => this.confirming()?.peerIdentity);
 
   /** Metadata of the file being sent. */
   protected readonly metadata = computed(() => this.confirming()?.metadata);

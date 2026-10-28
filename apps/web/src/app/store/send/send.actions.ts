@@ -29,6 +29,6 @@ export const SendActions = createActionGroup({
     'Transfer Verified': props<{ readonly elapsed: number }>(),
     'Transfer Failed': props<{ readonly error: SendErrorTag }>(),
     Reset: emptyProps(),
-    Disconnect: emptyProps()
-  }
+    Disconnect: emptyProps(),
+  },
 });

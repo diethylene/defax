@@ -2,11 +2,7 @@ import { ChangeDetectionStrategy, Component, input } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { NgIcon, provideIcons } from '@ng-icons/core';
 import { lucideShieldCheck } from '@ng-icons/lucide';
-import {
-  HlmCard,
-  HlmCardDescription,
-  HlmCardTitle
-} from '@spartan-ng/helm/card';
+import { HlmCard, HlmCardDescription, HlmCardTitle } from '@spartan-ng/helm/card';
 
 /** Card that explains how transfers are verified. */
 @Component({
@@ -33,7 +29,7 @@ import {
         </a>
       </div>
     </div>
-  `
+  `,
 })
 export class VerificationCardComponent {
   /** Card title. */

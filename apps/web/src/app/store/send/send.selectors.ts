@@ -17,13 +17,13 @@ export const phaseForStatus = {
   Transferring: 'transferring',
   Verifying: 'verifying',
   Done: 'done',
-  Failed: 'failed'
+  Failed: 'failed',
 } satisfies Record<SendStatus['_tag'], SendPhase>;
 
 /** Phase the router shows for the current send status. */
 export const selectSendPhase = createSelector(
   selectSendStatus,
-  (status) => phaseForStatus[status._tag]
+  (status) => phaseForStatus[status._tag],
 );
 
 /** User-facing text for every reason a send can stop. */
@@ -31,7 +31,7 @@ export const sendErrorMessages = {
   'handshake-failed': 'Handshake failed',
   'hash-failed': 'File hashing failed',
   'transfer-failed': 'Transfer failed',
-  'verification-failed': 'receiver verification failed'
+  'verification-failed': 'receiver verification failed',
 } satisfies Record<SendErrorTag, string>;
 
 /** Message for the current send failure, or undefined when there is none. */
@@ -40,8 +40,8 @@ export const selectSendErrorMessage = createSelector(
   (status): string | undefined =>
     Match.value(status).pipe(
       Match.tag('Failed', ({ error }) => sendErrorMessages[error]),
-      Match.orElse(() => undefined)
-    )
+      Match.orElse(() => undefined),
+    ),
 );
 
 /**
@@ -57,9 +57,9 @@ export const hashOf = (status: SendStatus): HashStatus =>
       'Transferring',
       'Verifying',
       'Done',
-      ({ hash }) => hash
+      ({ hash }) => hash,
     ),
-    Match.orElse((): HashStatus => ({ _tag: 'Idle' }))
+    Match.orElse((): HashStatus => ({ _tag: 'Idle' })),
   );
 
 /**
@@ -70,7 +70,7 @@ export const hashOf = (status: SendStatus): HashStatus =>
 export const hashDigestOf = (status: SendStatus): string | undefined =>
   Match.value(hashOf(status)).pipe(
     Match.tag('Complete', ({ digest }) => digest),
-    Match.orElse(() => undefined)
+    Match.orElse(() => undefined),
   );
 
 /**
@@ -86,9 +86,9 @@ export const metadataOf = (status: SendStatus): FileMetadata | undefined =>
       'Transferring',
       'Verifying',
       'Done',
-      ({ metadata }) => metadata
+      ({ metadata }) => metadata,
     ),
-    Match.orElse(() => undefined)
+    Match.orElse(() => undefined),
   );
 
 /**
@@ -103,9 +103,9 @@ export const peerIdentityOf = (status: SendStatus): Identity | undefined =>
       'Transferring',
       'Verifying',
       'Done',
-      ({ peerIdentity }) => peerIdentity
+      ({ peerIdentity }) => peerIdentity,
     ),
-    Match.orElse(() => undefined)
+    Match.orElse(() => undefined),
   );
 
 /**
@@ -114,16 +114,11 @@ export const peerIdentityOf = (status: SendStatus): Identity | undefined =>
  * @returns The sent and total bytes, or undefined before the transfer starts.
  */
 export const transferProgressOf = (
-  status: SendStatus
+  status: SendStatus,
 ): { readonly sent: number; readonly total: number } | undefined =>
   Match.value(status).pipe(
-    Match.tag(
-      'Transferring',
-      'Verifying',
-      'Done',
-      ({ sent, total }) => ({ sent, total })
-    ),
-    Match.orElse(() => undefined)
+    Match.tag('Transferring', 'Verifying', 'Done', ({ sent, total }) => ({ sent, total })),
+    Match.orElse(() => undefined),
   );
 
 /**
@@ -134,5 +129,5 @@ export const transferProgressOf = (
 export const isVerifying = (status: SendStatus): boolean =>
   Match.value(status).pipe(
     Match.tag('Verifying', () => true),
-    Match.orElse(() => false)
+    Match.orElse(() => false),
   );

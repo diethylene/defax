@@ -1,9 +1,4 @@
-import {
-  ChangeDetectionStrategy,
-  Component,
-  computed,
-  inject
-} from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, inject } from '@angular/core';
 import { Store } from '@ngrx/store';
 import { HlmButton } from '@spartan-ng/helm/button';
 import { HlmCard, HlmCardContent } from '@spartan-ng/helm/card';
@@ -12,7 +7,7 @@ import { receiveFeature } from '@web/store/receive/receive.reducer';
 import * as Match from 'effect/Match';
 import {
   type FileSummary,
-  FingerprintCardComponent
+  FingerprintCardComponent,
 } from '../../../core/components/fingerprint-card/fingerprint-card.component';
 import { PageShellComponent } from '../../../core/components/page-shell/page-shell.component';
 import { SasNumberComponent } from '../../../core/components/sas-number/sas-number.component';
@@ -26,11 +21,11 @@ import { SasNumberComponent } from '../../../core/components/sas-number/sas-numb
     FingerprintCardComponent,
     HlmButton,
     HlmCard,
-    HlmCardContent
+    HlmCardContent,
   ],
   host: { class: 'block' },
   changeDetection: ChangeDetectionStrategy.OnPush,
-  templateUrl: './receive-confirm.component.html'
+  templateUrl: './receive-confirm.component.html',
 })
 export class ReceiveConfirmComponent {
   /** Global store. */
@@ -43,8 +38,8 @@ export class ReceiveConfirmComponent {
   private readonly confirming = computed(() =>
     Match.value(this.status()).pipe(
       Match.tag('Confirming', (status) => status),
-      Match.orElse(() => undefined)
-    )
+      Match.orElse(() => undefined),
+    ),
   );
 
   /** Verification number both screens show. */

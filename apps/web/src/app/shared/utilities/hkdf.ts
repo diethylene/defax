@@ -1,6 +1,6 @@
+import { PROTOCOL_VERSION } from '@contract/signal/protocol-version.constant';
 import { bytesToNumberBE } from '@noble/curves/utils.js';
 import { utf8ToBytes } from '@noble/hashes/utils.js';
-import { PROTOCOL_VERSION } from '@contract/signal/protocol-version.constant';
 
 /**
  * Builds the protocol-versioned HKDF info label for a purpose.
@@ -26,11 +26,11 @@ export const formatSas = (bits: Uint8Array): string =>
  */
 export const deriveSessionKeys = async (
   isk: Uint8Array<ArrayBuffer>,
-  sid: Uint8Array<ArrayBuffer>
+  sid: Uint8Array<ArrayBuffer>,
 ): Promise<{ signalingKey: CryptoKey; sas: string }> => {
   const base = await crypto.subtle.importKey('raw', isk, 'HKDF', false, [
     'deriveKey',
-    'deriveBits'
+    'deriveBits',
   ]);
   isk.fill(0);
 
@@ -39,15 +39,15 @@ export const deriveSessionKeys = async (
     base,
     { name: 'AES-GCM', length: 256 },
     false,
-    ['encrypt', 'decrypt']
+    ['encrypt', 'decrypt'],
   );
 
   const sasBits = new Uint8Array(
     await crypto.subtle.deriveBits(
       { name: 'HKDF', hash: 'SHA-512', salt: sid, info: label('sas') },
       base,
-      32
-    )
+      32,
+    ),
   );
   const sas = formatSas(sasBits);
   sasBits.fill(0);

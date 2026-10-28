@@ -1,10 +1,7 @@
 import type { Routes } from '@angular/router';
 import { ReceiverTransferComponent } from './core/components/transfer/receiver-transfer/receiver-transfer.component';
 import { SenderTransferComponent } from './core/components/transfer/sender-transfer/sender-transfer.component';
-import {
-  receiveCanActivate,
-  receiveCanDeactivate
-} from './core/guards/receive.guard';
+import { receiveCanActivate, receiveCanDeactivate } from './core/guards/receive.guard';
 import { sendCanActivate, sendCanDeactivate } from './core/guards/send.guard';
 import { HelpComponent } from './features/help/help.component';
 import { ReceiveCompleteComponent } from './features/receive/receive-complete/receive-complete.component';
@@ -31,39 +28,39 @@ export const routes: Routes = [
         path: '',
         component: SendIdleComponent,
         canActivate: [sendCanActivate],
-        canDeactivate: [sendCanDeactivate]
+        canDeactivate: [sendCanDeactivate],
       },
       {
         path: 'code',
         component: SendCodeComponent,
         canActivate: [sendCanActivate],
-        canDeactivate: [sendCanDeactivate]
+        canDeactivate: [sendCanDeactivate],
       },
       {
         path: 'approve',
         component: SendApproveComponent,
         canActivate: [sendCanActivate],
-        canDeactivate: [sendCanDeactivate]
+        canDeactivate: [sendCanDeactivate],
       },
       {
         path: 'transfer',
         component: SenderTransferComponent,
         canActivate: [sendCanActivate],
-        canDeactivate: [sendCanDeactivate]
+        canDeactivate: [sendCanDeactivate],
       },
       {
         path: 'complete',
         component: SendCompleteComponent,
         canActivate: [sendCanActivate],
-        canDeactivate: [sendCanDeactivate]
+        canDeactivate: [sendCanDeactivate],
       },
       {
         path: 'failed',
         component: SendFailedComponent,
         canActivate: [sendCanActivate],
-        canDeactivate: [sendCanDeactivate]
-      }
-    ]
+        canDeactivate: [sendCanDeactivate],
+      },
+    ],
   },
   {
     path: 'receive',
@@ -73,34 +70,34 @@ export const routes: Routes = [
         path: '',
         component: ReceiveIdleComponent,
         canActivate: [receiveCanActivate],
-        canDeactivate: [receiveCanDeactivate]
+        canDeactivate: [receiveCanDeactivate],
       },
       {
         path: 'confirm',
         component: ReceiveConfirmComponent,
         canActivate: [receiveCanActivate],
-        canDeactivate: [receiveCanDeactivate]
+        canDeactivate: [receiveCanDeactivate],
       },
       {
         path: 'transfer',
         component: ReceiverTransferComponent,
         canActivate: [receiveCanActivate],
-        canDeactivate: [receiveCanDeactivate]
+        canDeactivate: [receiveCanDeactivate],
       },
       {
         path: 'complete',
         component: ReceiveCompleteComponent,
         canActivate: [receiveCanActivate],
-        canDeactivate: [receiveCanDeactivate]
+        canDeactivate: [receiveCanDeactivate],
       },
       {
         path: 'failed',
         component: ReceiveFailedComponent,
         canActivate: [receiveCanActivate],
-        canDeactivate: [receiveCanDeactivate]
-      }
-    ]
+        canDeactivate: [receiveCanDeactivate],
+      },
+    ],
   },
   { path: 'help', component: HelpComponent },
-  { path: 'relay-help', component: RelayHelpComponent }
+  { path: 'relay-help', component: RelayHelpComponent },
 ];

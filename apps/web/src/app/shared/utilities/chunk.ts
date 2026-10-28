@@ -6,5 +6,5 @@
  */
 export const chunk = (value: string, size: number): string[] =>
   Array.from({ length: Math.ceil(value.length / size) }, (_unused, index) =>
-    value.slice(index * size, index * size + size)
+    value.slice(index * size, index * size + size),
   );

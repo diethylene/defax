@@ -21,17 +21,10 @@ export const deriveGeneratorString = (
     dsi?: Uint8Array;
     ci?: Uint8Array;
     sInBytes?: number;
-  } = {}
+  } = {},
 ): Uint8Array => {
-  const {
-    dsi = CPACE_DSI,
-    ci = CPACE_CI,
-    sInBytes = SHA512_BLOCK_SIZE
-  } = options;
-  const zpad = Math.max(
-    0,
-    sInBytes - 1 - prependLen(password).length - prependLen(dsi).length
-  );
+  const { dsi = CPACE_DSI, ci = CPACE_CI, sInBytes = SHA512_BLOCK_SIZE } = options;
+  const zpad = Math.max(0, sInBytes - 1 - prependLen(password).length - prependLen(dsi).length);
   return lvCat(dsi, password, new Uint8Array(zpad), ci, sid);
 };
 
@@ -57,8 +50,10 @@ export const secretFromBytes = (bytes: Uint8Array): bigint => {
   if (bytes.length !== 32) {
     throw new Error('secret requires exactly 32 bytes');
   }
-  const scalarBytes = new Uint8Array(bytes);
-  scalarBytes[31] &= 0x0f; // clear bits above the 252-bit group size
+  const scalarBytes = Uint8Array.from(
+    bytes,
+    (byte, index) => (index === 31 ? byte & 0x0f : byte), // clear bits above the 252-bit group size
+  );
   const scalar = bytesToNumberLE(scalarBytes);
   if (scalar === 0n) {
     throw new Error('secret must not be zero');
@@ -72,10 +67,8 @@ export const secretFromBytes = (bytes: Uint8Array): bigint => {
  * @param generator Shared group element.
  * @returns The encoded public key.
  */
-export const derivePublicKey = (
-  secret: bigint,
-  generator: GroupElement
-): Uint8Array => generator.multiply(secret).toBytes();
+export const derivePublicKey = (secret: bigint, generator: GroupElement): Uint8Array =>
+  generator.multiply(secret).toBytes();
 
 /**
  * Checks that bytes decode to a usable public key.
@@ -100,7 +93,7 @@ export const isValidPublicKey = (bytes: Uint8Array): boolean => {
 export const deriveSharedSecret = (
   secret: bigint,
   peerPublicKey: Uint8Array,
-  ownPublicKey: Uint8Array
+  ownPublicKey: Uint8Array,
 ): Uint8Array => {
   if (equalBytes(peerPublicKey, ownPublicKey)) {
     throw new Error('peer public key is reflected');

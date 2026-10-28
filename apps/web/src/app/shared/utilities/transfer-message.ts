@@ -1,19 +1,19 @@
-import * as Schema from 'effect/Schema';
 import type {
   Accept,
   RtcAnswer,
   RtcIce,
   RtcOffer,
-  VerifyResult
+  VerifyResult,
 } from '@contract/signal/payload.model';
 import * as Payload from '@contract/signal/payload.model';
+import * as Schema from 'effect/Schema';
 
 export type {
   Accept,
   RtcAnswer,
   RtcIce,
   RtcOffer,
-  VerifyResult
+  VerifyResult,
 } from '@contract/signal/payload.model';
 
 /** JSON decoder for RTC offer payloads. */
@@ -52,16 +52,14 @@ export const parseRtcAnswer = (json: string): RtcAnswer =>
  * @param json The JSON text holding the candidate.
  * @returns The validated candidate.
  */
-export const parseRtcIce = (json: string): RtcIce =>
-  Schema.decodeUnknownSync(rtcIceFromJson)(json);
+export const parseRtcIce = (json: string): RtcIce => Schema.decodeUnknownSync(rtcIceFromJson)(json);
 
 /**
  * Parses an accept payload from its JSON wire form.
  * @param json The JSON text holding the accept payload.
  * @returns The validated accept payload.
  */
-export const parseAccept = (json: string): Accept =>
-  Schema.decodeUnknownSync(acceptFromJson)(json);
+export const parseAccept = (json: string): Accept => Schema.decodeUnknownSync(acceptFromJson)(json);
 
 /**
  * Parses a verify result payload from its JSON wire form.

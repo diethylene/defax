@@ -16,7 +16,7 @@ const sendPhaseRoutes: Record<SendPhase, string> = {
   transferring: '/send/transfer',
   verifying: '/send/transfer',
   done: '/send/complete',
-  failed: '/send/failed'
+  failed: '/send/failed',
 };
 
 /**
@@ -24,6 +24,4 @@ const sendPhaseRoutes: Record<SendPhase, string> = {
  * @param phase Page to show.
  * @returns URL of that page.
  */
-export function routeForPhase(phase: SendPhase): string {
-  return sendPhaseRoutes[phase];
-}
+export const routeForPhase = (phase: SendPhase): string => sendPhaseRoutes[phase];

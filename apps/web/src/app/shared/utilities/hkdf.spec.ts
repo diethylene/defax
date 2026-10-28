@@ -14,7 +14,7 @@ describe('deriveSessionKeys', () => {
   it('derives a non-extractable AES-GCM key and a SAS string', async () => {
     const { signalingKey, sas } = await deriveSessionKeys(
       new Uint8Array(64).fill(1),
-      new Uint8Array(16).fill(2)
+      new Uint8Array(16).fill(2),
     );
     expect(signalingKey.extractable).toBe(false);
     expect(signalingKey.algorithm.name).toBe('AES-GCM');
@@ -37,20 +37,12 @@ describe('deriveSessionKeys', () => {
   it('signaling key encrypts and decrypts', async () => {
     const { signalingKey } = await deriveSessionKeys(
       new Uint8Array(64).fill(5),
-      new Uint8Array(16).fill(6)
+      new Uint8Array(16).fill(6),
     );
     const data = encoder.encode('defax');
     const iv = crypto.getRandomValues(new Uint8Array(12));
-    const encrypted = await crypto.subtle.encrypt(
-      { name: 'AES-GCM', iv },
-      signalingKey,
-      data
-    );
-    const decrypted = await crypto.subtle.decrypt(
-      { name: 'AES-GCM', iv },
-      signalingKey,
-      encrypted
-    );
+    const encrypted = await crypto.subtle.encrypt({ name: 'AES-GCM', iv }, signalingKey, data);
+    const decrypted = await crypto.subtle.decrypt({ name: 'AES-GCM', iv }, signalingKey, encrypted);
     expect(new TextDecoder().decode(decrypted)).toBe('defax');
   });
 });

@@ -1,6 +1,7 @@
 <nav [attr.aria-label]="ariaLabel()" [class]="containerClasses" data-slot="nav">
   <ng-content select="[nav-leading]" />
   @for (item of view(); track item.route) {
+    <!-- biome-ignore lint/a11y/useValidAnchor: routerLink renders the href at runtime -->
     <a
       [routerLink]="item.route"
       [class]="item.classes"

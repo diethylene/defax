@@ -14,7 +14,7 @@ import { selectSendErrorMessage } from '../../../store/send/send.selectors';
         <p class="mt-2 text-sm text-muted-foreground">{{ message }}</p>
       }
     </div>
-  `
+  `,
 })
 export class SendFailedComponent {
   /** Global store. */

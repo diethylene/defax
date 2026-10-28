@@ -1,13 +1,8 @@
-import {
-  ChangeDetectionStrategy,
-  Component,
-  inject,
-  signal
-} from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
 import { Store } from '@ngrx/store';
 import {
   PageShellComponent,
-  type PageStep
+  type PageStep,
 } from '../../../core/components/page-shell/page-shell.component';
 import { DropzoneComponent } from '../../../shared/components/dropzone/dropzone.component';
 import type { DropzoneResult } from '../../../shared/components/dropzone/dropzone.model';
@@ -20,7 +15,7 @@ import { toFileMetadata } from '../file-metadata/file-metadata.util';
   imports: [PageShellComponent, DropzoneComponent],
   host: { class: 'block' },
   changeDetection: ChangeDetectionStrategy.OnPush,
-  templateUrl: './send-idle.component.html'
+  templateUrl: './send-idle.component.html',
 })
 export class SendIdleComponent {
   /** Global store. */
@@ -34,12 +29,12 @@ export class SendIdleComponent {
     { title: 'Choose a file.', description: 'You get a one-time code.' },
     {
       title: 'Share the code.',
-      description: 'Tell the receiver however you like.'
+      description: 'Tell the receiver however you like.',
     },
     {
       title: 'They accept.',
-      description: "The file transfers directly, encrypted. That's it."
-    }
+      description: "The file transfers directly, encrypted. That's it.",
+    },
   ];
 
   /**
@@ -55,8 +50,6 @@ export class SendIdleComponent {
     const file = this.pendingFile();
     if (file === undefined) return;
     this.pendingFile.set(undefined);
-    this.store.dispatch(
-      SendActions.fileSelected({ file, metadata: toFileMetadata(file) })
-    );
+    this.store.dispatch(SendActions.fileSelected({ file, metadata: toFileMetadata(file) }));
   }
 }

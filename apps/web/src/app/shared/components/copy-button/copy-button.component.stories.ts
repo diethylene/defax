@@ -8,13 +8,13 @@ const meta: Meta<CopyButtonComponent> = {
   render: (args) => ({
     props: args,
     template:
-      '<app-copy-button [label]="label" [variant]="variant" [disabled]="disabled" value="copy me"></app-copy-button>'
+      '<app-copy-button [label]="label" [variant]="variant" [disabled]="disabled" value="copy me"></app-copy-button>',
   }),
   args: {
     label: 'Copy code',
     variant: 'default',
-    disabled: false
-  }
+    disabled: false,
+  },
 };
 
 export default meta;

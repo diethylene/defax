@@ -255,5 +255,5 @@ export const PGP_WORDS: readonly string[] = [
   'wayside',
   'willow',
   'woodlark',
-  'Zulu'
+  'Zulu',
 ];

@@ -3,7 +3,7 @@ import {
   parseRtcAnswer,
   parseRtcIce,
   parseRtcOffer,
-  parseVerifyResult
+  parseVerifyResult,
 } from './transfer-message';
 
 describe('transfer message parsers', () => {
@@ -17,9 +17,11 @@ describe('transfer message parsers', () => {
     });
 
     it('parses an rtc ice candidate with null fields', () => {
-      expect(
-        parseRtcIce('{"candidate":null,"sdpMid":null,"sdpMLineIndex":null}')
-      ).toEqual({ candidate: null, sdpMid: null, sdpMLineIndex: null });
+      expect(parseRtcIce('{"candidate":null,"sdpMid":null,"sdpMLineIndex":null}')).toEqual({
+        candidate: null,
+        sdpMid: null,
+        sdpMLineIndex: null,
+      });
     });
 
     it('parses an accept payload', () => {
@@ -37,9 +39,7 @@ describe('transfer message parsers', () => {
     });
 
     it('throws on a non-integer sdpMLineIndex', () => {
-      expect(() =>
-        parseRtcIce('{"candidate":null,"sdpMid":null,"sdpMLineIndex":1.5}')
-      ).toThrow();
+      expect(() => parseRtcIce('{"candidate":null,"sdpMid":null,"sdpMLineIndex":1.5}')).toThrow();
     });
 
     it('throws on malformed JSON', () => {

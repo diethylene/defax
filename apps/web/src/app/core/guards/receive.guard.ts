@@ -1,11 +1,10 @@
 import { inject } from '@angular/core';
-import {
-  type CanActivateFn,
-  type CanDeactivateFn,
-  Router,
-} from '@angular/router';
+import { type CanActivateFn, type CanDeactivateFn, Router } from '@angular/router';
 import { Store } from '@ngrx/store';
-import { phaseForStatus, routeForPhase } from '@web/features/receive/receive-phase/receive-phase.model';
+import {
+  phaseForStatus,
+  routeForPhase,
+} from '@web/features/receive/receive-phase/receive-phase.model';
 import { ReceiveActions } from '@web/store/receive/receive.actions';
 import { receiveFeature } from '@web/store/receive/receive.reducer';
 import type { ReceiveStatus } from '@web/store/receive/receive-transitions';
@@ -27,6 +26,24 @@ const isSafeToLeave = (status: ReceiveStatus): boolean =>
     Match.orElse(() => false),
   );
 
+/**
+ * Tells whether a target URL needs no confirmation.
+ * @param status Current receive status.
+ * @param url URL the router is heading to.
+ * @returns True when the target is the status' own page or the status is safe.
+ */
+const canLeave = (status: ReceiveStatus, url: string): boolean =>
+  url === routeForPhase(phaseForStatus(status)) || isSafeToLeave(status);
+
+/**
+ * Asks the user, and ends the receive when they accept.
+ * @param store Store holding the receive slice.
+ */
+const cancelOnLeave = (store: Store): void => {
+  if (!window.confirm(cancelMessage)) return;
+  store.dispatch(ReceiveActions.disconnect());
+};
+
 /** Keeps a receive route on the page its status owns. */
 export const receiveCanActivate: CanActivateFn = (_route, state) => {
   const store = inject(Store);
@@ -45,9 +62,7 @@ export const receiveCanDeactivate: CanDeactivateFn<unknown> = (
 ) => {
   const store = inject(Store);
   const status = store.selectSignal(receiveFeature.selectStatus)();
-  if (nextState.url === routeForPhase(phaseForStatus(status))) return true;
-  if (isSafeToLeave(status)) return true;
-  if (!window.confirm(cancelMessage)) return false;
-  store.dispatch(ReceiveActions.disconnect());
+  if (canLeave(status, nextState.url)) return true;
+  cancelOnLeave(store);
   return false;
 };
