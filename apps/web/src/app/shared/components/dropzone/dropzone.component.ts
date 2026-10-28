@@ -5,7 +5,7 @@ import {
   query,
   style,
   transition,
-  trigger
+  trigger,
 } from '@angular/animations';
 import {
   ChangeDetectionStrategy,
@@ -18,7 +18,7 @@ import {
   input,
   output,
   signal,
-  viewChild
+  viewChild,
 } from '@angular/core';
 import { NgIcon, provideIcons } from '@ng-icons/core';
 import { lucideCircleCheck, lucideUpload, lucideX } from '@ng-icons/lucide';
@@ -40,74 +40,50 @@ const selectAnimation = trigger('selectAnim', [
     group([
       query('.content-base', [
         style({ opacity: 1, transform: 'translateY(0)' }),
-        animate(
-          `280ms 320ms ${EASE_OUT}`,
-          style({ opacity: 0, transform: 'translateY(-8px)' })
-        )
+        animate(`280ms 320ms ${EASE_OUT}`, style({ opacity: 0, transform: 'translateY(-8px)' })),
       ]),
       query('.content-selected', [
         style({ opacity: 0, transform: 'translateY(8px)' }),
-        animate(
-          `280ms 320ms ${EASE_OUT}`,
-          style({ opacity: 1, transform: 'translateY(0)' })
-        )
+        animate(`280ms 320ms ${EASE_OUT}`, style({ opacity: 1, transform: 'translateY(0)' })),
       ]),
       query(
         '.button-choose',
         [
           style({ opacity: 1, transform: 'translateY(0)' }),
-          animate(
-            `280ms 380ms ${EASE_OUT}`,
-            style({ opacity: 0, transform: 'translateY(-6px)' })
-          )
+          animate(`280ms 380ms ${EASE_OUT}`, style({ opacity: 0, transform: 'translateY(-6px)' })),
         ],
-        { optional: true }
+        { optional: true },
       ),
       query('.button-clear', [
         style({ opacity: 0, transform: 'translateY(6px)' }),
-        animate(
-          `280ms 380ms ${EASE_OUT}`,
-          style({ opacity: 1, transform: 'translateY(0)' })
-        )
-      ])
-    ])
+        animate(`280ms 380ms ${EASE_OUT}`, style({ opacity: 1, transform: 'translateY(0)' })),
+      ]),
+    ]),
   ]),
   transition('selected => idle', [
     group([
       query('.content-base', [
         style({ opacity: 0, transform: 'translateY(-8px)' }),
-        animate(
-          `280ms ${EASE_OUT}`,
-          style({ opacity: 1, transform: 'translateY(0)' })
-        )
+        animate(`280ms ${EASE_OUT}`, style({ opacity: 1, transform: 'translateY(0)' })),
       ]),
       query('.content-selected', [
         style({ opacity: 1, transform: 'translateY(0)' }),
-        animate(
-          `280ms ${EASE_OUT}`,
-          style({ opacity: 0, transform: 'translateY(8px)' })
-        )
+        animate(`280ms ${EASE_OUT}`, style({ opacity: 0, transform: 'translateY(8px)' })),
       ]),
       query(
         '.button-choose',
         [
           style({ opacity: 0, transform: 'translateY(-6px)' }),
-          animate(
-            `280ms ${EASE_OUT}`,
-            style({ opacity: 1, transform: 'translateY(0)' })
-          )
+          animate(`280ms ${EASE_OUT}`, style({ opacity: 1, transform: 'translateY(0)' })),
         ],
-        { optional: true }
+        { optional: true },
       ),
       query('.button-clear', [
         style({ opacity: 1, transform: 'translateY(0)' }),
-        animate(
-          `280ms ${EASE_OUT}`,
-          style({ opacity: 0, transform: 'translateY(6px)' })
-        )
-      ])
-    ])
-  ])
+        animate(`280ms ${EASE_OUT}`, style({ opacity: 0, transform: 'translateY(6px)' })),
+      ]),
+    ]),
+  ]),
 ]);
 
 /** Drag-and-drop surface with falling drops and a selected-file view. */
@@ -130,14 +106,14 @@ const selectAnimation = trigger('selectAnim', [
         'rejectionMode',
         'noClick',
         'noKeyboard',
-        'disabled'
+        'disabled',
       ],
-      outputs: ['filesChange', 'dragStateChange', 'pickerStateChange']
-    }
+      outputs: ['filesChange', 'dragStateChange', 'pickerStateChange'],
+    },
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './dropzone.component.html',
-  styleUrls: ['./dropzone.component.css']
+  styleUrls: ['./dropzone.component.css'],
 })
 export class DropzoneComponent {
   /** Host directive that owns the selection and interaction state. */
@@ -152,7 +128,7 @@ export class DropzoneComponent {
   readonly title = input('Drag and drop a file here');
   /** Supporting text shown while idle. */
   readonly subtitle = input(
-    'One file at a time. It stays on this device until the receiver accepts it.'
+    'One file at a time. It stays on this device until the receiver accepts it.',
   );
   /** Heading shown while a drag is over the dropzone. */
   readonly dropTitle = input('Drop to send');
@@ -170,21 +146,18 @@ export class DropzoneComponent {
 
   /** Whether the user prefers reduced motion. */
   protected readonly reduceMotion = signal(
-    window.matchMedia('(prefers-reduced-motion: reduce)').matches
+    window.matchMedia('(prefers-reduced-motion: reduce)').matches,
   );
   /** Whether the rejection flash should play. */
   private readonly rejectionFlash = signal(false);
 
   /** Layer that hosts the falling drops. */
-  private readonly dropsLayer =
-    viewChild<ElementRef<HTMLElement>>('dropsLayer');
+  private readonly dropsLayer = viewChild<ElementRef<HTMLElement>>('dropsLayer');
   /** Size and corner radius of the drops layer. */
   private readonly layerSize = signal({ width: 0, height: 0, radius: 0 });
 
   /** Animation state derived from the current view. */
-  protected readonly animState = computed(() =>
-    this.isSelectedView() ? 'selected' : 'idle'
-  );
+  protected readonly animState = computed(() => (this.isSelectedView() ? 'selected' : 'idle'));
 
   /** Falling drops placed around the current layer. */
   protected readonly drops = computed(() => {
@@ -194,36 +167,32 @@ export class DropzoneComponent {
 
   /** Colour of the falling drops. */
   protected readonly dropColor = computed(() =>
-    this.dragState() === 'invalid' ? 'var(--destructive)' : 'var(--foreground)'
+    this.dragState() === 'invalid' ? 'var(--destructive)' : 'var(--foreground)',
   );
 
   /** Frame classes for the current phase and rejection flash. */
   protected readonly containerClasses = computed(() => {
     const classes = Match.value(this.phase()).pipe(
-      Match.when(
-        'disabled',
-        () => `${baseContainer} pointer-events-none opacity-50`
-      ),
+      Match.when('disabled', () => `${baseContainer} pointer-events-none opacity-50`),
       Match.when('drag-over', () => this.dragOverClasses()),
       Match.when(
         'picker-open',
-        () =>
-          `${baseContainer} border border-primary ring-1 ring-inset ring-primary`
+        () => `${baseContainer} border border-primary ring-1 ring-inset ring-primary`,
       ),
       Match.when('idle', () => this.idleClasses()),
-      Match.exhaustive
+      Match.exhaustive,
     );
     return this.rejectionFlash() ? `${classes} rejection-flash` : classes;
   });
 
   /** Whether the selected-file view is showing. */
   protected readonly isSelectedView = computed(
-    () => this.files().length > 0 && this.phase() === 'idle'
+    () => this.files().length > 0 && this.phase() === 'idle',
   );
 
   /** Whether the check icon replaces the upload icon. */
   protected readonly showCheckIcon = computed(
-    () => this.files().length > 0 && this.phase() !== 'drag-over'
+    () => this.files().length > 0 && this.phase() !== 'drag-over',
   );
 
   /** Classes for the icon box. */
@@ -249,25 +218,23 @@ export class DropzoneComponent {
   protected readonly selectedFiles = computed(() =>
     this.files()
       .map((file) => file.name)
-      .join(', ')
+      .join(', '),
   );
 
   /** Heading for the current phase. */
   protected readonly heading = computed(() =>
-    this.phase() === 'drag-over' ? this.dropTitle() : this.title()
+    this.phase() === 'drag-over' ? this.dropTitle() : this.title(),
   );
 
   /** Whether the choose button is rendered. */
-  protected readonly showChooseButton = computed(
-    () => !this.dropzone.noClick()
-  );
+  protected readonly showChooseButton = computed(() => !this.dropzone.noClick());
 
   /** Whether a drag is over the dropzone. */
   protected readonly isDragging = computed(() => this.phase() === 'drag-over');
 
   /** Whether the falling drops are visible. */
   protected readonly showDrops = computed(
-    () => this.isDragging() && this.dragState() !== 'invalid'
+    () => this.isDragging() && this.dragState() !== 'invalid',
   );
 
   /** Starts the rejection flash and reduced-motion effects. */
@@ -299,12 +266,12 @@ export class DropzoneComponent {
       Match.when(
         'invalid',
         () =>
-          `${baseContainer} border border-destructive ring-1 ring-inset ring-destructive bg-destructive/5 invalid-strobe`
+          `${baseContainer} border border-destructive ring-1 ring-inset ring-destructive bg-destructive/5 invalid-strobe`,
       ),
       Match.orElse(
         () =>
-          `${baseContainer} border border-foreground ring-1 ring-inset ring-foreground bg-muted`
-      )
+          `${baseContainer} border border-foreground ring-1 ring-inset ring-foreground bg-muted`,
+      ),
     );
   }
 
@@ -365,7 +332,7 @@ export class DropzoneComponent {
       this.layerSize.set({
         width: layer.clientWidth,
         height: layer.clientHeight,
-        radius: 8
+        radius: 8,
       });
     };
 

@@ -1,5 +1,5 @@
-import * as Schema from 'effect/Schema';
 import { FileMetadata } from '@contract/signal/file-metadata.model';
+import * as Schema from 'effect/Schema';
 
 /** JSON decoder for file metadata. */
 const fileMetadataFromJson = Schema.fromJsonString(FileMetadata);

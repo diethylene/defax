@@ -19,11 +19,11 @@ interface ListCardData {
     PageShellComponent,
     HowItWorksCardComponent,
     ListCardComponent,
-    VerificationCardComponent
+    VerificationCardComponent,
   ],
   host: { class: 'page-transition block' },
   changeDetection: ChangeDetectionStrategy.OnPush,
-  templateUrl: './help.component.html'
+  templateUrl: './help.component.html',
 })
 export class HelpComponent {
   /** Server visibility cards shown at the bottom. */
@@ -33,16 +33,12 @@ export class HelpComponent {
       items: [
         'That two devices connected, and when',
         'Their network addresses',
-        'The number at the start of the code'
-      ]
+        'The number at the start of the code',
+      ],
     },
     {
       title: 'What it never sees',
-      items: [
-        'The file, its name, or its type',
-        'The words in your code',
-        'The encryption key'
-      ]
-    }
+      items: ['The file, its name, or its type', 'The words in your code', 'The encryption key'],
+    },
   ];
 }

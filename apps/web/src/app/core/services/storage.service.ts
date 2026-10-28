@@ -22,8 +22,7 @@ const openDatabase$ = (): Observable<IDBDatabase> =>
       subscriber.next(request.result);
       subscriber.complete();
     };
-    request.onerror = () =>
-      subscriber.error(request.error ?? new Error('indexeddb open failed'));
+    request.onerror = () => subscriber.error(request.error ?? new Error('indexeddb open failed'));
   });
 
 /**
@@ -39,8 +38,7 @@ const clearStore$ = (db: IDBDatabase): Observable<void> =>
       subscriber.next();
       subscriber.complete();
     };
-    tx.onerror = () =>
-      subscriber.error(tx.error ?? new Error('indexeddb clear failed'));
+    tx.onerror = () => subscriber.error(tx.error ?? new Error('indexeddb clear failed'));
   });
 
 /**
@@ -57,8 +55,7 @@ const putChunk$ = (db: IDBDatabase, data: ArrayBuffer): Observable<void> =>
       subscriber.next();
       subscriber.complete();
     };
-    request.onerror = () =>
-      subscriber.error(request.error ?? new Error('indexeddb write failed'));
+    request.onerror = () => subscriber.error(request.error ?? new Error('indexeddb write failed'));
   });
 
 /**
@@ -68,16 +65,13 @@ const putChunk$ = (db: IDBDatabase, data: ArrayBuffer): Observable<void> =>
  */
 const readAll$ = (db: IDBDatabase): Observable<ArrayBuffer[]> =>
   new Observable((subscriber) => {
-    const store = db
-      .transaction(STORE_NAME, 'readonly')
-      .objectStore(STORE_NAME);
+    const store = db.transaction(STORE_NAME, 'readonly').objectStore(STORE_NAME);
     const request: IDBRequest<ArrayBuffer[]> = store.getAll();
     request.onsuccess = () => {
       subscriber.next(request.result);
       subscriber.complete();
     };
-    request.onerror = () =>
-      subscriber.error(request.error ?? new Error('indexeddb read failed'));
+    request.onerror = () => subscriber.error(request.error ?? new Error('indexeddb read failed'));
   });
 
 /**
@@ -95,8 +89,7 @@ const deleteDatabase$ = (): Observable<void> =>
       subscriber.next();
       subscriber.complete();
     };
-    request.onerror = () =>
-      subscriber.error(request.error ?? new Error('indexeddb delete failed'));
+    request.onerror = () => subscriber.error(request.error ?? new Error('indexeddb delete failed'));
   });
 
 /** Database state before it is opened or after it is closed. */
@@ -135,9 +128,9 @@ export class StorageService {
         clearStore$(db).pipe(
           tap(() => {
             this.state = { _tag: 'open', db };
-          })
-        )
-      )
+          }),
+        ),
+      ),
     );
   }
 
@@ -157,7 +150,7 @@ export class StorageService {
    */
   assemble(mime: string): Observable<Blob> {
     return defer(() => readAll$(this.requireDb())).pipe(
-      map((chunks) => new Blob(chunks, { type: mime }))
+      map((chunks) => new Blob(chunks, { type: mime })),
     );
   }
 

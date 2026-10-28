@@ -6,9 +6,7 @@ import { concatBytes } from '@noble/curves/utils.js';
  * @returns The 7-bit groups, least significant first.
  */
 const base128Digits = (value: number): readonly number[] =>
-  value < 128
-    ? [value]
-    : [(value & 0x7f) | 0x80, ...base128Digits(Math.floor(value / 128))];
+  value < 128 ? [value] : [(value & 0x7f) | 0x80, ...base128Digits(Math.floor(value / 128))];
 
 /**
  * Encodes a length as unsigned LEB128.

@@ -4,14 +4,14 @@ describe('parsePasscode', () => {
   it('splits room id and password on the first hyphen', () => {
     expect(parsePasscode('123456-apple-bird')).toEqual({
       roomId: '123456',
-      password: 'apple-bird'
+      password: 'apple-bird',
     });
   });
 
   it('normalizes case and separators', () => {
     expect(parsePasscode(' 123456 Apple Bird ')).toEqual({
       roomId: '123456',
-      password: 'apple-bird'
+      password: 'apple-bird',
     });
   });
 
@@ -26,14 +26,14 @@ describe('parseReceiveCode', () => {
   it('accepts a six-digit room id and two pgp words', () => {
     expect(parseReceiveCode('123456-apple-orca')).toEqual({
       roomId: '123456',
-      password: 'apple-orca'
+      password: 'apple-orca',
     });
   });
 
   it('normalizes case and separators', () => {
     expect(parseReceiveCode(' 123456 Apple ORCA ')).toEqual({
       roomId: '123456',
-      password: 'apple-orca'
+      password: 'apple-orca',
     });
   });
 

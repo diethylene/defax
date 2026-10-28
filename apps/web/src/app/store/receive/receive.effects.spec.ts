@@ -56,9 +56,7 @@ const configure = (connectAsResponder: () => unknown): void => {
  */
 const statusWhere = (status: (value: ReceiveStatus) => boolean): Promise<ReceiveStatus> =>
   firstValueFrom(
-    TestBed.inject(Store)
-      .select(receiveFeature.selectStatus)
-      .pipe(filter(status), take(1)),
+    TestBed.inject(Store).select(receiveFeature.selectStatus).pipe(filter(status), take(1)),
   );
 
 describe('connect$', () => {

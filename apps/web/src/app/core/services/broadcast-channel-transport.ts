@@ -4,15 +4,11 @@ import { decodeSid as decodeWireSid } from '@contract/signal/sid.model';
 import * as Match from 'effect/Match';
 import * as Option from 'effect/Option';
 import { Subject } from 'rxjs';
-import type {
-  RoomCreated,
-  RoomId,
-  Sid
-} from '../../shared/interfaces/signal-session';
+import type { RoomCreated, RoomId, Sid } from '../../shared/interfaces/signal-session';
 import { SignalTransport } from '../../shared/interfaces/signal-transport';
-import { parseSignalMessage } from '../../shared/utilities/signal-message';
-import type { SignalMessage } from '../../shared/utilities/signal-message';
 import { createSid, decodeSid, encodeSid } from '../../shared/utilities/sid';
+import type { SignalMessage } from '../../shared/utilities/signal-message';
+import { parseSignalMessage } from '../../shared/utilities/signal-message';
 
 /** Transport phase with no room open. */
 interface IdlePhase {
@@ -131,7 +127,7 @@ export class BroadcastChannelTransport extends SignalTransport {
       Match.when({ _tag: 'host-waiting' }, (phase) => {
         this.phase = { ...phase, outgoing: [...phase.outgoing, message] };
       }),
-      Match.orElse(() => this.post(message))
+      Match.orElse(() => this.post(message)),
     );
   }
 
@@ -144,9 +140,9 @@ export class BroadcastChannelTransport extends SignalTransport {
     }
     Match.value(this.phase).pipe(
       Match.when({ _tag: 'guest-connecting' }, (phase) =>
-        phase.pending.reject(new Error('Transport closed'))
+        phase.pending.reject(new Error('Transport closed')),
       ),
-      Match.orElse(() => undefined)
+      Match.orElse(() => undefined),
     );
     this.phase = IDLE;
   }
@@ -167,13 +163,9 @@ export class BroadcastChannelTransport extends SignalTransport {
   private handleInbound(message: SignalMessage): void {
     Match.value(message).pipe(
       Match.when({ type: 'join' }, (join) => this.handleJoin(join)),
-      Match.when({ type: 'joined' }, (joined) =>
-        this.resolveJoin(decodeSid(joined.sid))
-      ),
-      Match.when({ type: 'error' }, (error) =>
-        this.rejectJoin(new Error(error.code))
-      ),
-      Match.orElse(() => undefined)
+      Match.when({ type: 'joined' }, (joined) => this.resolveJoin(decodeSid(joined.sid))),
+      Match.when({ type: 'error' }, (error) => this.rejectJoin(new Error(error.code))),
+      Match.orElse(() => undefined),
     );
   }
 
@@ -183,13 +175,9 @@ export class BroadcastChannelTransport extends SignalTransport {
    */
   private handleJoin(message: Extract<SignalMessage, { type: 'join' }>): void {
     Match.value(this.phase).pipe(
-      Match.when({ _tag: 'host-waiting' }, (phase) =>
-        this.answerJoin(phase, message)
-      ),
-      Match.when({ _tag: 'host-joined' }, (phase) =>
-        this.answerJoin(phase, message)
-      ),
-      Match.orElse(() => undefined)
+      Match.when({ _tag: 'host-waiting' }, (phase) => this.answerJoin(phase, message)),
+      Match.when({ _tag: 'host-joined' }, (phase) => this.answerJoin(phase, message)),
+      Match.orElse(() => undefined),
     );
   }
 
@@ -198,22 +186,15 @@ export class BroadcastChannelTransport extends SignalTransport {
    * @param phase Host phase answering the request.
    * @param message Join request.
    */
-  private answerJoin(
-    phase: HostPhase,
-    message: Extract<SignalMessage, { type: 'join' }>
-  ): void {
+  private answerJoin(phase: HostPhase, message: Extract<SignalMessage, { type: 'join' }>): void {
     if (message.protocol !== PROTOCOL_VERSION) {
       this.post({ type: 'error', code: 'protocol-mismatch' });
       return;
     }
     Match.value(phase).pipe(
-      Match.when({ _tag: 'host-waiting' }, (waiting) =>
-        this.acceptJoin(waiting)
-      ),
-      Match.when({ _tag: 'host-joined' }, () =>
-        this.post({ type: 'error', code: 'room-full' })
-      ),
-      Match.exhaustive
+      Match.when({ _tag: 'host-waiting' }, (waiting) => this.acceptJoin(waiting)),
+      Match.when({ _tag: 'host-joined' }, () => this.post({ type: 'error', code: 'room-full' })),
+      Match.exhaustive,
     );
   }
 
@@ -227,7 +208,7 @@ export class BroadcastChannelTransport extends SignalTransport {
     phase.outgoing.forEach((message) => this.post(message));
     this.post({
       type: 'joined',
-      sid: Option.getOrThrow(decodeWireSid(encodeSid(phase.sid)))
+      sid: Option.getOrThrow(decodeWireSid(encodeSid(phase.sid))),
     });
   }
 
@@ -241,7 +222,7 @@ export class BroadcastChannelTransport extends SignalTransport {
         phase.pending.resolve(sid);
         this.phase = { _tag: 'guest-settled' };
       }),
-      Match.orElse(() => undefined)
+      Match.orElse(() => undefined),
     );
   }
 
@@ -255,7 +236,7 @@ export class BroadcastChannelTransport extends SignalTransport {
         phase.pending.reject(error);
         this.phase = { _tag: 'guest-settled' };
       }),
-      Match.orElse(() => undefined)
+      Match.orElse(() => undefined),
     );
   }
 

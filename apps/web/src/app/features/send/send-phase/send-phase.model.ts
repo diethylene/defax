@@ -16,7 +16,7 @@ const sendPhaseRoutes: Record<SendPhase, string> = {
   transferring: '/send/transfer',
   verifying: '/send/transfer',
   done: '/send/complete',
-  failed: '/send/failed'
+  failed: '/send/failed',
 };
 
 /**

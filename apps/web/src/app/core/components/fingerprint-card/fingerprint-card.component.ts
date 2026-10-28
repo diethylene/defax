@@ -1,11 +1,6 @@
-import {
-  ChangeDetectionStrategy,
-  Component,
-  computed,
-  input
-} from '@angular/core';
-import { HlmSkeleton } from '@spartan-ng/helm/skeleton';
+import { ChangeDetectionStrategy, Component, computed, input } from '@angular/core';
 import type { Identity } from '@contract/signal/identity.model';
+import { HlmSkeleton } from '@spartan-ng/helm/skeleton';
 import { FileSizePipe } from '../../../shared/pipes/file-size.pipe';
 import { chunk } from '../../../shared/utilities/chunk';
 
@@ -73,7 +68,7 @@ const SKELETON_GROUPS = 16;
         </dd>
       </div>
     </dl>
-  `
+  `,
 })
 export class FingerprintCardComponent {
   /** Peer details to show, or none before the handshake completes. */
@@ -89,14 +84,12 @@ export class FingerprintCardComponent {
     return [
       { label: 'Browser', value: identity?.browser ?? '' },
       { label: 'Operating system', value: identity?.os ?? '' },
-      { label: 'Location', value: identity?.timeZone ?? '' }
+      { label: 'Location', value: identity?.timeZone ?? '' },
     ];
   });
 
   /** Checksum split into readable groups. */
-  protected readonly checksumGroups = computed(() =>
-    chunk(this.checksum() ?? '', GROUP_SIZE)
-  );
+  protected readonly checksumGroups = computed(() => chunk(this.checksum() ?? '', GROUP_SIZE));
 
   /** Placeholder widths shown while the checksum is unknown. */
   protected readonly skeletonGroups = Array.from({ length: SKELETON_GROUPS });

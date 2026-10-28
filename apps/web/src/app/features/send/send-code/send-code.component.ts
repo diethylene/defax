@@ -1,10 +1,5 @@
 import { DatePipe } from '@angular/common';
-import {
-  ChangeDetectionStrategy,
-  Component,
-  computed,
-  inject
-} from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, inject } from '@angular/core';
 import { Router } from '@angular/router';
 import { NgIcon, provideIcons } from '@ng-icons/core';
 import { lucideFile } from '@ng-icons/lucide';
@@ -19,10 +14,7 @@ import { SpinnerComponent } from '../../../core/components/spinner/spinner.compo
 import { FileSizePipe } from '../../../shared/pipes/file-size.pipe';
 import { FileTypePipe } from '../../../shared/pipes/file-type.pipe';
 import { SendActions } from '../../../store/send/send.actions';
-import {
-  hashDigestOf,
-  selectSendStatus
-} from '../../../store/send/send.selectors';
+import { hashDigestOf, selectSendStatus } from '../../../store/send/send.selectors';
 import { SendCodeFieldComponent } from './send-code-field.component';
 
 /** Shows the code the receiver enters while the sender waits for a connection. */
@@ -40,11 +32,11 @@ import { SendCodeFieldComponent } from './send-code-field.component';
     HlmCard,
     HlmCardContent,
     HlmSeparator,
-    HlmSkeleton
+    HlmSkeleton,
   ],
   providers: [provideIcons({ lucideFile })],
   changeDetection: ChangeDetectionStrategy.OnPush,
-  templateUrl: './send-code.component.html'
+  templateUrl: './send-code.component.html',
 })
 export class SendCodeComponent {
   /** Global store. */
@@ -60,8 +52,8 @@ export class SendCodeComponent {
   private readonly awaiting = computed(() =>
     Match.value(this.status()).pipe(
       Match.tag('AwaitingPeer', (status) => status),
-      Match.orElse(() => undefined)
-    )
+      Match.orElse(() => undefined),
+    ),
   );
 
   /** Room id half of the code. */

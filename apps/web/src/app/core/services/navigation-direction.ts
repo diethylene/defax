@@ -10,7 +10,7 @@ type Flow = 'send' | 'receive';
 /** Ordered step names for each transfer flow. */
 const STEP_ORDER: Record<Flow, readonly string[]> = {
   send: ['', 'code', 'approve', 'transfer', 'complete', 'failed'],
-  receive: ['', 'confirm', 'transfer', 'complete', 'failed']
+  receive: ['', 'confirm', 'transfer', 'complete', 'failed'],
 };
 
 /** A resolved flow and its position within the flow steps. */
@@ -28,7 +28,7 @@ interface RouteStep {
  */
 const leafSegments = (snapshot: ActivatedRouteSnapshot): string[] => [
   ...snapshot.url.map((segment) => segment.path),
-  ...(snapshot.firstChild ? leafSegments(snapshot.firstChild) : [])
+  ...(snapshot.firstChild ? leafSegments(snapshot.firstChild) : []),
 ];
 
 /**
@@ -50,13 +50,13 @@ const routeStep = (snapshot: ActivatedRouteSnapshot): RouteStep | null => {
   return Match.value(flow).pipe(
     Match.when('send', () => ({
       flow: 'send' as const,
-      step: stepIndex('send', child)
+      step: stepIndex('send', child),
     })),
     Match.when('receive', () => ({
       flow: 'receive' as const,
-      step: stepIndex('receive', child)
+      step: stepIndex('receive', child),
     })),
-    Match.orElse(() => null)
+    Match.orElse(() => null),
   );
 };
 
@@ -80,6 +80,5 @@ const isBackward = (from: RouteStep | null, to: RouteStep | null): boolean => {
  */
 export const navDirection = (
   from: ActivatedRouteSnapshot,
-  to: ActivatedRouteSnapshot
-): NavDirection =>
-  isBackward(routeStep(from), routeStep(to)) ? 'backward' : 'forward';
+  to: ActivatedRouteSnapshot,
+): NavDirection => (isBackward(routeStep(from), routeStep(to)) ? 'backward' : 'forward');

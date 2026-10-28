@@ -1,9 +1,4 @@
-import {
-  ChangeDetectionStrategy,
-  Component,
-  computed,
-  inject
-} from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, inject } from '@angular/core';
 import { Store } from '@ngrx/store';
 import { ReceiveActions } from '@web/store/receive/receive.actions';
 import { receiveFeature } from '@web/store/receive/receive.reducer';
@@ -26,7 +21,7 @@ import { TransferCompleteComponent } from '../../../core/components/transfer/tra
       [checksum]="digest()"
       (restart)="onRestart()"
     />
-  `
+  `,
 })
 export class ReceiveCompleteComponent {
   /** Global store. */
@@ -39,8 +34,8 @@ export class ReceiveCompleteComponent {
   private readonly done = computed(() =>
     Match.value(this.status()).pipe(
       Match.tag('Done', (status) => status),
-      Match.orElse(() => undefined)
-    )
+      Match.orElse(() => undefined),
+    ),
   );
 
   /** Digest produced by the received file. */
@@ -53,14 +48,10 @@ export class ReceiveCompleteComponent {
   protected readonly fileSize = computed(() => this.done()?.file.size ?? 0);
 
   /** Browser of the peer that sent the file. */
-  protected readonly peerBrowser = computed(
-    () => this.done()?.peerIdentity.browser ?? ''
-  );
+  protected readonly peerBrowser = computed(() => this.done()?.peerIdentity.browser ?? '');
 
   /** Operating system of the peer that sent the file. */
-  protected readonly peerOs = computed(
-    () => this.done()?.peerIdentity.os ?? ''
-  );
+  protected readonly peerOs = computed(() => this.done()?.peerIdentity.os ?? '');
 
   /** Seconds the receive took, or undefined while it is unfinished. */
   protected readonly timeTaken = computed(() => {

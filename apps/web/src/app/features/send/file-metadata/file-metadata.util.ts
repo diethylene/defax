@@ -11,7 +11,7 @@ export function toFileMetadata(file: File): FileMetadata {
     size: file.size,
     mime: file.type,
     extension: extensionOf(file.name),
-    lastModified: file.lastModified
+    lastModified: file.lastModified,
   };
 }
 

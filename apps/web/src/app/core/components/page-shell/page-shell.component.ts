@@ -1,10 +1,5 @@
 import { animate, style, transition, trigger } from '@angular/animations';
-import {
-  ChangeDetectionStrategy,
-  Component,
-  computed,
-  input
-} from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, input } from '@angular/core';
 import { HlmBadge } from '@spartan-ng/helm/badge';
 
 /** One numbered step shown under the page content. */
@@ -17,11 +12,8 @@ export interface PageStep {
 
 /** Fades the steps into and out of view. */
 const stepsFade = trigger('stepsFade', [
-  transition(':enter', [
-    style({ opacity: 0 }),
-    animate('200ms ease-out', style({ opacity: 1 }))
-  ]),
-  transition(':leave', [animate('200ms ease-out', style({ opacity: 0 }))])
+  transition(':enter', [style({ opacity: 0 }), animate('200ms ease-out', style({ opacity: 1 }))]),
+  transition(':leave', [animate('200ms ease-out', style({ opacity: 0 }))]),
 ]);
 
 /** Centred page frame with a heading, content and optional steps. */
@@ -31,7 +23,7 @@ const stepsFade = trigger('stepsFade', [
   host: { class: 'block' },
   animations: [stepsFade],
   changeDetection: ChangeDetectionStrategy.OnPush,
-  templateUrl: './page-shell.component.html'
+  templateUrl: './page-shell.component.html',
 })
 export class PageShellComponent {
   /** Page heading. */
@@ -44,7 +36,5 @@ export class PageShellComponent {
   readonly stepsVisible = input(true);
 
   /** Whether there are steps to show. */
-  protected readonly showSteps = computed(
-    () => this.stepsVisible() && this.steps().length > 0
-  );
+  protected readonly showSteps = computed(() => this.stepsVisible() && this.steps().length > 0);
 }

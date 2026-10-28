@@ -37,7 +37,7 @@ const defaults: Required<DropLayoutOptions> = {
   columnSpacing: 4,
   perColumn: 2,
   ripple: 0.07,
-  duration: 2.4
+  duration: 2.4,
 };
 
 /**
@@ -51,24 +51,12 @@ function perimeter(width: number, height: number, radius: number): Segment[] {
   const segments: Segment[] = [];
 
   /** Adds a straight perimeter segment. */
-  const line = (
-    x0: number,
-    y0: number,
-    x1: number,
-    y1: number,
-    nx: number,
-    ny: number
-  ): void => {
+  const line = (x0: number, y0: number, x1: number, y1: number, nx: number, ny: number): void => {
     const length = Math.hypot(x1 - x0, y1 - y0);
     if (length > 0) {
       segments.push({
         length,
-        at: (t) => [
-          x0 + ((x1 - x0) * t) / length,
-          y0 + ((y1 - y0) * t) / length,
-          nx,
-          ny
-        ]
+        at: (t) => [x0 + ((x1 - x0) * t) / length, y0 + ((y1 - y0) * t) / length, nx, ny],
       });
     }
   };
@@ -84,7 +72,7 @@ function perimeter(width: number, height: number, radius: number): Segment[] {
         const ux = Math.cos(a);
         const uy = Math.sin(a);
         return [cx + radius * ux, cy + radius * uy, -ux, -uy];
-      }
+      },
     });
   };
 
@@ -126,24 +114,19 @@ export function computeDrops(
   width: number,
   height: number,
   radius: number,
-  options: DropLayoutOptions = {}
+  options: DropLayoutOptions = {},
 ): Drop[] {
   const {
     columnSpacing,
     perColumn,
     ripple: rippleAmount,
-    duration
+    duration,
   } = {
     ...defaults,
-    ...options
+    ...options,
   };
 
-  if (
-    !Number.isFinite(width) ||
-    !Number.isFinite(height) ||
-    width <= 0 ||
-    height <= 0
-  ) {
+  if (!Number.isFinite(width) || !Number.isFinite(height) || width <= 0 || height <= 0) {
     return [];
   }
 
@@ -174,7 +157,7 @@ export function computeDrops(
         y: Number(y.toFixed(2)),
         dx: Number(dx.toFixed(4)),
         dy: Number(dy.toFixed(4)),
-        delay: `${(-((j + phase) / perColumn) * duration).toFixed(3)}s`
+        delay: `${(-((j + phase) / perColumn) * duration).toFixed(3)}s`,
       });
     }
   }

@@ -19,27 +19,21 @@ import {
   take,
   takeUntil,
   tap,
-  withLatestFrom
+  withLatestFrom,
 } from 'rxjs';
 import { HashService } from '../../core/services/hash.service';
 import { SignalingService } from '../../core/services/signaling.service';
 import {
   type TransferErrorTag,
   type TransferEvent,
-  TransferService
+  TransferService,
 } from '../../core/services/transfer.service';
-import {
-  routeForPhase,
-  type SendPhase
-} from '../../features/send/send-phase/send-phase.model';
+import { routeForPhase, type SendPhase } from '../../features/send/send-phase/send-phase.model';
 import { IdentityService } from '../../shared/services/identity.service';
 import type { FileHashEvent } from '../../shared/utilities/hash-protocol';
 import { SendActions } from './send.actions';
+import { selectSendPhase, selectSendStatus } from './send.selectors';
 import type { SendErrorTag, SendStatus } from './send-transitions';
-import {
-  selectSendPhase,
-  selectSendStatus
-} from './send.selectors';
 
 /** Transfer event paired with the moment the transfer started. */
 interface TimedTransferEvent {
@@ -52,30 +46,23 @@ interface TimedTransferEvent {
 /** Store tag for each reason the transfer service reports. */
 const sendErrorFor = {
   'storage-full': 'transfer-failed',
-  'verification-failed': 'verification-failed'
+  'verification-failed': 'verification-failed',
 } satisfies Record<TransferErrorTag, SendErrorTag>;
 
 /**
  * Follows a transfer and keeps its start time beside every event.
  * @returns Operator pairing each event with the start time.
  */
-const timeTransferEvents = (): OperatorFunction<
-  TransferEvent,
-  TimedTransferEvent
-> => (source) =>
+const timeTransferEvents = (): OperatorFunction<TransferEvent, TimedTransferEvent> => (source) =>
   source.pipe(
     scan(
-      (
-        timed: TimedTransferEvent | null,
-        event: TransferEvent
-      ): TimedTransferEvent | null => ({
+      (timed: TimedTransferEvent | null, event: TransferEvent): TimedTransferEvent | null => ({
         event,
-        startedAt:
-          event.type === 'started' ? Date.now() : (timed?.startedAt ?? null)
+        startedAt: event.type === 'started' ? Date.now() : (timed?.startedAt ?? null),
       }),
-      null
+      null,
     ),
-    filter((timed): timed is TimedTransferEvent => timed !== null)
+    filter((timed): timed is TimedTransferEvent => timed !== null),
   );
 
 /**
@@ -85,24 +72,20 @@ const timeTransferEvents = (): OperatorFunction<
  */
 const transferActionFor = ({ event, startedAt }: TimedTransferEvent): Action =>
   Match.value(event).pipe(
-    Match.discriminator('type')('started', ({ total }) =>
-      SendActions.transferStarted({ total })
-    ),
+    Match.discriminator('type')('started', ({ total }) => SendActions.transferStarted({ total })),
     Match.discriminator('type')('progress', ({ transferred }) =>
-      SendActions.transferProgress({ sent: transferred })
+      SendActions.transferProgress({ sent: transferred }),
     ),
-    Match.discriminator('type')('complete', () =>
-      SendActions.transferComplete()
-    ),
+    Match.discriminator('type')('complete', () => SendActions.transferComplete()),
     Match.discriminator('type')('verified', () =>
       SendActions.transferVerified({
-        elapsed: Date.now() - (startedAt ?? Date.now())
-      })
+        elapsed: Date.now() - (startedAt ?? Date.now()),
+      }),
     ),
     Match.discriminator('type')('failed', ({ error }) =>
-      SendActions.transferFailed({ error: sendErrorFor[error] })
+      SendActions.transferFailed({ error: sendErrorFor[error] }),
     ),
-    Match.exhaustive
+    Match.exhaustive,
   );
 
 /**
@@ -113,12 +96,10 @@ const transferActionFor = ({ event, startedAt }: TimedTransferEvent): Action =>
 const hashActionFor = (event: FileHashEvent): Action =>
   Match.value(event).pipe(
     Match.discriminator('type')('progress', ({ processed }) =>
-      SendActions.hashProgress({ processed })
+      SendActions.hashProgress({ processed }),
     ),
-    Match.discriminator('type')('complete', ({ digest }) =>
-      SendActions.hashComplete({ digest })
-    ),
-    Match.exhaustive
+    Match.discriminator('type')('complete', ({ digest }) => SendActions.hashComplete({ digest })),
+    Match.exhaustive,
   );
 
 /**
@@ -128,14 +109,8 @@ const hashActionFor = (event: FileHashEvent): Action =>
  */
 const isConnected = (status: SendStatus): boolean =>
   Match.value(status).pipe(
-    Match.tag(
-      'SasConfirm',
-      'Transferring',
-      'Verifying',
-      'Done',
-      () => true
-    ),
-    Match.orElse(() => false)
+    Match.tag('SasConfirm', 'Transferring', 'Verifying', 'Done', () => true),
+    Match.orElse(() => false),
   );
 
 /** Navigates to the route that matches the send status. */
@@ -149,9 +124,9 @@ export const sendRouteToPhase$ = createEffect(
         if (router.url !== url) {
           void router.navigateByUrl(url);
         }
-      })
+      }),
     ),
-  { dispatch: false, functional: true }
+  { dispatch: false, functional: true },
 );
 
 /** Creates the room and runs the handshake when a file is chosen. */
@@ -159,7 +134,7 @@ export const sendStartSession$ = createEffect(
   (
     actions$ = inject(Actions),
     signaling = inject(SignalingService),
-    identity = inject(IdentityService)
+    identity = inject(IdentityService),
   ) =>
     actions$.pipe(
       ofType(SendActions.fileSelected),
@@ -168,20 +143,16 @@ export const sendStartSession$ = createEffect(
         return concat(
           of(
             SendActions.roomCreated({ roomId: session.roomId }),
-            SendActions.passwordGenerated({ password: session.password })
+            SendActions.passwordGenerated({ password: session.password }),
           ),
-          signaling
-            .connectAsInitiator(session, identity.detect(), metadata)
-            .pipe(
-              map(({ sas, peerIdentity }) =>
-                SendActions.sasComputed({ sas, peerIdentity })
-              ),
-              catchError(() => of(SendActions.handshakeFailed()))
-            )
+          signaling.connectAsInitiator(session, identity.detect(), metadata).pipe(
+            map(({ sas, peerIdentity }) => SendActions.sasComputed({ sas, peerIdentity })),
+            catchError(() => of(SendActions.handshakeFailed())),
+          ),
         );
-      })
+      }),
     ),
-  { functional: true }
+  { functional: true },
 );
 
 /** Closes the signalling room when the send is reset. */
@@ -189,9 +160,9 @@ export const sendCloseRoom$ = createEffect(
   (actions$ = inject(Actions), signaling = inject(SignalingService)) =>
     actions$.pipe(
       ofType(SendActions.reset),
-      tap(() => signaling.close())
+      tap(() => signaling.close()),
     ),
-  { dispatch: false, functional: true }
+  { dispatch: false, functional: true },
 );
 
 /** Disconnects from the peer when the send is cancelled. */
@@ -199,9 +170,9 @@ export const sendDisconnect$ = createEffect(
   (actions$ = inject(Actions), signaling = inject(SignalingService)) =>
     actions$.pipe(
       ofType(SendActions.disconnect),
-      tap(() => signaling.disconnect())
+      tap(() => signaling.disconnect()),
     ),
-  { dispatch: false, functional: true }
+  { dispatch: false, functional: true },
 );
 
 /** Resets the send when the receiver cancels. */
@@ -210,9 +181,9 @@ export const sendPeerDisconnected$ = createEffect(
     signaling.peerDisconnected$.pipe(
       filter((notice) => notice.cancelledBy === 'receiver'),
       tap(() => toast.warning('The receiver canceled the transfer.')),
-      map(() => SendActions.reset())
+      map(() => SendActions.reset()),
     ),
-  { functional: true }
+  { functional: true },
 );
 
 /** Hashes the chosen file and reports progress. */
@@ -226,28 +197,17 @@ export const sendHashFile$ = createEffect(
           hashService.hashFile(file).pipe(
             map(hashActionFor),
             catchError(() => of(SendActions.hashFailed())),
-            takeUntil(
-              actions$.pipe(
-                ofType(
-                  SendActions.reset,
-                  SendActions.disconnect
-                )
-              )
-            )
-          )
-        )
-      )
+            takeUntil(actions$.pipe(ofType(SendActions.reset, SendActions.disconnect))),
+          ),
+        ),
+      ),
     ),
-  { functional: true }
+  { functional: true },
 );
 
 /** Hands the finished digest to the receiver once the handshake completes. */
 export const sendFileHash$ = createEffect(
-  (
-    actions$ = inject(Actions),
-    store = inject(Store),
-    signaling = inject(SignalingService)
-  ) =>
+  (actions$ = inject(Actions), store = inject(Store), signaling = inject(SignalingService)) =>
     actions$.pipe(
       ofType(SendActions.hashComplete),
       switchMap(({ digest }) =>
@@ -255,28 +215,20 @@ export const sendFileHash$ = createEffect(
           filter(isConnected),
           takeUntil(
             actions$.pipe(
-              ofType(
-                SendActions.fileSelected,
-                SendActions.reset,
-                SendActions.disconnect
-              )
-            )
+              ofType(SendActions.fileSelected, SendActions.reset, SendActions.disconnect),
+            ),
           ),
           take(1),
-          tap(() => signaling.sendFileHash(digest))
-        )
-      )
+          tap(() => signaling.sendFileHash(digest)),
+        ),
+      ),
     ),
-  { dispatch: false, functional: true }
+  { dispatch: false, functional: true },
 );
 
 /** Starts the transfer once both peers confirmed the sas. */
 export const sendStartTransfer$ = createEffect(
-  (
-    actions$ = inject(Actions),
-    store = inject(Store),
-    transfer = inject(TransferService)
-  ) =>
+  (actions$ = inject(Actions), store = inject(Store), transfer = inject(TransferService)) =>
     actions$.pipe(
       ofType(SendActions.sasComputed),
       withLatestFrom(store.select(selectSendStatus)),
@@ -289,26 +241,22 @@ export const sendStartTransfer$ = createEffect(
               catchError(() =>
                 of(
                   SendActions.transferFailed({
-                    error: 'transfer-failed'
-                  })
-                )
+                    error: 'transfer-failed',
+                  }),
+                ),
               ),
               takeUntil(
                 actions$.pipe(
-                  ofType(
-                    SendActions.fileSelected,
-                    SendActions.reset,
-                    SendActions.disconnect
-                  )
-                )
-              )
-            )
+                  ofType(SendActions.fileSelected, SendActions.reset, SendActions.disconnect),
+                ),
+              ),
+            ),
           ),
-          Match.orElse(() => EMPTY)
-        )
-      )
+          Match.orElse(() => EMPTY),
+        ),
+      ),
     ),
-  { functional: true }
+  { functional: true },
 );
 
 /** Every send effect, registered together. */
@@ -320,5 +268,5 @@ export const sendEffects = {
   sendPeerDisconnected$,
   sendHashFile$,
   sendFileHash$,
-  sendStartTransfer$
+  sendStartTransfer$,
 };

@@ -1,4 +1,12 @@
 import { Injectable, inject } from '@angular/core';
+import type { FileMetadata } from '@contract/signal/file-metadata.model';
+import type { Identity } from '@contract/signal/identity.model';
+import type { DisconnectNotice } from '@contract/signal/payload.model';
+import {
+  DisconnectNotice as DisconnectNoticeSchema,
+  FileHash,
+} from '@contract/signal/payload.model';
+import type { SealedKind } from '@contract/signal/sealed-kind.model';
 import { utf8ToBytes } from '@noble/hashes/utils.js';
 import * as Match from 'effect/Match';
 import * as Schema from 'effect/Schema';
@@ -16,27 +24,16 @@ import {
   switchMap,
   take,
   takeUntil,
-  tap
+  tap,
 } from 'rxjs';
-import type { SealedKind } from '@contract/signal/sealed-kind.model';
-import type { FileMetadata } from '@contract/signal/file-metadata.model';
-import type { Identity } from '@contract/signal/identity.model';
-import {
-  DisconnectNotice as DisconnectNoticeSchema,
-  FileHash
-} from '@contract/signal/payload.model';
-import type { DisconnectNotice } from '@contract/signal/payload.model';
-import type { SignalMessage } from '../../shared/utilities/signal-message';
 import type { RoomId } from '../../shared/interfaces/signal-session';
 import { SignalTransport } from '../../shared/interfaces/signal-transport';
 import { open, type SignalRole, seal } from '../../shared/utilities/aead';
-import {
-  decodeBase64Url,
-  encodeBase64Url
-} from '../../shared/utilities/base64url';
-import { generatePassword } from '../../shared/utilities/password';
+import { decodeBase64Url, encodeBase64Url } from '../../shared/utilities/base64url';
 import { parseFileMetadata } from '../../shared/utilities/file-metadata';
 import { parseIdentity } from '../../shared/utilities/identity';
+import { generatePassword } from '../../shared/utilities/password';
+import type { SignalMessage } from '../../shared/utilities/signal-message';
 import { HandshakeService, type InitiatorSession } from './handshake.service';
 
 /** Connection the initiator reports once the peer answers. */
@@ -87,13 +84,13 @@ const IDLE: Connection = { _tag: 'idle' };
 /** Role the peer plays for each local role. */
 const PEER_ROLE = {
   initiator: 'responder',
-  responder: 'initiator'
+  responder: 'initiator',
 } as const satisfies Record<SignalRole, SignalRole>;
 
 /** Disconnect notice each role sends when it cancels. */
 const CANCELLED_BY = {
   initiator: 'sender',
-  responder: 'receiver'
+  responder: 'receiver',
 } as const satisfies Record<SignalRole, DisconnectNotice['cancelledBy']>;
 
 /** Decoder for the decrypted payloads. */
@@ -139,11 +136,9 @@ export class SignalingService {
   /** Forwards the peer's disconnect notice and file digest. */
   constructor() {
     this.sealed$('disconnect', parseDisconnect).subscribe((notice) =>
-      this.disconnect$.next(notice)
+      this.disconnect$.next(notice),
     );
-    this.sealed$('file-hash', parseFileHash).subscribe((digest) =>
-      this.fileHash$.next(digest)
-    );
+    this.sealed$('file-hash', parseFileHash).subscribe((digest) => this.fileHash$.next(digest));
   }
 
   /**
@@ -165,7 +160,7 @@ export class SignalingService {
   connectAsInitiator(
     session: InitiatorSession,
     identity: Identity,
-    file: FileMetadata
+    file: FileMetadata,
   ): Observable<InitiatorConnection> {
     return this.handshake.runAsInitiator(this.transport, session).pipe(
       switchMap(({ signalingKey, sas }) => {
@@ -173,13 +168,13 @@ export class SignalingService {
           _tag: 'established',
           signalingKey,
           roomId: session.roomId,
-          role: 'initiator'
+          role: 'initiator',
         };
         return this.exchangeAsInitiator(identity, file).pipe(
-          map((peerIdentity) => ({ sas, peerIdentity }))
+          map((peerIdentity) => ({ sas, peerIdentity })),
         );
       }),
-      takeUntil(this.close$)
+      takeUntil(this.close$),
     );
   }
 
@@ -189,25 +184,20 @@ export class SignalingService {
    * @param identity Details sent to the initiator.
    * @returns Observable of the sas, the initiator's details, and the file.
    */
-  connectAsResponder(
-    code: string,
-    identity: Identity
-  ): Observable<ResponderConnection> {
-    return defer(() =>
-      this.handshake.runAsResponder(this.transport, code)
-    ).pipe(
+  connectAsResponder(code: string, identity: Identity): Observable<ResponderConnection> {
+    return defer(() => this.handshake.runAsResponder(this.transport, code)).pipe(
       switchMap(({ signalingKey, sas, roomId }) => {
         this.connection = {
           _tag: 'established',
           signalingKey,
           roomId,
-          role: 'responder'
+          role: 'responder',
         };
         return this.exchangeAsResponder(identity).pipe(
-          map(({ peerIdentity, fileInfo }) => ({ sas, peerIdentity, fileInfo }))
+          map(({ peerIdentity, fileInfo }) => ({ sas, peerIdentity, fileInfo })),
         );
       }),
-      takeUntil(this.close$)
+      takeUntil(this.close$),
     );
   }
 
@@ -221,29 +211,22 @@ export class SignalingService {
     return Match.value(this.connection).pipe(
       Match.tag('established', ({ signalingKey, roomId, role }) =>
         defer(() =>
-          from(
-            seal(
-              signalingKey,
-              utf8ToBytes(JSON.stringify(payload)),
-              roomId,
-              role
-            )
-          ).pipe(
+          from(seal(signalingKey, utf8ToBytes(JSON.stringify(payload)), roomId, role)).pipe(
             tap((ct) =>
               this.transport.send({
                 type: 'sealed',
                 kind,
-                ct: encodeBase64Url(ct)
-              })
+                ct: encodeBase64Url(ct),
+              }),
             ),
-            map(() => undefined)
-          )
-        )
+            map(() => undefined),
+          ),
+        ),
       ),
       Match.tag('idle', () => {
         throw new Error('connection not established');
       }),
-      Match.exhaustive
+      Match.exhaustive,
     );
   }
 
@@ -253,21 +236,18 @@ export class SignalingService {
    * @param parse Parser for the decrypted payload.
    * @returns Observable of the parsed value.
    */
-  receiveSealed<T>(
-    kind: SealedKind,
-    parse: (json: string) => T
-  ): Observable<T> {
+  receiveSealed<T>(kind: SealedKind, parse: (json: string) => T): Observable<T> {
     return Match.value(this.connection).pipe(
       Match.tag('established', (connection) =>
         this.sealedOfKind(kind).pipe(
           take(1),
-          switchMap((message) => this.openPayload(connection, message, parse))
-        )
+          switchMap((message) => this.openPayload(connection, message, parse)),
+        ),
       ),
       Match.tag('idle', () => {
         throw new Error('connection not established');
       }),
-      Match.exhaustive
+      Match.exhaustive,
     );
   }
 
@@ -285,12 +265,12 @@ export class SignalingService {
         this.sendSealed('disconnect', { cancelledBy: CANCELLED_BY[role] })
           .pipe(
             catchError(() => EMPTY),
-            finalize(() => this.close())
+            finalize(() => this.close()),
           )
-          .subscribe()
+          .subscribe(),
       ),
       Match.tag('idle', () => this.close()),
-      Match.exhaustive
+      Match.exhaustive,
     );
   }
 
@@ -303,10 +283,10 @@ export class SignalingService {
       Match.tag('established', () =>
         this.sendSealed('file-hash', { digest })
           .pipe(catchError(() => EMPTY))
-          .subscribe()
+          .subscribe(),
       ),
       Match.tag('idle', () => undefined),
-      Match.exhaustive
+      Match.exhaustive,
     );
   }
 
@@ -317,9 +297,7 @@ export class SignalingService {
    * @returns Observable of parsed values, skipping undecryptable messages.
    */
   sealed$<T>(kind: SealedKind, parse: (json: string) => T): Observable<T> {
-    return this.sealedOfKind(kind).pipe(
-      switchMap((message) => this.openSealed(message, parse))
-    );
+    return this.sealedOfKind(kind).pipe(switchMap((message) => this.openSealed(message, parse)));
   }
 
   /**
@@ -330,9 +308,8 @@ export class SignalingService {
   private sealedOfKind(kind: SealedKind): Observable<SealedMessage> {
     return this.transport.messages$.pipe(
       filter(
-        (message): message is SealedMessage =>
-          message.type === 'sealed' && message.kind === kind
-      )
+        (message): message is SealedMessage => message.type === 'sealed' && message.kind === kind,
+      ),
     );
   }
 
@@ -343,18 +320,13 @@ export class SignalingService {
    * @param parse Parser for the decrypted payload.
    * @returns Observable of the parsed value, empty when it cannot be opened.
    */
-  private openSealed<T>(
-    message: SealedMessage,
-    parse: (json: string) => T
-  ): Observable<T> {
+  private openSealed<T>(message: SealedMessage, parse: (json: string) => T): Observable<T> {
     return Match.value(this.connection).pipe(
       Match.tag('established', (connection) =>
-        this.openPayload(connection, message, parse).pipe(
-          catchError(() => EMPTY)
-        )
+        this.openPayload(connection, message, parse).pipe(catchError(() => EMPTY)),
       ),
       Match.tag('idle', () => EMPTY),
-      Match.exhaustive
+      Match.exhaustive,
     );
   }
 
@@ -368,15 +340,15 @@ export class SignalingService {
   private openPayload<T>(
     connection: EstablishedConnection,
     message: SealedMessage,
-    parse: (json: string) => T
+    parse: (json: string) => T,
   ): Observable<T> {
     return from(
       open(
         connection.signalingKey,
         decodeBase64Url(message.ct) as Uint8Array<ArrayBuffer>,
         connection.roomId,
-        PEER_ROLE[connection.role]
-      )
+        PEER_ROLE[connection.role],
+      ),
     ).pipe(map((bytes) => parse(decoder.decode(bytes))));
   }
 
@@ -386,13 +358,10 @@ export class SignalingService {
    * @param file Metadata of the file to send.
    * @returns Observable of the responder's details.
    */
-  private exchangeAsInitiator(
-    identity: Identity,
-    file: FileMetadata
-  ): Observable<Identity> {
+  private exchangeAsInitiator(identity: Identity, file: FileMetadata): Observable<Identity> {
     return combineLatest([
       this.sendSealed('peer-info', identity),
-      this.sendSealed('file', file)
+      this.sendSealed('file', file),
     ]).pipe(switchMap(() => this.receiveSealed('peer-info', parseIdentity)));
   }
 
@@ -402,16 +371,16 @@ export class SignalingService {
    * @returns Observable of the initiator's details and the file metadata.
    */
   private exchangeAsResponder(
-    identity: Identity
+    identity: Identity,
   ): Observable<{ peerIdentity: Identity; fileInfo: FileMetadata | null }> {
     const sendIdentity$ = this.sendSealed('peer-info', identity);
     return combineLatest([
       this.receiveSealed('peer-info', parseIdentity),
-      this.receiveSealed('file', parseFileMetadata)
+      this.receiveSealed('file', parseFileMetadata),
     ]).pipe(
       switchMap(([peerIdentity, fileInfo]) =>
-        sendIdentity$.pipe(map(() => ({ peerIdentity, fileInfo })))
-      )
+        sendIdentity$.pipe(map(() => ({ peerIdentity, fileInfo }))),
+      ),
     );
   }
 }

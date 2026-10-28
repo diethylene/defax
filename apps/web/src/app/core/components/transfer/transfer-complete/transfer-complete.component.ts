@@ -1,10 +1,4 @@
-import {
-  ChangeDetectionStrategy,
-  Component,
-  computed,
-  input,
-  output
-} from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, input, output } from '@angular/core';
 import { NgIcon, provideIcons } from '@ng-icons/core';
 import { lucideCheck } from '@ng-icons/lucide';
 import { HlmButton } from '@spartan-ng/helm/button';
@@ -24,14 +18,14 @@ const copyFor = Match.type<TransferMode>().pipe(
   Match.when('send', () => ({
     heading: 'Delivered',
     subheading: 'The receiver has the file and confirmed it arrived intact.',
-    actionLabel: 'Send another file'
+    actionLabel: 'Send another file',
   })),
   Match.when('receive', () => ({
     heading: 'Received',
     subheading: 'The file is saved and confirmed intact.',
-    actionLabel: 'Receive another file'
+    actionLabel: 'Receive another file',
   })),
-  Match.exhaustive
+  Match.exhaustive,
 );
 
 /** Completion screen with the file summary and matched checksum. */
@@ -44,11 +38,11 @@ const copyFor = Match.type<TransferMode>().pipe(
     HlmButton,
     HlmCard,
     HlmCardContent,
-    HlmSeparator
+    HlmSeparator,
   ],
   providers: [provideIcons({ lucideCheck })],
   changeDetection: ChangeDetectionStrategy.OnPush,
-  templateUrl: './transfer-complete.component.html'
+  templateUrl: './transfer-complete.component.html',
 })
 export class TransferCompleteComponent {
   /** Direction of the finished transfer. */
@@ -73,6 +67,6 @@ export class TransferCompleteComponent {
 
   /** Checksum split into readable groups. */
   protected readonly checksumGroups = computed(() =>
-    chunk(this.checksum() ?? '', CHECKSUM_GROUP_SIZE)
+    chunk(this.checksum() ?? '', CHECKSUM_GROUP_SIZE),
   );
 }

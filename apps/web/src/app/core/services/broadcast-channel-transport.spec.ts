@@ -1,5 +1,5 @@
-import type { SignalMessage } from '../../shared/utilities/signal-message';
 import { encodeBase64Url } from '../../shared/utilities/base64url';
+import type { SignalMessage } from '../../shared/utilities/signal-message';
 import { BroadcastChannelTransport } from './broadcast-channel-transport';
 
 const pakeY = encodeBase64Url(new Uint8Array(32).fill(1));
@@ -30,9 +30,7 @@ describe('BroadcastChannelTransport room lifecycle', () => {
     expect(sid).toEqual(room.sid);
     expect(guestReceived[0]).toEqual({ type: 'pake', y: pakeY });
     expect(guestReceived[1]?.type).toBe('joined');
-    expect(hostReceived.some((message) => message.type === 'peer-joined')).toBe(
-      true
-    );
+    expect(hostReceived.some((message) => message.type === 'peer-joined')).toBe(true);
 
     host.close();
     guest.close();

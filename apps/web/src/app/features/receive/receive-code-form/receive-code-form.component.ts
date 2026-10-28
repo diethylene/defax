@@ -6,15 +6,9 @@ import {
   effect,
   input,
   output,
-  signal
+  signal,
 } from '@angular/core';
-import {
-  disabled,
-  FormField,
-  form,
-  submit,
-  validate
-} from '@angular/forms/signals';
+import { disabled, FormField, form, submit, validate } from '@angular/forms/signals';
 import { NgIcon, provideIcons } from '@ng-icons/core';
 import { lucideCheck } from '@ng-icons/lucide';
 import { ErrorStateMatcher } from '@spartan-ng/brain/forms';
@@ -50,22 +44,18 @@ class NoopErrorStateMatcher extends ErrorStateMatcher {
 const grow = trigger('grow', [
   transition(':enter', [
     style({ opacity: 0, height: 0 }),
-    animate('200ms ease-out', style({ opacity: 1, height: '*' }))
+    animate('200ms ease-out', style({ opacity: 1, height: '*' })),
   ]),
-  transition(':leave', [
-    animate('200ms ease-out', style({ opacity: 0, height: 0 }))
-  ])
+  transition(':leave', [animate('200ms ease-out', style({ opacity: 0, height: 0 }))]),
 ]);
 
 /** Pops the valid-code check mark in and out. */
 const check = trigger('check', [
   transition(':enter', [
     style({ opacity: 0, transform: 'scale(0.5)' }),
-    animate('150ms ease-out', style({ opacity: 1, transform: 'scale(1)' }))
+    animate('150ms ease-out', style({ opacity: 1, transform: 'scale(1)' })),
   ]),
-  transition(':leave', [
-    animate('120ms ease-out', style({ opacity: 0, transform: 'scale(0.5)' }))
-  ])
+  transition(':leave', [animate('120ms ease-out', style({ opacity: 0, transform: 'scale(0.5)' }))]),
 ]);
 
 /** Collects the code from the sender and emits it once it parses. */
@@ -80,15 +70,15 @@ const check = trigger('check', [
     HlmCardContent,
     HlmInput,
     HlmLabel,
-    HlmSeparator
+    HlmSeparator,
   ],
   providers: [
     provideIcons({ lucideCheck }),
-    { provide: ErrorStateMatcher, useClass: NoopErrorStateMatcher }
+    { provide: ErrorStateMatcher, useClass: NoopErrorStateMatcher },
   ],
   animations: [grow, check],
   changeDetection: ChangeDetectionStrategy.OnPush,
-  templateUrl: './receive-code-form.component.html'
+  templateUrl: './receive-code-form.component.html',
 })
 export class ReceiveCodeFormComponent {
   /** Emits the parsed code when the user connects. */
@@ -114,19 +104,13 @@ export class ReceiveCodeFormComponent {
   protected readonly submitted = signal(false);
 
   /** True when the field holds non-blank text. */
-  protected readonly hasText = computed(
-    () => this.codeForm.code().value().trim().length > 0
-  );
+  protected readonly hasText = computed(() => this.codeForm.code().value().trim().length > 0);
 
   /** True when the field holds non-blank text that parses. */
-  protected readonly valid = computed(
-    () => this.hasText() && this.codeForm.code().valid()
-  );
+  protected readonly valid = computed(() => this.hasText() && this.codeForm.code().valid());
 
   /** True when a submitted code failed to parse. */
-  protected readonly showError = computed(
-    () => this.submitted() && this.codeForm.code().invalid()
-  );
+  protected readonly showError = computed(() => this.submitted() && this.codeForm.code().invalid());
 
   /** Clears the field whenever a connection attempt ends. */
   constructor() {

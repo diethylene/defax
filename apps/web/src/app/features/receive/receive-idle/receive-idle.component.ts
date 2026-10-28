@@ -1,9 +1,4 @@
-import {
-  ChangeDetectionStrategy,
-  Component,
-  computed,
-  inject
-} from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, inject } from '@angular/core';
 import { Store } from '@ngrx/store';
 import { HlmButton } from '@spartan-ng/helm/button';
 import { ReceiveActions } from '@web/store/receive/receive.actions';
@@ -11,7 +6,7 @@ import { receiveFeature } from '@web/store/receive/receive.reducer';
 import * as Match from 'effect/Match';
 import {
   PageShellComponent,
-  type PageStep
+  type PageStep,
 } from '../../../core/components/page-shell/page-shell.component';
 import { ReceiveCodeFormComponent } from '../receive-code-form/receive-code-form.component';
 
@@ -21,7 +16,7 @@ import { ReceiveCodeFormComponent } from '../receive-code-form/receive-code-form
   imports: [PageShellComponent, ReceiveCodeFormComponent, HlmButton],
   host: { class: 'block' },
   changeDetection: ChangeDetectionStrategy.OnPush,
-  templateUrl: './receive-idle.component.html'
+  templateUrl: './receive-idle.component.html',
 })
 export class ReceiveIdleComponent {
   /** Global store. */
@@ -34,24 +29,24 @@ export class ReceiveIdleComponent {
   protected readonly connecting = computed(() =>
     Match.value(this.status()).pipe(
       Match.tag('Connecting', () => true),
-      Match.orElse(() => false)
-    )
+      Match.orElse(() => false),
+    ),
   );
 
   /** Steps shown beside the form. */
   protected readonly steps: PageStep[] = [
     {
       title: 'Enter the code.',
-      description: "Your device connects to the sender's."
+      description: "Your device connects to the sender's.",
     },
     {
       title: 'Check the details.',
-      description: 'Confirm the file and sender are who you expect.'
+      description: 'Confirm the file and sender are who you expect.',
     },
     {
       title: 'Receive.',
-      description: 'The file arrives encrypted and is checked on arrival.'
-    }
+      description: 'The file arrives encrypted and is checked on arrival.',
+    },
   ];
 
   /**

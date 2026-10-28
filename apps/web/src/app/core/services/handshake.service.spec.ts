@@ -5,7 +5,7 @@ import { type HandshakeResult, HandshakeService } from './handshake.service';
 
 async function runHandshakePair(
   initiatorPassword: string,
-  responderPassword: string
+  responderPassword: string,
 ): Promise<{
   initiatorResult: HandshakeResult;
   responderResult: HandshakeResult;
@@ -21,15 +21,10 @@ async function runHandshakePair(
       initiator.runAsInitiator(initiatorTransport, {
         roomId,
         sid,
-        password: initiatorPassword
-      })
+        password: initiatorPassword,
+      }),
     ),
-    firstValueFrom(
-      responder.runAsResponder(
-        responderTransport,
-        `${roomId}-${responderPassword}`
-      )
-    )
+    firstValueFrom(responder.runAsResponder(responderTransport, `${roomId}-${responderPassword}`)),
   ]);
 
   return { initiatorResult, responderResult };
@@ -51,14 +46,9 @@ describe('HandshakeService', () => {
       pair.responderResult.signalingKey,
       new TextEncoder().encode('hello defax'),
       roomId,
-      'responder'
+      'responder',
     );
-    const opened = await open(
-      pair.initiatorResult.signalingKey,
-      sealed,
-      roomId,
-      'responder'
-    );
+    const opened = await open(pair.initiatorResult.signalingKey, sealed, roomId, 'responder');
 
     expect(new TextDecoder().decode(opened)).toBe('hello defax');
   });

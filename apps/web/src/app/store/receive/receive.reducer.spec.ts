@@ -2,11 +2,7 @@ import type { FileMetadata } from '@contract/signal/file-metadata.model';
 import type { Identity } from '@contract/signal/identity.model';
 import { describe, expect, it } from 'vitest';
 import { ReceiveActions } from './receive.actions';
-import {
-  initialReceiveState,
-  type ReceiveState,
-  receiveFeature,
-} from './receive.reducer';
+import { initialReceiveState, type ReceiveState, receiveFeature } from './receive.reducer';
 
 const peerIdentity: Identity = {
   browser: 'Firefox 121',
@@ -109,10 +105,7 @@ describe('receiveFeature.reducer', () => {
 
     it('records the elapsed time and moves to Done when the file verifies', () => {
       const verifying = receiveFeature.reducer(
-        receiveFeature.reducer(
-          transferring,
-          ReceiveActions.transferStarted({ total: 12345 }),
-        ),
+        receiveFeature.reducer(transferring, ReceiveActions.transferStarted({ total: 12345 })),
         ReceiveActions.transferComplete(),
       );
 
@@ -147,10 +140,7 @@ describe('receiveFeature.reducer', () => {
     });
 
     it('fails with handshake-failed when the handshake fails', () => {
-      const next = receiveFeature.reducer(
-        connecting,
-        ReceiveActions.handshakeFailed(),
-      );
+      const next = receiveFeature.reducer(connecting, ReceiveActions.handshakeFailed());
 
       expect(next.status).toEqual({ _tag: 'Failed', error: 'handshake-failed' });
     });

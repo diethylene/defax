@@ -24,7 +24,7 @@ export class IdentityService {
       browser: browserName(userAgent),
       os: osName(userAgent),
       timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone,
-      language: navigator.language
+      language: navigator.language,
     };
   }
 }
@@ -38,21 +38,21 @@ const browserName = (userAgent: string): string =>
   Match.value(userAgent).pipe(
     Match.when(
       (ua) => EDGE.test(ua),
-      (ua) => `Edge ${capture(EDGE, ua)}`
+      (ua) => `Edge ${capture(EDGE, ua)}`,
     ),
     Match.when(
       (ua) => CHROME.test(ua),
-      (ua) => `Chrome ${capture(CHROME, ua)}`
+      (ua) => `Chrome ${capture(CHROME, ua)}`,
     ),
     Match.when(
       (ua) => FIREFOX.test(ua),
-      (ua) => `Firefox ${capture(FIREFOX, ua)}`
+      (ua) => `Firefox ${capture(FIREFOX, ua)}`,
     ),
     Match.when(
       (ua) => SAFARI.test(ua),
-      (ua) => `Safari ${capture(SAFARI, ua)}`
+      (ua) => `Safari ${capture(SAFARI, ua)}`,
     ),
-    Match.orElse(() => 'Unknown browser')
+    Match.orElse(() => 'Unknown browser'),
   );
 
 /**
@@ -64,25 +64,25 @@ const osName = (userAgent: string): string =>
   Match.value(userAgent).pipe(
     Match.when(
       (ua) => ua.includes('Windows'),
-      () => 'Windows'
+      () => 'Windows',
     ),
     Match.when(
       (ua) => ua.includes('Mac OS X'),
-      () => 'macOS'
+      () => 'macOS',
     ),
     Match.when(
       (ua) => ua.includes('Android'),
-      () => 'Android'
+      () => 'Android',
     ),
     Match.when(
       (ua) => /(iPhone|iPad|iPod)/.test(ua),
-      () => 'iOS'
+      () => 'iOS',
     ),
     Match.when(
       (ua) => ua.includes('Linux'),
-      () => 'Linux'
+      () => 'Linux',
     ),
-    Match.orElse(() => 'Unknown OS')
+    Match.orElse(() => 'Unknown OS'),
   );
 
 /**
@@ -91,5 +91,4 @@ const osName = (userAgent: string): string =>
  * @param userAgent Text to search.
  * @returns The captured text, or an empty string.
  */
-const capture = (pattern: RegExp, userAgent: string): string =>
-  pattern.exec(userAgent)?.[1] ?? '';
+const capture = (pattern: RegExp, userAgent: string): string => pattern.exec(userAgent)?.[1] ?? '';

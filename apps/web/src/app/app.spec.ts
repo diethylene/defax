@@ -6,7 +6,7 @@ import { provideStore } from '@ngrx/store';
 import { App } from './app';
 import {
   applyThemeMode$,
-  persistThemeMode$
+  persistThemeMode$,
 } from './store/application-config/application-config.effects';
 import { applicationConfigFeature } from './store/application-config/application-config.reducer';
 import { sendFeature } from './store/send/send.reducer';
@@ -20,11 +20,11 @@ describe('App', () => {
         provideStore({
           applicationConfig: applicationConfigFeature.reducer,
           send: sendFeature.reducer,
-          router: routerReducer
+          router: routerReducer,
         }),
         provideEffects({ applyThemeMode$, persistThemeMode$ }),
-        provideRouterStore()
-      ]
+        provideRouterStore(),
+      ],
     }).compileComponents();
   });
 

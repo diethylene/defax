@@ -70,15 +70,11 @@ export type SendStatus =
  */
 export const withHash = (status: SendStatus, hash: HashStatus): SendStatus =>
   Match.value(status).pipe(
-    Match.tag(
-      'AwaitingPeer',
-      'SasConfirm',
-      'Transferring',
-      'Verifying',
-      'Done',
-      (current) => ({ ...current, hash })
-    ),
-    Match.orElse(() => status)
+    Match.tag('AwaitingPeer', 'SasConfirm', 'Transferring', 'Verifying', 'Done', (current) => ({
+      ...current,
+      hash,
+    })),
+    Match.orElse(() => status),
   );
 
 /**
@@ -90,7 +86,7 @@ export const withHash = (status: SendStatus, hash: HashStatus): SendStatus =>
 export const withRoom = (status: SendStatus, roomId: RoomId): SendStatus =>
   Match.value(status).pipe(
     Match.tag('AwaitingPeer', (current) => ({ ...current, roomId })),
-    Match.orElse(() => status)
+    Match.orElse(() => status),
   );
 
 /**
@@ -102,7 +98,7 @@ export const withRoom = (status: SendStatus, roomId: RoomId): SendStatus =>
 export const withPassword = (status: SendStatus, password: string): SendStatus =>
   Match.value(status).pipe(
     Match.tag('AwaitingPeer', (current) => ({ ...current, password })),
-    Match.orElse(() => status)
+    Match.orElse(() => status),
   );
 
 /**
@@ -112,19 +108,15 @@ export const withPassword = (status: SendStatus, password: string): SendStatus =
  * @param peerIdentity Details the receiver sent about itself.
  * @returns The confirmation status, or the status unchanged.
  */
-export const withSas = (
-  status: SendStatus,
-  sas: string,
-  peerIdentity: Identity
-): SendStatus =>
+export const withSas = (status: SendStatus, sas: string, peerIdentity: Identity): SendStatus =>
   Match.value(status).pipe(
     Match.tag('AwaitingPeer', (current) => ({
       ...current,
       _tag: 'SasConfirm' as const,
       sas,
-      peerIdentity
+      peerIdentity,
     })),
-    Match.orElse(() => status)
+    Match.orElse(() => status),
   );
 
 /**
@@ -139,9 +131,9 @@ export const withTransferStarted = (status: SendStatus, total: number): SendStat
       ...current,
       _tag: 'Transferring' as const,
       sent: 0,
-      total
+      total,
     })),
-    Match.orElse(() => status)
+    Match.orElse(() => status),
   );
 
 /**
@@ -153,7 +145,7 @@ export const withTransferStarted = (status: SendStatus, total: number): SendStat
 export const withTransferProgress = (status: SendStatus, sent: number): SendStatus =>
   Match.value(status).pipe(
     Match.tag('Transferring', (current) => ({ ...current, sent })),
-    Match.orElse(() => status)
+    Match.orElse(() => status),
   );
 
 /**
@@ -165,9 +157,9 @@ export const withTransferComplete = (status: SendStatus): SendStatus =>
   Match.value(status).pipe(
     Match.tag('Transferring', (current) => ({
       ...current,
-      _tag: 'Verifying' as const
+      _tag: 'Verifying' as const,
     })),
-    Match.orElse(() => status)
+    Match.orElse(() => status),
   );
 
 /**
@@ -181,7 +173,7 @@ export const withVerified = (status: SendStatus, durationMs: number): SendStatus
     Match.tag('Transferring', 'Verifying', (current) => ({
       ...current,
       _tag: 'Done' as const,
-      durationMs
+      durationMs,
     })),
-    Match.orElse(() => status)
+    Match.orElse(() => status),
   );

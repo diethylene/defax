@@ -1,4 +1,6 @@
 import { Injectable, inject } from '@angular/core';
+import type { FileMetadata } from '@contract/signal/file-metadata.model';
+import * as Match from 'effect/Match';
 import {
   catchError,
   concat,
@@ -16,15 +18,10 @@ import {
   scan,
   switchMap,
   take,
-  tap
+  tap,
 } from 'rxjs';
-import * as Match from 'effect/Match';
 import { TRANSFER_CHUNK_SIZE } from '../../shared/constants/transfer-protocol';
-import type { FileMetadata } from '@contract/signal/file-metadata.model';
-import {
-  parseAccept,
-  parseVerifyResult
-} from '../../shared/utilities/transfer-message';
+import { parseAccept, parseVerifyResult } from '../../shared/utilities/transfer-message';
 import { HashService } from './hash.service';
 import { SignalingService } from './signaling.service';
 import { StorageService } from './storage.service';
@@ -75,11 +72,8 @@ export class TransferService {
     return this.signaling.sealed$('accept', parseAccept).pipe(
       take(1),
       switchMap(() =>
-        concat(
-          of<TransferEvent>({ type: 'started', total: file.size }),
-          this.streamOut(file)
-        )
-      )
+        concat(of<TransferEvent>({ type: 'started', total: file.size }), this.streamOut(file)),
+      ),
     );
   }
 
@@ -96,10 +90,10 @@ export class TransferService {
           ? this.receiveIn(input)
           : of<TransferEvent>({
               type: 'failed',
-              error: 'storage-full'
-            })
+              error: 'storage-full',
+            }),
       ),
-      finalize(() => this.storage.close())
+      finalize(() => this.storage.close()),
     );
   }
 
@@ -116,12 +110,10 @@ export class TransferService {
           concat(
             this.sendChunks(file, channel),
             channel.drain().pipe(ignoreElements()),
-            of<TransferEvent>({ type: 'complete' }).pipe(
-              tap(() => channel.close())
-            ),
-            this.awaitVerification()
-          ).pipe(finalize(() => channel.close()))
-        )
+            of<TransferEvent>({ type: 'complete' }).pipe(tap(() => channel.close())),
+            this.awaitVerification(),
+          ).pipe(finalize(() => channel.close())),
+        ),
       );
   }
 
@@ -131,27 +123,17 @@ export class TransferService {
    * @param channel Open data channel.
    * @returns Observable of progress events.
    */
-  private sendChunks(
-    file: File,
-    channel: RtcChannel
-  ): Observable<TransferEvent> {
+  private sendChunks(file: File, channel: RtcChannel): Observable<TransferEvent> {
     const chunkCount = Math.ceil(file.size / TRANSFER_CHUNK_SIZE);
     return range(chunkCount).pipe(
       concatMap((index) =>
         from(
-          file
-            .slice(
-              index * TRANSFER_CHUNK_SIZE,
-              (index + 1) * TRANSFER_CHUNK_SIZE
-            )
-            .arrayBuffer()
-        )
+          file.slice(index * TRANSFER_CHUNK_SIZE, (index + 1) * TRANSFER_CHUNK_SIZE).arrayBuffer(),
+        ),
       ),
-      concatMap((bytes) =>
-        channel.send(bytes).pipe(map(() => bytes.byteLength))
-      ),
+      concatMap((bytes) => channel.send(bytes).pipe(map(() => bytes.byteLength))),
       scan((sent, byteLength) => sent + byteLength, 0),
-      map((sent): TransferEvent => ({ type: 'progress', transferred: sent }))
+      map((sent): TransferEvent => ({ type: 'progress', transferred: sent })),
     );
   }
 
@@ -165,10 +147,8 @@ export class TransferService {
       .pipe(
         map(
           (result): TransferEvent =>
-            result.ok
-              ? { type: 'verified' }
-              : { type: 'failed', error: 'verification-failed' }
-        )
+            result.ok ? { type: 'verified' } : { type: 'failed', error: 'verification-failed' },
+        ),
       );
   }
 
@@ -185,12 +165,12 @@ export class TransferService {
           concat(
             of<TransferEvent>({
               type: 'started',
-              total: input.metadata.size
+              total: input.metadata.size,
             }),
             this.receiveChunks(channel),
-            this.verifyAndFinish(input)
-          ).pipe(finalize(() => channel.close()))
-        )
+            this.verifyAndFinish(input),
+          ).pipe(finalize(() => channel.close())),
+        ),
       );
     });
   }
@@ -202,16 +182,14 @@ export class TransferService {
    */
   private receiveChunks(channel: RtcChannel): Observable<TransferEvent> {
     return channel.messages$.pipe(
-      concatMap((chunk) =>
-        this.storage.storeChunk(chunk).pipe(map(() => chunk.byteLength))
-      ),
+      concatMap((chunk) => this.storage.storeChunk(chunk).pipe(map(() => chunk.byteLength))),
       scan((received, byteLength) => received + byteLength, 0),
       map(
         (received): TransferEvent => ({
           type: 'progress',
-          transferred: received
-        })
-      )
+          transferred: received,
+        }),
+      ),
     );
   }
 
@@ -225,7 +203,7 @@ export class TransferService {
       of<TransferEvent>({ type: 'complete' }),
       this.storage
         .assemble(input.metadata.mime)
-        .pipe(switchMap((blob) => this.hashAndCompare(blob, input)))
+        .pipe(switchMap((blob) => this.hashAndCompare(blob, input))),
     );
   }
 
@@ -235,13 +213,10 @@ export class TransferService {
    * @param input Metadata and digest the sender announced.
    * @returns Observable of verified or failed events.
    */
-  private hashAndCompare(
-    blob: Blob,
-    input: ReceiveRequest
-  ): Observable<TransferEvent> {
+  private hashAndCompare(blob: Blob, input: ReceiveRequest): Observable<TransferEvent> {
     const file = new File([blob], input.metadata.name, {
       type: input.metadata.mime,
-      lastModified: input.metadata.lastModified
+      lastModified: input.metadata.lastModified,
     });
     return this.hash.hashFile(file).pipe(
       last(),
@@ -250,10 +225,10 @@ export class TransferService {
           Match.discriminator('type')('complete', (e) => e.digest),
           Match.orElse(() => {
             throw new Error('hash did not complete');
-          })
-        )
+          }),
+        ),
       ),
-      switchMap((digest) => this.finishAfterVerify(digest, input, blob))
+      switchMap((digest) => this.finishAfterVerify(digest, input, blob)),
     );
   }
 
@@ -267,7 +242,7 @@ export class TransferService {
   private finishAfterVerify(
     digest: string,
     input: ReceiveRequest,
-    blob: Blob
+    blob: Blob,
   ): Observable<TransferEvent> {
     const ok = digest === input.digest;
     if (ok) {
@@ -275,9 +250,7 @@ export class TransferService {
     }
     this.sendVerifyResult(ok);
     return of<TransferEvent>(
-      ok
-        ? { type: 'verified' }
-        : { type: 'failed', error: 'verification-failed' }
+      ok ? { type: 'verified' } : { type: 'failed', error: 'verification-failed' },
     );
   }
 
@@ -308,7 +281,6 @@ export class TransferService {
  * @returns True when the free quota covers the file.
  */
 const hasRoomFor = (estimate: StorageEstimate, size: number): boolean => {
-  const available =
-    (estimate.quota ?? Number.POSITIVE_INFINITY) - (estimate.usage ?? 0);
+  const available = (estimate.quota ?? Number.POSITIVE_INFINITY) - (estimate.usage ?? 0);
   return size <= available;
 };

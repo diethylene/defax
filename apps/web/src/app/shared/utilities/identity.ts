@@ -1,5 +1,5 @@
-import * as Schema from 'effect/Schema';
 import { Identity } from '@contract/signal/identity.model';
+import * as Schema from 'effect/Schema';
 
 /** JSON decoder for peer identity. */
 const identityFromJson = Schema.fromJsonString(Identity);

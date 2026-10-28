@@ -19,7 +19,7 @@ const rounded: readonly Drop[] = [
   { x: 0, y: 26.61, dx: 1, dy: 0, delay: '0.146s' },
   { x: 0, y: 26.61, dx: 1, dy: 0, delay: '-1.054s' },
   { x: 0.29, y: 5.85, dx: 0.9633, dy: 0.2685, delay: '-0.570s' },
-  { x: 0.29, y: 5.85, dx: 0.9633, dy: 0.2685, delay: '-1.770s' }
+  { x: 0.29, y: 5.85, dx: 0.9633, dy: 0.2685, delay: '-1.770s' },
 ];
 
 /** Expected drops for a sharp-cornered rectangle with one drop per column. */
@@ -29,7 +29,7 @@ const sharp: readonly Drop[] = [
   { x: 60, y: 15, dx: -1, dy: 0, delay: '-0.068s' },
   { x: 45, y: 30, dx: 0, dy: -1, delay: '-1.132s' },
   { x: 15, y: 30, dx: 0, dy: -1, delay: '0.083s' },
-  { x: 0, y: 15, dx: 1, dy: 0, delay: '-1.132s' }
+  { x: 0, y: 15, dx: 1, dy: 0, delay: '-1.132s' },
 ];
 
 describe('computeDrops', () => {
@@ -39,9 +39,7 @@ describe('computeDrops', () => {
     });
 
     it('places the straight segments of a sharp rectangle without corner arcs', () => {
-      expect(
-        computeDrops(60, 30, 0, { columnSpacing: 30, perColumn: 1 })
-      ).toEqual(sharp);
+      expect(computeDrops(60, 30, 0, { columnSpacing: 30, perColumn: 1 })).toEqual(sharp);
     });
   });
 

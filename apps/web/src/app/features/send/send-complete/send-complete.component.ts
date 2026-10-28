@@ -1,17 +1,9 @@
-import {
-  ChangeDetectionStrategy,
-  Component,
-  computed,
-  inject
-} from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, inject } from '@angular/core';
 import { Store } from '@ngrx/store';
 import * as Match from 'effect/Match';
 import { TransferCompleteComponent } from '../../../core/components/transfer/transfer-complete/transfer-complete.component';
 import { SendActions } from '../../../store/send/send.actions';
-import {
-  hashDigestOf,
-  selectSendStatus
-} from '../../../store/send/send.selectors';
+import { hashDigestOf, selectSendStatus } from '../../../store/send/send.selectors';
 
 /** Shows the result of a finished send. */
 @Component({
@@ -29,7 +21,7 @@ import {
       [checksum]="digest()"
       (restart)="onRestart()"
     />
-  `
+  `,
 })
 export class SendCompleteComponent {
   /** Global store. */
@@ -42,32 +34,24 @@ export class SendCompleteComponent {
   private readonly done = computed(() =>
     Match.value(this.status()).pipe(
       Match.tag('Done', (status) => status),
-      Match.orElse(() => undefined)
-    )
+      Match.orElse(() => undefined),
+    ),
   );
 
   /** Digest of the sent file. */
   protected readonly digest = computed(() => hashDigestOf(this.status()));
 
   /** Name of the sent file. */
-  protected readonly fileName = computed(
-    () => this.done()?.metadata.name ?? ''
-  );
+  protected readonly fileName = computed(() => this.done()?.metadata.name ?? '');
 
   /** Size of the sent file in bytes. */
-  protected readonly fileSize = computed(
-    () => this.done()?.metadata.size ?? 0
-  );
+  protected readonly fileSize = computed(() => this.done()?.metadata.size ?? 0);
 
   /** Browser of the receiving peer. */
-  protected readonly peerBrowser = computed(
-    () => this.done()?.peerIdentity.browser ?? ''
-  );
+  protected readonly peerBrowser = computed(() => this.done()?.peerIdentity.browser ?? '');
 
   /** Operating system of the receiving peer. */
-  protected readonly peerOs = computed(
-    () => this.done()?.peerIdentity.os ?? ''
-  );
+  protected readonly peerOs = computed(() => this.done()?.peerIdentity.os ?? '');
 
   /** Seconds the send took, or undefined while it is unfinished. */
   protected readonly timeTaken = computed(() => {

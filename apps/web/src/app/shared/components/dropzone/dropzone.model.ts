@@ -10,9 +10,7 @@ export type DropzoneReason =
   | 'custom';
 
 /** Extra file check supplied by the caller. */
-export type DropzoneValidator = (
-  file: File
-) => DropzoneReason | DropzoneReason[] | null;
+export type DropzoneValidator = (file: File) => DropzoneReason | DropzoneReason[] | null;
 
 /** How a batch with rejections is handled. */
 export type DropzoneRejectionMode = 'all' | 'partial';

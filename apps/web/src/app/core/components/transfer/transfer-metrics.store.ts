@@ -15,7 +15,7 @@ interface TransferMetricsState {
 const initialMetrics: TransferMetricsState = {
   lastBytes: 0,
   lastAt: 0,
-  speed: 0
+  speed: 0,
 };
 
 /** Samples transferred bytes to estimate the transfer speed. */
@@ -34,9 +34,9 @@ export const TransferMetricsStore = signalStore(
         patchState(store, {
           lastBytes: transferred,
           lastAt: now,
-          speed: elapsed > 0 ? (delta / elapsed) * 1000 : 0
+          speed: elapsed > 0 ? (delta / elapsed) * 1000 : 0,
         });
       });
-    }
-  }))
+    },
+  })),
 );

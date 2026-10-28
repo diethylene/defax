@@ -9,14 +9,10 @@ import { HashService } from '@web/core/services/hash.service';
 import { SignalingService } from '@web/core/services/signaling.service';
 import { TransferService } from '@web/core/services/transfer.service';
 import { IdentityService } from '@web/shared/services/identity.service';
-import { firstValueFrom, of, type Observable, throwError, toArray } from 'rxjs';
+import { firstValueFrom, type Observable, of, throwError, toArray } from 'rxjs';
 import { describe, expect, it } from 'vitest';
 import { SendActions } from './send.actions';
-import {
-  sendHashFile$,
-  sendStartSession$,
-  sendStartTransfer$
-} from './send.effects';
+import { sendHashFile$, sendStartSession$, sendStartTransfer$ } from './send.effects';
 import { initialSendState, sendFeature } from './send.reducer';
 import type { SendStatus } from './send-transitions';
 
@@ -24,7 +20,7 @@ const peerIdentity: Identity = {
   browser: 'Firefox 121',
   os: 'Windows',
   timeZone: 'Europe/London',
-  language: 'en-GB'
+  language: 'en-GB',
 };
 
 const metadata: FileMetadata = {
@@ -32,12 +28,12 @@ const metadata: FileMetadata = {
   size: 3,
   mime: 'application/pdf',
   extension: 'pdf',
-  lastModified: 1_700_000_000_000
+  lastModified: 1_700_000_000_000,
 };
 
 const file = new File(['abc'], 'report.pdf', {
   type: 'application/pdf',
-  lastModified: 1_700_000_000_000
+  lastModified: 1_700_000_000_000,
 });
 
 const readyStatus = (): SendStatus =>
@@ -45,10 +41,10 @@ const readyStatus = (): SendStatus =>
     SendActions.fileSelected({ file, metadata }),
     SendActions.roomCreated({ roomId: 'room-1' }),
     SendActions.passwordGenerated({ password: 'pw' }),
-    SendActions.sasComputed({ sas: '123456', peerIdentity })
+    SendActions.sasComputed({ sas: '123456', peerIdentity }),
   ].reduce<SendStatus>(
     (status, action) => sendFeature.reducer({ status }, action).status,
-    initialSendState.status
+    initialSendState.status,
   );
 
 /**
@@ -57,19 +53,14 @@ const readyStatus = (): SendStatus =>
  * @param providers Providers the effect needs.
  * @returns Every action emitted before the effect completes.
  */
-const run = (
-  effect: () => Observable<Action>,
-  providers: Provider[]
-): Promise<Action[]> => {
+const run = (effect: () => Observable<Action>, providers: Provider[]): Promise<Action[]> => {
   TestBed.configureTestingModule({ providers });
-  return firstValueFrom(
-    TestBed.runInInjectionContext(effect).pipe(toArray())
-  );
+  return firstValueFrom(TestBed.runInInjectionContext(effect).pipe(toArray()));
 };
 
 const actionsFor = (action: Action): Provider => ({
   provide: Actions,
-  useValue: new Actions(of(action))
+  useValue: new Actions(of(action)),
 });
 
 describe('sendStartSession$', () => {
@@ -83,18 +74,18 @@ describe('sendStartSession$', () => {
             createSession: () => ({
               roomId: 'room-1',
               sid: new Uint8Array(16),
-              password: 'pw'
+              password: 'pw',
             }),
-            connectAsInitiator: () => of({ sas: '123456', peerIdentity })
-          }
+            connectAsInitiator: () => of({ sas: '123456', peerIdentity }),
+          },
         },
-        { provide: IdentityService, useValue: { detect: () => peerIdentity } }
+        { provide: IdentityService, useValue: { detect: () => peerIdentity } },
       ]);
 
       expect(emitted).toEqual([
         SendActions.roomCreated({ roomId: 'room-1' }),
         SendActions.passwordGenerated({ password: 'pw' }),
-        SendActions.sasComputed({ sas: '123456', peerIdentity })
+        SendActions.sasComputed({ sas: '123456', peerIdentity }),
       ]);
     });
   });
@@ -109,12 +100,12 @@ describe('sendStartSession$', () => {
             createSession: () => ({
               roomId: 'room-1',
               sid: new Uint8Array(16),
-              password: 'pw'
+              password: 'pw',
             }),
-            connectAsInitiator: () => throwError(() => new Error('nope'))
-          }
+            connectAsInitiator: () => throwError(() => new Error('nope')),
+          },
         },
-        { provide: IdentityService, useValue: { detect: () => peerIdentity } }
+        { provide: IdentityService, useValue: { detect: () => peerIdentity } },
       ]);
 
       expect(emitted.at(-1)).toEqual(SendActions.handshakeFailed());
@@ -131,18 +122,15 @@ describe('sendHashFile$', () => {
           provide: HashService,
           useValue: {
             hashFile: () =>
-              of(
-                { type: 'progress', processed: 1, total: 3 },
-                { type: 'complete', digest: 'abc' }
-              )
-          }
-        }
+              of({ type: 'progress', processed: 1, total: 3 }, { type: 'complete', digest: 'abc' }),
+          },
+        },
       ]);
 
       expect(emitted).toEqual([
         SendActions.hashStarted(),
         SendActions.hashProgress({ processed: 1 }),
-        SendActions.hashComplete({ digest: 'abc' })
+        SendActions.hashComplete({ digest: 'abc' }),
       ]);
     });
   });
@@ -154,15 +142,12 @@ describe('sendHashFile$', () => {
         {
           provide: HashService,
           useValue: {
-            hashFile: () => throwError(() => new Error('boom'))
-          }
-        }
+            hashFile: () => throwError(() => new Error('boom')),
+          },
+        },
       ]);
 
-      expect(emitted).toEqual([
-        SendActions.hashStarted(),
-        SendActions.hashFailed()
-      ]);
+      expect(emitted).toEqual([SendActions.hashStarted(), SendActions.hashFailed()]);
     });
   });
 });
@@ -170,38 +155,36 @@ describe('sendHashFile$', () => {
 describe('sendStartTransfer$', () => {
   const storeWith = (status: SendStatus): Provider => ({
     provide: Store,
-    useValue: { select: () => of(status) }
+    useValue: { select: () => of(status) },
   });
 
   const transferOf = (events: Observable<unknown>): Provider => ({
     provide: TransferService,
-    useValue: { send: () => events }
+    useValue: { send: () => events },
   });
 
   describe('success', () => {
     it('emits the transfer actions through to verified', async () => {
       const emitted = await run(sendStartTransfer$, [
-        actionsFor(
-          SendActions.sasComputed({ sas: '123456', peerIdentity })
-        ),
+        actionsFor(SendActions.sasComputed({ sas: '123456', peerIdentity })),
         storeWith(readyStatus()),
         transferOf(
           of(
             { type: 'started', total: 3 },
             { type: 'progress', transferred: 3 },
             { type: 'complete' },
-            { type: 'verified' }
-          )
-        )
+            { type: 'verified' },
+          ),
+        ),
       ]);
 
       expect(emitted.slice(0, 3)).toEqual([
         SendActions.transferStarted({ total: 3 }),
         SendActions.transferProgress({ sent: 3 }),
-        SendActions.transferComplete()
+        SendActions.transferComplete(),
       ]);
       expect(emitted.at(-1)).toMatchObject({
-        type: '[Send] Transfer Verified'
+        type: '[Send] Transfer Verified',
       });
     });
   });
@@ -209,44 +192,31 @@ describe('sendStartTransfer$', () => {
   describe('invariants', () => {
     it('emits the verification tag when the receiver rejects the digest', async () => {
       const emitted = await run(sendStartTransfer$, [
-        actionsFor(
-          SendActions.sasComputed({ sas: '123456', peerIdentity })
-        ),
+        actionsFor(SendActions.sasComputed({ sas: '123456', peerIdentity })),
         storeWith(readyStatus()),
         transferOf(
-          of(
-            { type: 'started', total: 3 },
-            { type: 'failed', error: 'verification-failed' }
-          )
-        )
+          of({ type: 'started', total: 3 }, { type: 'failed', error: 'verification-failed' }),
+        ),
       ]);
 
-      expect(emitted.at(-1)).toEqual(
-        SendActions.transferFailed({ error: 'verification-failed' })
-      );
+      expect(emitted.at(-1)).toEqual(SendActions.transferFailed({ error: 'verification-failed' }));
     });
 
     it('emits the transfer tag when the transfer throws', async () => {
       const emitted = await run(sendStartTransfer$, [
-        actionsFor(
-          SendActions.sasComputed({ sas: '123456', peerIdentity })
-        ),
+        actionsFor(SendActions.sasComputed({ sas: '123456', peerIdentity })),
         storeWith(readyStatus()),
-        transferOf(throwError(() => new Error('channel closed')))
+        transferOf(throwError(() => new Error('channel closed'))),
       ]);
 
-      expect(emitted.at(-1)).toEqual(
-        SendActions.transferFailed({ error: 'transfer-failed' })
-      );
+      expect(emitted.at(-1)).toEqual(SendActions.transferFailed({ error: 'transfer-failed' }));
     });
 
     it('emits nothing when the send is not past the handshake', async () => {
       const emitted = await run(sendStartTransfer$, [
-        actionsFor(
-          SendActions.sasComputed({ sas: '123456', peerIdentity })
-        ),
+        actionsFor(SendActions.sasComputed({ sas: '123456', peerIdentity })),
         storeWith({ _tag: 'Idle' }),
-        transferOf(of({ type: 'started', total: 3 }))
+        transferOf(of({ type: 'started', total: 3 })),
       ]);
 
       expect(emitted).toEqual([]);

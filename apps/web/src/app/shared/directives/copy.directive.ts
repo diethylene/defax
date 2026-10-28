@@ -4,7 +4,7 @@ const COPIED_RESET_MS = 2000;
 
 @Directive({
   selector: '[appCopy]',
-  host: { '(click)': 'copy()' }
+  host: { '(click)': 'copy()' },
 })
 export class CopyDirective {
   readonly value = input.required<string>();
@@ -21,10 +21,7 @@ export class CopyDirective {
       .then(() => {
         this.copiedState.set(true);
         clearTimeout(this.resetTimer);
-        this.resetTimer = setTimeout(
-          () => this.copiedState.set(false),
-          COPIED_RESET_MS
-        );
+        this.resetTimer = setTimeout(() => this.copiedState.set(false), COPIED_RESET_MS);
       })
       .catch(() => undefined);
   }

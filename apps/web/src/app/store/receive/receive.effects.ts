@@ -4,11 +4,11 @@ import { Actions, createEffect, ofType } from '@ngrx/effects';
 import { type Action, Store } from '@ngrx/store';
 import { toast } from '@spartan-ng/brain/sonner';
 import { SignalingService } from '@web/core/services/signaling.service';
+import { type TransferEvent, TransferService } from '@web/core/services/transfer.service';
 import {
-  type TransferEvent,
-  TransferService,
-} from '@web/core/services/transfer.service';
-import { phaseForStatus, routeForPhase } from '@web/features/receive/receive-phase/receive-phase.model';
+  phaseForStatus,
+  routeForPhase,
+} from '@web/features/receive/receive-phase/receive-phase.model';
 import { IdentityService } from '@web/shared/services/identity.service';
 import * as Match from 'effect/Match';
 import {

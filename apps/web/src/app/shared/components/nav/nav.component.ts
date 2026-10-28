@@ -1,9 +1,4 @@
-import {
-  ChangeDetectionStrategy,
-  Component,
-  computed,
-  input
-} from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, input } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { NgIcon } from '@ng-icons/core';
 import type { NavItem } from './nav-item.model';
@@ -25,7 +20,7 @@ interface NavViewItem extends NavItem {
   selector: 'app-nav',
   imports: [RouterLink, NgIcon],
   changeDetection: ChangeDetectionStrategy.OnPush,
-  templateUrl: './nav.component.html'
+  templateUrl: './nav.component.html',
 })
 export class NavComponent {
   /** Links rendered by the bar. */
@@ -50,7 +45,7 @@ export class NavComponent {
       return {
         ...item,
         classes: `${itemBase} ${active ? 'bg-muted' : 'hover:bg-muted'}`,
-        active
+        active,
       };
     });
   });

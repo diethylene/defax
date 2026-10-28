@@ -8,14 +8,15 @@ import {
   inject,
   input,
   output,
-  signal
+  signal,
 } from '@angular/core';
 import {
   NG_VALIDATORS,
   NG_VALUE_ACCESSOR,
   type ValidationErrors,
-  type Validator
+  type Validator,
 } from '@angular/forms';
+import * as Match from 'effect/Match';
 import {
   distinctUntilChanged,
   filter,
@@ -24,16 +25,15 @@ import {
   merge,
   Subject,
   scan,
-  takeUntil
+  takeUntil,
 } from 'rxjs';
-import * as Match from 'effect/Match';
 import { AbstractControlValueAccessor } from '../../abstractions/control-value-accessor';
 import { parseDropzoneConfig } from './dropzone.config';
 import type {
   DragState,
   DropzoneRejectionMode,
   DropzoneResult,
-  DropzoneValidator
+  DropzoneValidator,
 } from './dropzone.model';
 import { DropzoneStore } from './dropzone.store';
 import { matchesMimeType } from './dropzone-accept.util';
@@ -80,7 +80,7 @@ function extractDrop(dataTransfer: DataTransfer | null): ExtractedDrop {
   const classified = items.map(classifyDropItem);
   return {
     files: classified.flatMap((part) => part.files),
-    directories: classified.flatMap((part) => part.directories)
+    directories: classified.flatMap((part) => part.directories),
   };
 }
 
@@ -95,7 +95,7 @@ function reduceDepth(depth: number, delta: DragDelta): number {
     Match.when('enter', () => depth + 1),
     Match.when('leave', () => Math.max(0, depth - 1)),
     Match.when('reset', () => 0),
-    Match.exhaustive
+    Match.exhaustive,
   );
 }
 
@@ -105,10 +105,7 @@ function reduceDepth(depth: number, delta: DragDelta): number {
  * @param accept Normalized accept entries.
  * @returns Whether the drag is valid, invalid, or unknown.
  */
-function dragStateFor(
-  transfer: DataTransfer | null,
-  accept: readonly string[]
-): DragState {
+function dragStateFor(transfer: DataTransfer | null, accept: readonly string[]): DragState {
   const types = transfer ? Array.from(transfer.types) : [];
   if (!types.includes('Files')) return 'invalid';
   if (accept.length === 0) return 'valid';
@@ -130,19 +127,16 @@ function dragStateFor(
     {
       provide: NG_VALUE_ACCESSOR,
       useExisting: forwardRef(() => DropzoneDirective),
-      multi: true
+      multi: true,
     },
     {
       provide: NG_VALIDATORS,
       useExisting: forwardRef(() => DropzoneDirective),
-      multi: true
-    }
-  ]
+      multi: true,
+    },
+  ],
 })
-export class DropzoneDirective
-  extends AbstractControlValueAccessor<File[]>
-  implements Validator
-{
+export class DropzoneDirective extends AbstractControlValueAccessor<File[]> implements Validator {
   /** Store holding the dropzone interaction and files. */
   readonly store = inject(DropzoneStore);
   /** Host element that receives the drag and click events. */
@@ -213,8 +207,8 @@ export class DropzoneDirective
       rejectionMode: this.rejectionMode(),
       noClick: this.noClick(),
       noKeyboard: this.noKeyboard(),
-      disabled: this.disabled()
-    })
+      disabled: this.disabled(),
+    }),
   );
 
   /** Creates the hidden file input and binds the host events. */
@@ -226,9 +220,7 @@ export class DropzoneDirective
     this.elementRef.nativeElement.appendChild(this.fileInput);
     this.elementRef.nativeElement.setAttribute('role', 'button');
 
-    effect(() =>
-      this.store.setDisabled(this.config().disabled || this.formDisabled())
-    );
+    effect(() => this.store.setDisabled(this.config().disabled || this.formDisabled()));
     effect(() => this.syncAccessibility());
 
     this.bindDragEvents();
@@ -272,8 +264,8 @@ export class DropzoneDirective
       return {
         dropzone: error.map((rejection) => ({
           name: rejection.file.name,
-          reasons: rejection.reasons
-        }))
+          reasons: rejection.reasons,
+        })),
       };
     }
     return null;
@@ -318,14 +310,14 @@ export class DropzoneDirective
     const depth$ = merge(
       enter$.pipe(map(() => ({ kind: 'enter' }) as const)),
       leave$.pipe(map(() => ({ kind: 'leave' }) as const)),
-      drop$.pipe(map(() => ({ kind: 'reset' }) as const))
+      drop$.pipe(map(() => ({ kind: 'reset' }) as const)),
     ).pipe(scan(reduceDepth, 0));
 
     depth$
       .pipe(
         map((depth) => depth > 0),
         distinctUntilChanged(),
-        takeUntil(this.destroy$)
+        takeUntil(this.destroy$),
       )
       .subscribe((active) => this.onDragActive(active));
 
@@ -356,7 +348,7 @@ export class DropzoneDirective
       .pipe(
         filter((event) => event.target !== this.fileInput),
         filter(() => !this.isDisabled() && !this.config().noClick),
-        takeUntil(this.destroy$)
+        takeUntil(this.destroy$),
       )
       .subscribe(() => this.openPicker());
 
@@ -364,7 +356,7 @@ export class DropzoneDirective
       .pipe(
         filter((event) => event.key === 'Enter' || event.key === ' '),
         filter(() => !this.isDisabled() && !this.config().noKeyboard),
-        takeUntil(this.destroy$)
+        takeUntil(this.destroy$),
       )
       .subscribe((event) => {
         event.preventDefault();
@@ -391,7 +383,7 @@ export class DropzoneDirective
       fromEvent(win, 'focus')
         .pipe(
           filter(() => this.store.interaction() === 'picker-open'),
-          takeUntil(this.destroy$)
+          takeUntil(this.destroy$),
         )
         .subscribe(() => this.closePicker());
     }
@@ -436,12 +428,7 @@ export class DropzoneDirective
    * @param directories Directories dragged in.
    */
   private process(files: File[], directories: File[]): void {
-    const result = evaluateFiles(
-      files,
-      directories,
-      this.store.files(),
-      this.config()
-    );
+    const result = evaluateFiles(files, directories, this.store.files(), this.config());
     this.store.applyResult(result);
     this.commit(result.accepted);
     this.filesChange.emit(result);

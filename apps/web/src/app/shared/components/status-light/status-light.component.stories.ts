@@ -8,23 +8,22 @@ const meta: Meta<StatusLightComponent> = {
   tags: ['autodocs'],
   render: (args) => ({
     props: args,
-    template:
-      '<app-status-light [variant]="variant" [size]="size">Status</app-status-light>'
+    template: '<app-status-light [variant]="variant" [size]="size">Status</app-status-light>',
   }),
   argTypes: {
     variant: {
       control: 'select',
-      options: ['neutral', 'positive', 'warning', 'negative', 'info']
+      options: ['neutral', 'positive', 'warning', 'negative', 'info'],
     },
     size: {
       control: 'select',
-      options: ['sm', 'md', 'lg']
-    }
+      options: ['sm', 'md', 'lg'],
+    },
   },
   args: {
     variant: 'neutral',
-    size: 'md'
-  }
+    size: 'md',
+  },
 };
 
 export default meta;
@@ -51,6 +50,6 @@ export const Sizes: Story = {
         <app-status-light size="md" variant="positive">Medium</app-status-light>
         <app-status-light size="lg" variant="positive">Large</app-status-light>
       </div>
-    `
-  })
+    `,
+  }),
 };

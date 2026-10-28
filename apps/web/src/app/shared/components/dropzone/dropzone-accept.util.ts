@@ -3,9 +3,7 @@
  * @param accept Accept value as one string or a list.
  * @returns Normalized accept entries.
  */
-export function normalizeAccept(
-  accept: string | readonly string[]
-): string[] {
+export function normalizeAccept(accept: string | readonly string[]): string[] {
   const raw = Array.isArray(accept) ? accept : [accept];
   return raw
     .flatMap((entry) => entry.split(','))
@@ -19,10 +17,7 @@ export function normalizeAccept(
  * @param accept Normalized accept entries.
  * @returns True when the type is accepted.
  */
-export function matchesMimeType(
-  type: string,
-  accept: readonly string[]
-): boolean {
+export function matchesMimeType(type: string, accept: readonly string[]): boolean {
   if (accept.length === 0) return true;
   const normalized = type.toLowerCase();
   return accept.some((entry) => {

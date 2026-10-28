@@ -16,7 +16,7 @@ import { HlmCard, HlmCardTitle } from '@spartan-ng/helm/card';
         }
       </ul>
     </div>
-  `
+  `,
 })
 export class ListCardComponent {
   /** Card title. */

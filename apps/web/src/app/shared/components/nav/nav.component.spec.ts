@@ -2,23 +2,20 @@ import { TestBed } from '@angular/core/testing';
 import { provideRouter } from '@angular/router';
 import { provideIcons } from '@ng-icons/core';
 import { lucideDownload, lucideUpload } from '@ng-icons/lucide';
-import type { NavItem } from './nav-item.model';
 import { NavComponent } from './nav.component';
+import type { NavItem } from './nav-item.model';
 
 /** Links shared by the nav tests. */
 const items: NavItem[] = [
   { label: 'Send', route: '/send', icon: 'lucideUpload' },
-  { label: 'Receive', route: '/receive', icon: 'lucideDownload' }
+  { label: 'Receive', route: '/receive', icon: 'lucideDownload' },
 ];
 
 describe('NavComponent', () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [NavComponent],
-      providers: [
-        provideRouter([]),
-        provideIcons({ lucideUpload, lucideDownload })
-      ]
+      providers: [provideRouter([]), provideIcons({ lucideUpload, lucideDownload })],
     }).compileComponents();
   });
 

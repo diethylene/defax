@@ -1,9 +1,4 @@
-import {
-  ChangeDetectionStrategy,
-  Component,
-  computed,
-  input
-} from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, input } from '@angular/core';
 import { HlmBadge } from '@spartan-ng/helm/badge';
 import { HlmCard, HlmCardContent } from '@spartan-ng/helm/card';
 import { HlmProgressImports } from '@spartan-ng/helm/progress';
@@ -11,10 +6,7 @@ import * as Match from 'effect/Match';
 import { StatusLightComponent } from '../../../../shared/components/status-light/status-light.component';
 import { DurationPipe } from '../../../../shared/pipes/duration.pipe';
 import { FileSizePipe } from '../../../../shared/pipes/file-size.pipe';
-import type {
-  TransferMode,
-  TransferRoute
-} from '../../../interfaces/transfer.interface';
+import type { TransferMode, TransferRoute } from '../../../interfaces/transfer.interface';
 import { TransferFileSummaryComponent } from '../transfer-file-summary/transfer-file-summary.component';
 
 /** Progress values shown while a transfer runs. */
@@ -52,11 +44,11 @@ export interface ProgressTransfer {
     StatusLightComponent,
     FileSizePipe,
     DurationPipe,
-    TransferFileSummaryComponent
+    TransferFileSummaryComponent,
   ],
   host: { class: 'block w-full' },
   changeDetection: ChangeDetectionStrategy.OnPush,
-  templateUrl: './progress-transfer.component.html'
+  templateUrl: './progress-transfer.component.html',
 })
 export class ProgressTransferComponent {
   /** Direction of the transfer. */
@@ -69,8 +61,8 @@ export class ProgressTransferComponent {
     Match.value(this.mode()).pipe(
       Match.when('send', () => 'Sent'),
       Match.when('receive', () => 'Received'),
-      Match.exhaustive
-    )
+      Match.exhaustive,
+    ),
   );
 
   /** Line shown under the progress bar. */
@@ -80,8 +72,8 @@ export class ProgressTransferComponent {
       : Match.value(this.mode()).pipe(
           Match.when('send', () => 'Transmitting...'),
           Match.when('receive', () => 'Receiving...'),
-          Match.exhaustive
-        )
+          Match.exhaustive,
+        ),
   );
 
   /** Light variant and label for the route. */
@@ -89,7 +81,7 @@ export class ProgressTransferComponent {
     Match.value(this.progress().route).pipe(
       Match.when('direct', () => ({ variant: 'positive', label: 'Direct' }) as const),
       Match.when('relay', () => ({ variant: 'warning', label: 'Relay' }) as const),
-      Match.exhaustive
-    )
+      Match.exhaustive,
+    ),
   );
 }
