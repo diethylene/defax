@@ -1,7 +1,6 @@
 import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
-import { toSignal } from '@angular/core/rxjs-interop';
 import { Store } from '@ngrx/store';
-import { selectSendError } from '../../../store/selectors/send.selectors';
+import { selectSendErrorMessage } from '../../../store/send/send.selectors';
 
 @Component({
   selector: 'app-send-failed',
@@ -18,7 +17,5 @@ import { selectSendError } from '../../../store/selectors/send.selectors';
 export class SendFailedComponent {
   private readonly store = inject(Store);
 
-  protected readonly error = toSignal(this.store.select(selectSendError), {
-    initialValue: null
-  });
+  protected readonly error = this.store.selectSignal(selectSendErrorMessage);
 }

@@ -6,7 +6,7 @@ import {
 } from '../../../core/components/page-shell/page-shell';
 import { DropzoneComponent } from '../../../shared/components/dropzone/dropzone.component';
 import type { DropzoneResult } from '../../../shared/components/dropzone/dropzone.model';
-import { sendFileSelected } from '../../../store/actions/send.actions';
+import { SendActions } from '../../../store/send/send.actions';
 import { toFileMetadata } from '../file-metadata/file-metadata';
 
 @Component({
@@ -41,7 +41,7 @@ export class SendIdleComponent {
     if (!file) return;
     this.pendingFile = null;
     this.store.dispatch(
-      sendFileSelected({ file, metadata: toFileMetadata(file) })
+      SendActions.fileSelected({ file, metadata: toFileMetadata(file) })
     );
   }
 }

@@ -1,3 +1,6 @@
+import type { ReceiveStatus } from '../../../store/receive/receive-transitions';
+
+/** Page a receive status shows. */
 export type ReceivePhase =
   | 'idle'
   | 'connecting'
@@ -14,9 +17,32 @@ const receivePhaseRoutes: Record<ReceivePhase, string> = {
   transferring: '/receive/transfer',
   verifying: '/receive/transfer',
   done: '/receive/complete',
-  failed: '/receive/failed'
+  failed: '/receive/failed',
 };
 
+/** Page that shows each receive status. */
+const receivePhases: Record<ReceiveStatus['_tag'], ReceivePhase> = {
+  Idle: 'idle',
+  Connecting: 'connecting',
+  Confirming: 'confirming',
+  Transferring: 'transferring',
+  Verifying: 'verifying',
+  Done: 'done',
+  Failed: 'failed',
+};
+
+/**
+ * Maps a receive status to the page that shows it.
+ * @param status Current receive status.
+ * @returns Page for that status.
+ */
+export const phaseForStatus = (status: ReceiveStatus): ReceivePhase => receivePhases[status._tag];
+
+/**
+ * Reads the route that shows a receive phase.
+ * @param phase Page to show.
+ * @returns URL of that page.
+ */
 export function routeForPhase(phase: ReceivePhase): string {
   return receivePhaseRoutes[phase];
 }

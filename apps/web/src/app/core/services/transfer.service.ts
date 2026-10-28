@@ -30,6 +30,9 @@ import { SignalingService } from './signaling.service';
 import { StorageService } from './storage.service';
 import { type RtcChannel, WebRtcService } from './webrtc.service';
 
+/** Why a transfer stopped, at the granularity the store reports. */
+export type TransferErrorTag = 'storage-full' | 'verification-failed';
+
 /** Progress and outcome of one file transfer. */
 export type TransferEvent =
   /** Transfer began, carrying the total byte count. */
@@ -41,7 +44,7 @@ export type TransferEvent =
   /** The receiver confirmed the file digest. */
   | { readonly type: 'verified' }
   /** The transfer stopped, carrying the reason. */
-  | { readonly type: 'failed'; readonly error: string };
+  | { readonly type: 'failed'; readonly error: TransferErrorTag };
 
 /** Everything needed to receive one file. */
 export interface ReceiveRequest {
@@ -93,7 +96,7 @@ export class TransferService {
           ? this.receiveIn(input)
           : of<TransferEvent>({
               type: 'failed',
-              error: 'not enough storage space'
+              error: 'storage-full'
             })
       ),
       finalize(() => this.storage.close())
@@ -164,7 +167,7 @@ export class TransferService {
           (result): TransferEvent =>
             result.ok
               ? { type: 'verified' }
-              : { type: 'failed', error: 'receiver verification failed' }
+              : { type: 'failed', error: 'verification-failed' }
         )
       );
   }
@@ -274,7 +277,7 @@ export class TransferService {
     return of<TransferEvent>(
       ok
         ? { type: 'verified' }
-        : { type: 'failed', error: 'file verification failed' }
+        : { type: 'failed', error: 'verification-failed' }
     );
   }
 

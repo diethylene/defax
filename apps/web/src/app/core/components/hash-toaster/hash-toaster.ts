@@ -1,16 +1,16 @@
 import {
   ChangeDetectionStrategy,
   Component,
-  DestroyRef,
-  inject
+  computed,
+  effect,
+  inject,
+  untracked
 } from '@angular/core';
-import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { Store } from '@ngrx/store';
-import { toast } from '@spartan-ng/brain/sonner';
 import { HlmToasterImports } from '@spartan-ng/helm/sonner';
-import { distinctUntilChanged } from 'rxjs';
-import { match } from 'ts-pattern';
-import { selectSendHash } from '../../../store/selectors/send.selectors';
+import { toast } from '@spartan-ng/brain/sonner';
+import * as Match from 'effect/Match';
+import { hashOf, selectSendStatus } from '../../../store/send/send.selectors';
 import { HashProgressToastComponent } from './hash-progress-toast';
 
 const HASH_PROGRESS_TOAST_ID = 'file-hash-progress';
@@ -23,41 +23,34 @@ const HASH_PROGRESS_TOAST_ID = 'file-hash-progress';
 })
 export class HashToasterComponent {
   private readonly store = inject(Store);
-  private readonly destroyRef = inject(DestroyRef);
+  private readonly status = this.store.selectSignal(selectSendStatus);
+  private readonly hashTag = computed(() => hashOf(this.status())._tag);
 
   constructor() {
-    this.store
-      .select(selectSendHash)
-      .pipe(
-        distinctUntilChanged((a, b) => a.status === b.status),
-        takeUntilDestroyed(this.destroyRef)
-      )
-      .subscribe((hash) => {
-        match(hash.status)
-          .with('hashing', () => {
+    effect(() => {
+      this.hashTag();
+      untracked(() => {
+        const hash = hashOf(this.status());
+        Match.value(hash).pipe(
+          Match.tag('Hashing', () => {
             toast.custom(HashProgressToastComponent, {
               id: HASH_PROGRESS_TOAST_ID,
               dismissible: false,
               duration: Infinity
             });
-          })
-          .with('complete', () => {
+          }),
+          Match.tag('Complete', ({ digest }) => {
             toast.dismiss(HASH_PROGRESS_TOAST_ID);
             toast.success('SHA-256 checksum complete', {
-              description: hash.digest ?? undefined
+              description: digest
             });
-          })
-          .with('failed', () => {
+          }),
+          Match.tag('Idle', () => {
             toast.dismiss(HASH_PROGRESS_TOAST_ID);
-            toast.error(hash.error ?? 'File hashing failed', {
-              duration: Infinity,
-              closeButton: true
-            });
-          })
-          .with('idle', () => {
-            toast.dismiss(HASH_PROGRESS_TOAST_ID);
-          })
-          .exhaustive();
+          }),
+          Match.exhaustive
+        );
       });
+    });
   }
 }

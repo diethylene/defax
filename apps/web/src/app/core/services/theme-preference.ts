@@ -1,5 +1,5 @@
 import * as Match from 'effect/Match';
-import type { ThemeMode } from '../../store/reducers/application-config.reducer';
+import type { ThemeMode } from '../../store/application-config/application-config.reducer';
 
 /** Local storage key holding the persisted theme mode. */
 const STORAGE_KEY = 'defax-mode';

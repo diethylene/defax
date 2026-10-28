@@ -5,13 +5,14 @@ import {
   Router
 } from '@angular/router';
 import { Store } from '@ngrx/store';
-import { match } from 'ts-pattern';
+import * as Match from 'effect/Match';
+import { routeForPhase } from '../../features/send/send-phase/send-phase';
+import { SendActions } from '../../store/send/send.actions';
+import type { SendStatus } from '../../store/send/send-transitions';
 import {
-  routeForPhase,
-  type SendPhase
-} from '../../features/send/send-phase/send-phase';
-import { sendDisconnect } from '../../store/actions/send.actions';
-import { selectSendPhase } from '../../store/selectors/send.selectors';
+  phaseForStatus,
+  selectSendStatus
+} from '../../store/send/send.selectors';
 
 const cancelMessage =
   'Leaving cancels the transfer and returns you to the start.';
@@ -19,8 +20,8 @@ const cancelMessage =
 export const sendCanActivate: CanActivateFn = (_route, state) => {
   const store = inject(Store);
   const router = inject(Router);
-  const phase = store.selectSignal(selectSendPhase)();
-  const expected = routeForPhase(phase);
+  const status = store.selectSignal(selectSendStatus)();
+  const expected = routeForPhase(phaseForStatus[status._tag]);
   return state.url === expected ? true : router.parseUrl(expected);
 };
 
@@ -31,16 +32,21 @@ export const sendCanDeactivate: CanDeactivateFn<unknown> = (
   nextState
 ) => {
   const store = inject(Store);
-  const phase = store.selectSignal(selectSendPhase)();
-  if (nextState.url === routeForPhase(phase)) return true;
-  if (isSafeToLeave(phase)) return true;
+  const status = store.selectSignal(selectSendStatus)();
+  if (nextState.url === routeForPhase(phaseForStatus[status._tag])) return true;
+  if (isSafeToLeave(status)) return true;
   if (!window.confirm(cancelMessage)) return false;
-  store.dispatch(sendDisconnect());
+  store.dispatch(SendActions.disconnect());
   return false;
 };
 
-function isSafeToLeave(phase: SendPhase): boolean {
-  return match(phase)
-    .with('idle', 'done', 'failed', () => true)
-    .otherwise(() => false);
-}
+/**
+ * Tells whether the send can be left without cancelling it.
+ * @param status Current send status.
+ * @returns True when nothing is in flight.
+ */
+const isSafeToLeave = (status: SendStatus): boolean =>
+  Match.value(status).pipe(
+    Match.tag('Idle', 'Done', 'Failed', () => true),
+    Match.orElse(() => false)
+  );
