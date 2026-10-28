@@ -64,16 +64,10 @@ export class WebRtcService {
         ordered: true,
       });
       const ice = this.attachIce(peer);
-      // The teardown cannot tell whether a value was emitted, so this flag
-      // marks the handover of the peer to the caller.
-      let opened = false;
       return this.negotiateInitiator(peer, channel, ice).pipe(
-        tap(() => {
-          opened = true;
-        }),
         finalize(() => {
           ice.dispose();
-          if (!opened) peer.close();
+          if (channel.readyState !== 'open') peer.close();
         }),
       );
     }).pipe(timeout(CONNECT_TIMEOUT_MS));
@@ -92,16 +86,12 @@ export class WebRtcService {
         incoming.next(event.channel);
         incoming.complete();
       };
-      // The teardown cannot tell whether a value was emitted, so this flag
-      // marks the handover of the peer to the caller.
-      let opened = false;
+      // The teardown cannot see the channel, so the peer's own state marks
+      // the handover of the peer to the caller.
       return this.negotiateResponder(peer, incoming, ice).pipe(
-        tap(() => {
-          opened = true;
-        }),
         finalize(() => {
           ice.dispose();
-          if (!opened) peer.close();
+          if (peer.connectionState !== 'connected') peer.close();
         }),
       );
     }).pipe(timeout(CONNECT_TIMEOUT_MS));
