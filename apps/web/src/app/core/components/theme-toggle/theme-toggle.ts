@@ -9,8 +9,8 @@ import { NgIcon, provideIcons } from '@ng-icons/core';
 import { lucideMoon, lucideSun } from '@ng-icons/lucide';
 import { Store } from '@ngrx/store';
 import { HlmButton } from '@spartan-ng/helm/button';
-import { toggleMode } from '../../../store/actions/application-config.actions';
-import { selectMode } from '../../../store/selectors/application-config.selectors';
+import { ApplicationConfigActions } from '../../../store/application-config/application-config.actions';
+import { applicationConfigFeature } from '../../../store/application-config/application-config.reducer';
 
 @Component({
   selector: 'app-theme-toggle',
@@ -34,9 +34,12 @@ import { selectMode } from '../../../store/selectors/application-config.selector
 export class ThemeToggle {
   private readonly store = inject(Store);
 
-  private readonly mode = toSignal(this.store.select(selectMode), {
-    initialValue: 'light'
-  });
+  private readonly mode = toSignal(
+    this.store.select(applicationConfigFeature.selectMode),
+    {
+      initialValue: 'light'
+    }
+  );
 
   protected readonly isDark = computed(() => this.mode() === 'dark');
   protected readonly label = computed(() =>
@@ -44,6 +47,6 @@ export class ThemeToggle {
   );
 
   protected toggle(): void {
-    this.store.dispatch(toggleMode());
+    this.store.dispatch(ApplicationConfigActions.toggleMode());
   }
 }

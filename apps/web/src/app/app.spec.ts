@@ -4,8 +4,11 @@ import { provideEffects } from '@ngrx/effects';
 import { provideRouterStore, routerReducer } from '@ngrx/router-store';
 import { provideStore } from '@ngrx/store';
 import { App } from './app';
-import { ApplicationConfigEffects } from './store/effects/application-config.effects';
-import { applicationConfigReducer } from './store/reducers/application-config.reducer';
+import {
+  applyThemeMode$,
+  persistThemeMode$
+} from './store/application-config/application-config.effects';
+import { applicationConfigFeature } from './store/application-config/application-config.reducer';
 import { sendReducer } from './store/reducers/send.reducer';
 
 describe('App', () => {
@@ -15,11 +18,11 @@ describe('App', () => {
       providers: [
         provideRouter([]),
         provideStore({
-          applicationConfig: applicationConfigReducer,
+          applicationConfig: applicationConfigFeature.reducer,
           send: sendReducer,
           router: routerReducer
         }),
-        provideEffects(ApplicationConfigEffects),
+        provideEffects({ applyThemeMode$, persistThemeMode$ }),
         provideRouterStore()
       ]
     }).compileComponents();
