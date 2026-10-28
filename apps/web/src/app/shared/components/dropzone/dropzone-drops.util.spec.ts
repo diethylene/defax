@@ -63,4 +63,10 @@ describe('computeDrops', () => {
       expect(options).toEqual({ columnSpacing: 20 });
     });
   });
+
+  describe('regressions', () => {
+    it('returns no drops for a zero column spacing instead of hanging (#columnSpacing)', () => {
+      expect(computeDrops(50, 40, 8, { columnSpacing: 0 })).toEqual([]);
+    });
+  });
 });

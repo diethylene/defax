@@ -151,6 +151,8 @@ export const computeDrops = (
 
   const rounded = Math.round(total / columnSpacing);
   const columnCount = rounded % 2 === 0 ? rounded : rounded + 1;
+  if (!Number.isFinite(columnCount)) return [];
+  if (columnCount <= 0) return [];
   const step = total / columnCount;
 
   const spans: Span[] = segments.map((segment, index) => ({
