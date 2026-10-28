@@ -8,7 +8,7 @@ import { Store } from '@ngrx/store';
 import * as Match from 'effect/Match';
 import { routeForPhase } from '../../features/send/send-phase/send-phase';
 import { SendActions } from '../../store/send/send.actions';
-import type { SendStatus } from '../../store/send/send.reducer';
+import type { SendStatus } from '../../store/send/send-transitions';
 import {
   phaseForStatus,
   selectSendStatus

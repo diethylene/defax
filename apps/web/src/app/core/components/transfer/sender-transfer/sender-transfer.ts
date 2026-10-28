@@ -4,7 +4,7 @@ import { HlmButton } from '@spartan-ng/helm/button';
 import { map } from 'rxjs';
 import type { TransferSnapshot } from '../../../interfaces/transfer.interface';
 import { SendActions } from '../../../../store/send/send.actions';
-import type { SendStatus } from '../../../../store/send/send.reducer';
+import type { SendStatus } from '../../../../store/send/send-transitions';
 import {
   isVerifying,
   metadataOf,

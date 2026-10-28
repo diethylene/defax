@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import type { SendStatus } from './send.reducer';
+import type { SendStatus } from './send-transitions';
 import { selectSendErrorMessage, sendErrorMessages } from './send.selectors';
 
 const failed = (error: keyof typeof sendErrorMessages): SendStatus => ({

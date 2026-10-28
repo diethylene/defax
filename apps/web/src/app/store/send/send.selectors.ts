@@ -3,12 +3,8 @@ import type { Identity } from '@contract/signal/identity.model';
 import { createSelector } from '@ngrx/store';
 import * as Match from 'effect/Match';
 import type { SendPhase } from '../../features/send/send-phase/send-phase';
-import {
-  type HashStatus,
-  sendFeature,
-  type SendErrorTag,
-  type SendStatus
-} from './send.reducer';
+import { sendFeature } from './send.reducer';
+import type { HashStatus, SendErrorTag, SendStatus } from './send-transitions';
 
 /** Status of the send slice. */
 export const selectSendStatus = sendFeature.selectStatus;

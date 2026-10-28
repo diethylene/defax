@@ -35,10 +35,7 @@ import {
 import { IdentityService } from '../../shared/services/identity.service';
 import type { FileHashEvent } from '../../shared/utilities/hash-protocol';
 import { SendActions } from './send.actions';
-import {
-  type SendErrorTag,
-  type SendStatus
-} from './send.reducer';
+import type { SendErrorTag, SendStatus } from './send-transitions';
 import {
   selectSendPhase,
   selectSendStatus

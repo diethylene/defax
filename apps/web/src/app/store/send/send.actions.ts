@@ -2,7 +2,7 @@ import type { FileMetadata } from '@contract/signal/file-metadata.model';
 import type { Identity } from '@contract/signal/identity.model';
 import { createActionGroup, emptyProps, props } from '@ngrx/store';
 import type { RoomId } from '../../shared/interfaces/signal-session';
-import type { SendErrorTag } from './send.reducer';
+import type { SendErrorTag } from './send-transitions';
 
 /** Everything that can happen to the send slice. */
 export const SendActions = createActionGroup({

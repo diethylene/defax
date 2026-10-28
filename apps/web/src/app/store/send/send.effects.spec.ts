@@ -17,7 +17,8 @@ import {
   sendStartSession$,
   sendStartTransfer$
 } from './send.effects';
-import { initialSendState, sendFeature, type SendStatus } from './send.reducer';
+import { initialSendState, sendFeature } from './send.reducer';
+import type { SendStatus } from './send-transitions';
 
 const peerIdentity: Identity = {
   browser: 'Firefox 121',
