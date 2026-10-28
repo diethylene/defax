@@ -1,4 +1,4 @@
-import { match } from 'ts-pattern';
+import * as Match from 'effect/Match';
 import type { DropzoneConfig } from './dropzone.config';
 import type {
   DropzoneReason,
@@ -6,8 +6,14 @@ import type {
   DropzoneValidator,
   RejectedFile
 } from './dropzone.model';
-import { matchesAccept } from './dropzone-accept';
+import { matchesAccept } from './dropzone-accept.util';
 
+/**
+ * Collects the reasons one file fails every per-file rule.
+ * @param file File being checked.
+ * @param config Resolved dropzone config.
+ * @returns Reasons the file fails, empty when it passes.
+ */
 function perFileReasons(file: File, config: DropzoneConfig): DropzoneReason[] {
   const reasons: DropzoneReason[] = [];
   if (!matchesAccept(file, config.accept)) reasons.push('file-type');
@@ -19,6 +25,12 @@ function perFileReasons(file: File, config: DropzoneConfig): DropzoneReason[] {
   return reasons;
 }
 
+/**
+ * Runs the caller's validator and normalizes its result to a list.
+ * @param file File being checked.
+ * @param validator Caller validator, when present.
+ * @returns Reasons reported by the validator.
+ */
 function customReasons(
   file: File,
   validator: DropzoneValidator | null
@@ -28,6 +40,12 @@ function customReasons(
   return Array.isArray(outcome) ? outcome : [outcome];
 }
 
+/**
+ * Tells whether a file is already in the selection.
+ * @param file Candidate file.
+ * @param seen Files already selected.
+ * @returns True for a name, size, and modification time match.
+ */
 function isDuplicate(file: File, seen: File[]): boolean {
   return seen.some(
     (existing) =>
@@ -37,10 +55,24 @@ function isDuplicate(file: File, seen: File[]): boolean {
   );
 }
 
+/**
+ * Wraps a file and its reasons.
+ * @param file Rejected file.
+ * @param reasons Reasons it failed.
+ * @returns Rejection record.
+ */
 function toRejected(file: File, reasons: DropzoneReason[]): RejectedFile {
   return { file, reasons };
 }
 
+/**
+ * Evaluates one drop or picker selection.
+ * @param incoming Files chosen in this interaction.
+ * @param directories Directories dragged into the dropzone.
+ * @param existing Files already selected.
+ * @param config Resolved dropzone config.
+ * @returns Accepted and rejected files.
+ */
 export function evaluateFiles(
   incoming: File[],
   directories: File[],
@@ -53,16 +85,25 @@ export function evaluateFiles(
   const directoryRejections = directories.map((file) =>
     toRejected(file, ['directory'])
   );
-  return match(config.rejectionMode)
-    .with('all', () =>
+  return Match.value(config.rejectionMode).pipe(
+    Match.when('all', () =>
       evaluateAll(entries, directoryRejections, existing, config)
-    )
-    .with('partial', () =>
+    ),
+    Match.when('partial', () =>
       evaluatePartial(entries, directoryRejections, existing, config)
-    )
-    .exhaustive();
+    ),
+    Match.exhaustive
+  );
 }
 
+/**
+ * Accepts the files that pass and rejects the rest.
+ * @param entries Incoming files with per-file reasons.
+ * @param directoryRejections Directories to report.
+ * @param existing Files already selected.
+ * @param config Resolved dropzone config.
+ * @returns Accepted and rejected files.
+ */
 function evaluatePartial(
   entries: RejectedFile[],
   directoryRejections: RejectedFile[],
@@ -83,18 +124,25 @@ function evaluatePartial(
     seen.push(entry.file);
   }
 
-  return match(evaluateCapacity(candidates, existing, config))
-    .with({ kind: 'ok' }, () => ({ accepted: candidates, rejected }))
-    .with({ kind: 'reject' }, ({ reason }) => ({
+  return Match.value(evaluateCapacity(candidates, existing, config)).pipe(
+    Match.when({ kind: 'ok' }, () => ({ accepted: candidates, rejected })),
+    Match.when({ kind: 'reject' }, ({ reason }) => ({
       accepted: [],
       rejected: [
         ...directoryRejections,
         ...entries.map((entry) => toRejected(entry.file, [reason]))
       ]
-    }))
-    .exhaustive();
+    })),
+    Match.exhaustive
+  );
 }
 
+/**
+ * Combines per-file reasons with the duplicate check.
+ * @param entry Incoming file with its per-file reasons.
+ * @param seen Files already selected.
+ * @returns Reasons that still apply.
+ */
 function perFileRejectionReasons(
   entry: RejectedFile,
   seen: File[]
@@ -104,10 +152,18 @@ function perFileRejectionReasons(
   return [];
 }
 
+/** Result of the capacity check. */
 type CapacityResult =
   | { kind: 'ok' }
   | { kind: 'reject'; reason: 'too-many-files' | 'total-size-exceeded' };
 
+/**
+ * Checks the file-count and total-size limits.
+ * @param candidates Files that passed the per-file rules.
+ * @param existing Files already selected.
+ * @param config Resolved dropzone config.
+ * @returns Whether the batch fits.
+ */
 function evaluateCapacity(
   candidates: File[],
   existing: File[],
@@ -129,6 +185,14 @@ function evaluateCapacity(
   return { kind: 'ok' };
 }
 
+/**
+ * Rejects the whole batch when any file fails.
+ * @param entries Incoming files with per-file reasons.
+ * @param directoryRejections Directories to report.
+ * @param existing Files already selected.
+ * @param config Resolved dropzone config.
+ * @returns Accepted and rejected files.
+ */
 function evaluateAll(
   entries: RejectedFile[],
   directoryRejections: RejectedFile[],

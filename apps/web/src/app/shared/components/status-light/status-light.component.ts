@@ -7,6 +7,7 @@ import {
 import { classes } from '@spartan-ng/helm/utils';
 import { cva, type VariantProps } from 'class-variance-authority';
 
+/** Layout classes for the status light wrapper. */
 const statusLightVariants = cva(
   'inline-flex items-center font-medium text-foreground',
   {
@@ -23,6 +24,7 @@ const statusLightVariants = cva(
   }
 );
 
+/** Classes for the coloured dot. */
 const statusLightDotVariants = cva('shrink-0 rounded-full', {
   variants: {
     variant: {
@@ -44,13 +46,16 @@ const statusLightDotVariants = cva('shrink-0 rounded-full', {
   }
 });
 
+/** Colour of the status dot. */
 export type StatusLightVariant = NonNullable<
   VariantProps<typeof statusLightDotVariants>['variant']
 >;
+/** Size of the status dot. */
 export type StatusLightSize = NonNullable<
   VariantProps<typeof statusLightDotVariants>['size']
 >;
 
+/** A coloured dot followed by a status label. */
 @Component({
   selector: 'app-status-light',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -60,13 +65,17 @@ export type StatusLightSize = NonNullable<
   `
 })
 export class StatusLightComponent {
+  /** Colour of the dot. */
   readonly variant = input<StatusLightVariant>('neutral');
+  /** Size of the dot. */
   readonly size = input<StatusLightSize>('md');
 
+  /** Classes for the dot from the current variant and size. */
   protected readonly dotClasses = computed(() =>
     statusLightDotVariants({ variant: this.variant(), size: this.size() })
   );
 
+  /** Applies the wrapper classes from the current size. */
   constructor() {
     classes(() => statusLightVariants({ size: this.size() }));
   }

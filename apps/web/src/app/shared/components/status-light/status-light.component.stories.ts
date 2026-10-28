@@ -1,6 +1,7 @@
 import type { Meta, StoryObj } from '@storybook/angular-vite';
-import { StatusLightComponent } from './status-light';
+import { StatusLightComponent } from './status-light.component';
 
+/** Status light in each tone and size. */
 const meta: Meta<StatusLightComponent> = {
   title: 'Shared/StatusLight',
   component: StatusLightComponent,
@@ -27,14 +28,21 @@ const meta: Meta<StatusLightComponent> = {
 };
 
 export default meta;
+/** One status light story. */
 type Story = StoryObj<StatusLightComponent>;
 
+/** Neutral tone. */
 export const Neutral: Story = { args: { variant: 'neutral' } };
+/** Positive tone. */
 export const Positive: Story = { args: { variant: 'positive' } };
+/** Warning tone. */
 export const Warning: Story = { args: { variant: 'warning' } };
+/** Negative tone. */
 export const Negative: Story = { args: { variant: 'negative' } };
+/** Info tone. */
 export const Info: Story = { args: { variant: 'info' } };
 
+/** Every size side by side. */
 export const Sizes: Story = {
   render: () => ({
     template: `
