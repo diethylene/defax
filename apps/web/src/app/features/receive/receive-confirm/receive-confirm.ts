@@ -2,28 +2,20 @@ import {
   ChangeDetectionStrategy,
   Component,
   computed,
-  inject
+  inject,
 } from '@angular/core';
-import { toSignal } from '@angular/core/rxjs-interop';
 import { Store } from '@ngrx/store';
 import { HlmButton } from '@spartan-ng/helm/button';
 import { HlmCard, HlmCardContent } from '@spartan-ng/helm/card';
+import { ReceiveActions } from '@web/store/receive/receive.actions';
+import { receiveFeature } from '@web/store/receive/receive.reducer';
+import * as Match from 'effect/Match';
 import {
   type FileSummary,
-  FingerprintCardComponent
+  FingerprintCardComponent,
 } from '../../../core/components/fingerprint-card/fingerprint-card';
 import { PageShellComponent } from '../../../core/components/page-shell/page-shell';
 import { SasNumberComponent } from '../../../core/components/sas-number/sas-number';
-import {
-  receiveAccepted,
-  receiveDisconnect
-} from '../../../store/actions/receive.actions';
-import {
-  selectReceiveDigest,
-  selectReceiveFile,
-  selectReceivePeerIdentity,
-  selectReceiveSas
-} from '../../../store/selectors/receive.selectors';
 
 @Component({
   selector: 'app-receive-confirm',
@@ -33,31 +25,33 @@ import {
     FingerprintCardComponent,
     HlmButton,
     HlmCard,
-    HlmCardContent
+    HlmCardContent,
   ],
   host: { class: 'block' },
   changeDetection: ChangeDetectionStrategy.OnPush,
-  templateUrl: './receive-confirm.html'
+  templateUrl: './receive-confirm.html',
 })
 export class ReceiveConfirmComponent {
   private readonly store = inject(Store);
 
-  protected readonly sas = toSignal(this.store.select(selectReceiveSas), {
-    initialValue: null
-  });
+  private readonly status = this.store.selectSignal(receiveFeature.selectStatus);
 
-  protected readonly peerIdentity = toSignal(
-    this.store.select(selectReceivePeerIdentity),
-    { initialValue: null }
+  private readonly confirming = computed(() =>
+    Match.value(this.status()).pipe(
+      Match.when({ _tag: 'Confirming' }, (status) => status),
+      Match.orElse(() => undefined),
+    ),
   );
 
-  protected readonly file = toSignal(this.store.select(selectReceiveFile), {
-    initialValue: null
-  });
+  protected readonly sas = computed(() => this.confirming()?.sas ?? null);
 
-  protected readonly digest = toSignal(this.store.select(selectReceiveDigest), {
-    initialValue: null
-  });
+  protected readonly peerIdentity = computed(
+    () => this.confirming()?.peerIdentity ?? null,
+  );
+
+  protected readonly file = computed(() => this.confirming()?.file ?? null);
+
+  protected readonly digest = computed(() => this.confirming()?.digest ?? null);
 
   protected readonly fileSummary = computed<FileSummary | null>(() => {
     const file = this.file();
@@ -65,10 +59,10 @@ export class ReceiveConfirmComponent {
   });
 
   protected decline(): void {
-    this.store.dispatch(receiveDisconnect());
+    this.store.dispatch(ReceiveActions.disconnect());
   }
 
   protected accept(): void {
-    this.store.dispatch(receiveAccepted());
+    this.store.dispatch(ReceiveActions.accepted());
   }
 }

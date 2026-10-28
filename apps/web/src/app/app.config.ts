@@ -29,8 +29,16 @@ import {
   persistThemeMode$
 } from './store/application-config/application-config.effects';
 import { applicationConfigFeature } from './store/application-config/application-config.reducer';
-import { ReceiveEffects } from './store/effects/receive.effects';
-import { receiveReducer } from './store/reducers/receive.reducer';
+import {
+  closeRoom$ as closeReceiveRoom$,
+  connect$ as connectReceive$,
+  disconnect$ as disconnectReceive$,
+  fileHash$ as fileHashReceive$,
+  peerDisconnected$ as peerDisconnectedReceive$,
+  routeToPhase$ as routeToReceivePhase$,
+  startTransfer$ as startReceiveTransfer$
+} from './store/receive/receive.effects';
+import { receiveFeature } from './store/receive/receive.reducer';
 import { sendEffects } from './store/send/send.effects';
 import { sendFeature } from './store/send/send.reducer';
 
@@ -41,13 +49,21 @@ export const appConfig: ApplicationConfig = {
     provideStore({
       applicationConfig: applicationConfigFeature.reducer,
       send: sendFeature.reducer,
-      receive: receiveReducer,
+      receive: receiveFeature.reducer,
       router: routerReducer
     }),
     provideEffects(
       { applyThemeMode$, persistThemeMode$ },
       sendEffects,
-      ReceiveEffects
+      {
+        routeToPhase: routeToReceivePhase$,
+        connect: connectReceive$,
+        closeRoom: closeReceiveRoom$,
+        disconnect: disconnectReceive$,
+        peerDisconnected: peerDisconnectedReceive$,
+        fileHash: fileHashReceive$,
+        startTransfer: startReceiveTransfer$
+      }
     ),
     provideRouter(
       routes,
