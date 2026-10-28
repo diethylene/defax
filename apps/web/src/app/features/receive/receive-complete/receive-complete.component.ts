@@ -62,7 +62,7 @@ export class ReceiveCompleteComponent {
     () => this.done()?.peerIdentity.os ?? ''
   );
 
-  /** Seconds the receive took, or null while it is unfinished. */
+  /** Seconds the receive took, or undefined while it is unfinished. */
   protected readonly timeTaken = computed(() => {
     const done = this.done();
     return done === undefined ? undefined : done.elapsedMs / 1000;

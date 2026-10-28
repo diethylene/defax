@@ -69,7 +69,7 @@ export class SendCompleteComponent {
     () => this.done()?.peerIdentity.os ?? ''
   );
 
-  /** Seconds the send took, or null while it is unfinished. */
+  /** Seconds the send took, or undefined while it is unfinished. */
   protected readonly timeTaken = computed(() => {
     const durationMs = this.done()?.durationMs;
     return durationMs === undefined ? undefined : durationMs / 1000;

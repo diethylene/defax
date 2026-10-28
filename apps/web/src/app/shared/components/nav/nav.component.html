@@ -1,10 +1,10 @@
 <nav [attr.aria-label]="ariaLabel()" [class]="containerClasses" data-slot="nav">
   <ng-content select="[nav-leading]" />
-  @for (item of items(); track item.route) {
+  @for (item of view(); track item.route) {
     <a
       [routerLink]="item.route"
-      [class]="itemClasses(item)"
-      [attr.aria-current]="isActive(item) ? 'page' : null"
+      [class]="item.classes"
+      [attr.aria-current]="item.active ? 'page' : null"
     >
       @if (item.icon) {
         <ng-icon [name]="item.icon" size="16px" />

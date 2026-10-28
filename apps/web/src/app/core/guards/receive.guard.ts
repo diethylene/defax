@@ -5,7 +5,7 @@ import {
   Router,
 } from '@angular/router';
 import { Store } from '@ngrx/store';
-import { phaseForStatus, routeForPhase } from '@web/features/receive/receive-phase/receive-phase';
+import { phaseForStatus, routeForPhase } from '@web/features/receive/receive-phase/receive-phase.model';
 import { ReceiveActions } from '@web/store/receive/receive.actions';
 import { receiveFeature } from '@web/store/receive/receive.reducer';
 import type { ReceiveStatus } from '@web/store/receive/receive-transitions';

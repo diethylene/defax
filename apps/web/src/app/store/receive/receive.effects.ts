@@ -8,7 +8,7 @@ import {
   type TransferEvent,
   TransferService,
 } from '@web/core/services/transfer.service';
-import { phaseForStatus, routeForPhase } from '@web/features/receive/receive-phase/receive-phase';
+import { phaseForStatus, routeForPhase } from '@web/features/receive/receive-phase/receive-phase.model';
 import { IdentityService } from '@web/shared/services/identity.service';
 import * as Match from 'effect/Match';
 import {

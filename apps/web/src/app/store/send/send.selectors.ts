@@ -2,7 +2,7 @@ import type { FileMetadata } from '@contract/signal/file-metadata.model';
 import type { Identity } from '@contract/signal/identity.model';
 import { createSelector } from '@ngrx/store';
 import * as Match from 'effect/Match';
-import type { SendPhase } from '../../features/send/send-phase/send-phase';
+import type { SendPhase } from '../../features/send/send-phase/send-phase.model';
 import { sendFeature } from './send.reducer';
 import type { HashStatus, SendErrorTag, SendStatus } from './send-transitions';
 

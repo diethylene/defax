@@ -20,6 +20,6 @@ export class SendFailedComponent {
   /** Global store. */
   private readonly store = inject(Store);
 
-  /** User-facing reason for the failure, or null while there is none. */
+  /** User-facing reason for the failure, or undefined while there is none. */
   protected readonly error = this.store.selectSignal(selectSendErrorMessage);
 }

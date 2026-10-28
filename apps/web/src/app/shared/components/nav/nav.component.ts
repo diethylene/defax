@@ -1,4 +1,9 @@
-import { ChangeDetectionStrategy, Component, input } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  computed,
+  input
+} from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { NgIcon } from '@ng-icons/core';
 import type { NavItem } from './nav-item.model';
@@ -6,6 +11,14 @@ import type { NavItem } from './nav-item.model';
 /** Base classes shared by every nav link. */
 const itemBase =
   'rounded-sm px-1.5 py-[2px] text-sm font-medium flex items-center gap-1.5 outline-hidden select-none data-disabled:pointer-events-none data-disabled:opacity-50';
+
+/** A nav link with its computed presentation. */
+interface NavViewItem extends NavItem {
+  /** Classes for the link. */
+  readonly classes: string;
+  /** Whether the link matches the current route. */
+  readonly active: boolean;
+}
 
 /** Horizontal navigation bar built from a list of router links. */
 @Component({
@@ -26,29 +39,21 @@ export class NavComponent {
   protected readonly containerClasses =
     'bg-background h-8 gap-0.5 rounded-lg border p-[3px] flex items-center';
 
-  /**
-   * Combines base and active classes for one link.
-   * @param item Link being rendered.
-   * @returns Class list for the link.
-   */
-  protected itemClasses(item: NavItem): string {
-    const state = this.isActive(item) ? 'bg-muted' : 'hover:bg-muted';
-    return `${itemBase} ${state}`;
-  }
-
-  /**
-   * Tells whether a link matches the current route.
-   * @param item Link being checked.
-   * @returns True when the link is the current page.
-   */
-  protected isActive(item: NavItem): boolean {
+  /** Links with their computed classes and active state. */
+  protected readonly view = computed<NavViewItem[]>(() => {
     const current = this.path(this.activeRoute());
-    if (!current) return false;
-    const exact = item.exact ?? true;
-    return exact
-      ? current === item.route
-      : current === item.route || current.startsWith(`${item.route}/`);
-  }
+    return this.items().map((item) => {
+      const exact = item.exact ?? true;
+      const active = exact
+        ? current === item.route
+        : current === item.route || current.startsWith(`${item.route}/`);
+      return {
+        ...item,
+        classes: `${itemBase} ${active ? 'bg-muted' : 'hover:bg-muted'}`,
+        active
+      };
+    });
+  });
 
   /**
    * Normalizes a router URL to a comparable path.
