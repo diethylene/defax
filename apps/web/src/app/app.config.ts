@@ -23,11 +23,14 @@ import {
 } from './core/services/theme-preference';
 import { SignalTransport } from './shared/interfaces/signal-transport';
 import { provideMaskedUrls } from './shared/services/masking-location-strategy';
-import { setMode } from './store/actions/application-config.actions';
-import { ApplicationConfigEffects } from './store/effects/application-config.effects';
+import { ApplicationConfigActions } from './store/application-config/application-config.actions';
+import {
+  applyThemeMode$,
+  persistThemeMode$
+} from './store/application-config/application-config.effects';
+import { applicationConfigFeature } from './store/application-config/application-config.reducer';
 import { ReceiveEffects } from './store/effects/receive.effects';
 import { SendEffects } from './store/effects/send.effects';
-import { applicationConfigReducer } from './store/reducers/application-config.reducer';
 import { receiveReducer } from './store/reducers/receive.reducer';
 import { sendReducer } from './store/reducers/send.reducer';
 
@@ -36,12 +39,16 @@ export const appConfig: ApplicationConfig = {
     provideBrowserGlobalErrorListeners(),
     provideAnimationsAsync(),
     provideStore({
-      applicationConfig: applicationConfigReducer,
+      applicationConfig: applicationConfigFeature.reducer,
       send: sendReducer,
       receive: receiveReducer,
       router: routerReducer
     }),
-    provideEffects(ApplicationConfigEffects, SendEffects, ReceiveEffects),
+    provideEffects(
+      { applyThemeMode$, persistThemeMode$ },
+      SendEffects,
+      ReceiveEffects
+    ),
     provideRouter(
       routes,
       withViewTransitions({
@@ -70,7 +77,7 @@ export const appConfig: ApplicationConfig = {
         () => {
           const mode = resolveInitialMode();
           applyMode(mode);
-          store.dispatch(setMode({ mode }));
+          store.dispatch(ApplicationConfigActions.setMode({ mode }));
         },
       multi: true
     }
