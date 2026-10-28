@@ -1,6 +1,7 @@
 import { ChangeDetectionStrategy, Component, input } from '@angular/core';
 import { CopyButtonComponent } from '../../../shared/components/copy-button/copy-button';
 
+/** Read-only field that shows the transfer code with a copy button. */
 @Component({
   selector: 'app-send-code-field',
   imports: [CopyButtonComponent],
@@ -17,5 +18,6 @@ import { CopyButtonComponent } from '../../../shared/components/copy-button/copy
   `
 })
 export class SendCodeFieldComponent {
+  /** Code the user shares with the receiver. */
   readonly code = input.required<string>();
 }

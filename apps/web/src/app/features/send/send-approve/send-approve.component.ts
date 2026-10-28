@@ -21,6 +21,7 @@ import {
   selectSendStatus
 } from '../../../store/send/send.selectors';
 
+/** Waits while the receiver checks the sender and the file. */
 @Component({
   selector: 'app-send-approve',
   imports: [
@@ -34,36 +35,46 @@ import {
   ],
   host: { class: 'block' },
   changeDetection: ChangeDetectionStrategy.OnPush,
-  templateUrl: './send-approve.html'
+  templateUrl: './send-approve.component.html'
 })
 export class SendApproveComponent {
+  /** Global store. */
   private readonly store = inject(Store);
+
+  /** Current send status. */
   private readonly status = this.store.selectSignal(selectSendStatus);
 
+  /** Confirming status, or undefined while the send is elsewhere. */
   private readonly confirming = computed(() =>
     Match.value(this.status()).pipe(
       Match.tag('SasConfirm', (status) => status),
-      Match.orElse(() => null)
+      Match.orElse(() => undefined)
     )
   );
 
+  /** Verification number both screens show. */
   protected readonly sas = computed(() => this.confirming()?.sas ?? null);
 
+  /** Identity of the receiving peer. */
   protected readonly peerIdentity = computed(
     () => this.confirming()?.peerIdentity ?? null
   );
 
+  /** Metadata of the file being sent. */
   protected readonly metadata = computed(
     () => this.confirming()?.metadata ?? null
   );
 
+  /** Digest of the file being sent. */
   protected readonly digest = computed(() => hashDigestOf(this.status()));
 
+  /** Name and size shown on the fingerprint card. */
   protected readonly fileSummary = computed<FileSummary | null>(() => {
     const metadata = this.metadata();
     return metadata ? { name: metadata.name, size: metadata.size } : null;
   });
 
+  /** Cancels the transfer and disconnects. */
   protected cancel(): void {
     this.store.dispatch(SendActions.disconnect());
   }

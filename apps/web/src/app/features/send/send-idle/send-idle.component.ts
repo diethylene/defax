@@ -1,4 +1,9 @@
-import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  inject,
+  signal
+} from '@angular/core';
 import { Store } from '@ngrx/store';
 import {
   PageShellComponent,
@@ -7,19 +12,24 @@ import {
 import { DropzoneComponent } from '../../../shared/components/dropzone/dropzone.component';
 import type { DropzoneResult } from '../../../shared/components/dropzone/dropzone.model';
 import { SendActions } from '../../../store/send/send.actions';
-import { toFileMetadata } from '../file-metadata/file-metadata';
+import { toFileMetadata } from '../file-metadata/file-metadata.util';
 
+/** Asks the user to choose a file and starts the send. */
 @Component({
   selector: 'app-send-idle',
   imports: [PageShellComponent, DropzoneComponent],
   host: { class: 'block' },
   changeDetection: ChangeDetectionStrategy.OnPush,
-  templateUrl: './send-idle.html'
+  templateUrl: './send-idle.component.html'
 })
 export class SendIdleComponent {
+  /** Global store. */
   private readonly store = inject(Store);
-  private pendingFile: File | null = null;
 
+  /** File the dropzone accepted, waiting for the selection animation to settle. */
+  private readonly pendingFile = signal<File | undefined>(undefined);
+
+  /** Steps shown beside the dropzone. */
   protected readonly steps: PageStep[] = [
     { title: 'Choose a file.', description: 'You get a one-time code.' },
     {
@@ -32,14 +42,19 @@ export class SendIdleComponent {
     }
   ];
 
+  /**
+   * Remembers the accepted file until the dropzone settles.
+   * @param result Files the dropzone accepted or rejected.
+   */
   onFilesChange(result: DropzoneResult): void {
-    this.pendingFile = result.accepted[0] ?? null;
+    this.pendingFile.set(result.accepted[0]);
   }
 
+  /** Dispatches the chosen file once the dropzone animation settles. */
   onSettled(): void {
-    const file = this.pendingFile;
-    if (!file) return;
-    this.pendingFile = null;
+    const file = this.pendingFile();
+    if (file === undefined) return;
+    this.pendingFile.set(undefined);
     this.store.dispatch(
       SendActions.fileSelected({ file, metadata: toFileMetadata(file) })
     );

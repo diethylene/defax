@@ -23,8 +23,9 @@ import {
   hashDigestOf,
   selectSendStatus
 } from '../../../store/send/send.selectors';
-import { SendCodeFieldComponent } from './send-code-field';
+import { SendCodeFieldComponent } from './send-code-field.component';
 
+/** Shows the code the receiver enters while the sender waits for a connection. */
 @Component({
   selector: 'app-send-code',
   imports: [
@@ -43,40 +44,46 @@ import { SendCodeFieldComponent } from './send-code-field';
   ],
   providers: [provideIcons({ lucideFile })],
   changeDetection: ChangeDetectionStrategy.OnPush,
-  templateUrl: './send-code.html'
+  templateUrl: './send-code.component.html'
 })
 export class SendCodeComponent {
+  /** Global store. */
   private readonly store = inject(Store);
+
+  /** Router, used to leave the page after a cancel. */
   private readonly router = inject(Router);
+
+  /** Current send status. */
   private readonly status = this.store.selectSignal(selectSendStatus);
 
+  /** Awaiting-peer status, or undefined while the send is elsewhere. */
   private readonly awaiting = computed(() =>
     Match.value(this.status()).pipe(
       Match.tag('AwaitingPeer', (status) => status),
-      Match.orElse(() => null)
+      Match.orElse(() => undefined)
     )
   );
 
-  protected readonly roomId = computed(
-    () => this.awaiting()?.roomId || null
-  );
+  /** Room id half of the code. */
+  protected readonly roomId = computed(() => this.awaiting()?.roomId);
 
-  protected readonly password = computed(
-    () => this.awaiting()?.password || null
-  );
+  /** Password half of the code. */
+  protected readonly password = computed(() => this.awaiting()?.password);
 
+  /** Full code the receiver types. */
   protected readonly passcode = computed(() => {
     const roomId = this.roomId();
     const password = this.password();
     return roomId && password ? `${roomId}-${password}` : '';
   });
 
-  protected readonly metadata = computed(
-    () => this.awaiting()?.metadata ?? null
-  );
+  /** Metadata of the file being sent. */
+  protected readonly metadata = computed(() => this.awaiting()?.metadata);
 
+  /** Digest of the file being sent. */
   protected readonly digest = computed(() => hashDigestOf(this.status()));
 
+  /** Cancels the transfer and returns to the send page. */
   protected cancel(): void {
     this.store.dispatch(SendActions.disconnect());
     this.router.navigate(['/send']);

@@ -26,7 +26,8 @@
 
   <section hlmCard class="w-full">
     <div hlmCardContent class="flex flex-col gap-4">
-      @if (metadata(); as file) {
+      @let file = metadata();
+      @if (file) {
         <div class="flex items-center gap-3">
           <span
             class="flex size-10 shrink-0 items-center justify-center rounded-[10px] bg-muted text-foreground"

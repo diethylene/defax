@@ -76,7 +76,7 @@ const check = trigger('check', [
   ],
   animations: [grow, check],
   changeDetection: ChangeDetectionStrategy.OnPush,
-  templateUrl: './receive-code-form.html'
+  templateUrl: './receive-code-form.component.html'
 })
 export class ReceiveCodeFormComponent {
   readonly connect = output<string>();
