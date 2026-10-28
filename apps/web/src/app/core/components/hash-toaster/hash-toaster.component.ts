@@ -11,7 +11,7 @@ import { HlmToasterImports } from '@spartan-ng/helm/sonner';
 import { toast } from '@spartan-ng/brain/sonner';
 import * as Match from 'effect/Match';
 import { hashOf, selectSendStatus } from '../../../store/send/send.selectors';
-import { HashProgressToastComponent } from './hash-progress-toast';
+import { HashProgressToastComponent } from './hash-progress-toast.component';
 
 const HASH_PROGRESS_TOAST_ID = 'file-hash-progress';
 

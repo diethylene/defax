@@ -17,7 +17,7 @@ import { HlmCard, HlmCardTitle } from '@spartan-ng/helm/card';
     </div>
   `
 })
-export class ListCard {
+export class ListCardComponent {
   readonly title = input.required<string>();
   readonly items = input.required<string[]>();
 }

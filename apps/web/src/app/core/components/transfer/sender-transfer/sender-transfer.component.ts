@@ -12,9 +12,9 @@ import {
   selectSendStatus,
   transferProgressOf
 } from '../../../../store/send/send.selectors';
-import { PageShellComponent } from '../../page-shell/page-shell';
-import { ProgressTransferComponent } from '../progress-transfer/progress-transfer';
-import { TransferComponent } from '../transfer.abstract';
+import { PageShellComponent } from '../../page-shell/page-shell.component';
+import { ProgressTransferComponent } from '../progress-transfer/progress-transfer.component';
+import { TransferComponent } from '../transfer.component';
 import { TransferMetricsStore } from '../transfer-metrics.store';
 
 const EMPTY_TRANSFER: TransferSnapshot = {
@@ -46,7 +46,7 @@ const snapshotOf = (status: SendStatus): TransferSnapshot => {
   providers: [TransferMetricsStore],
   host: { class: 'block' },
   changeDetection: ChangeDetectionStrategy.OnPush,
-  templateUrl: './sender-transfer.html'
+  templateUrl: './sender-transfer.component.html'
 })
 export class SenderTransferComponent extends TransferComponent {
   constructor() {

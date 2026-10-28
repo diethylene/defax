@@ -27,7 +27,7 @@ import {
     </div>
   `
 })
-export class HowItWorksCard {
+export class HowItWorksCardComponent {
   readonly step = input.required<number>();
   readonly title = input.required<string>();
 }

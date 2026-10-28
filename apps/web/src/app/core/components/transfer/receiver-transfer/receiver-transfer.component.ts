@@ -9,9 +9,9 @@ import { receiveFeature } from '@web/store/receive/receive.reducer';
 import type { ReceiveStatus } from '@web/store/receive/receive-transitions';
 import * as Match from 'effect/Match';
 import { map } from 'rxjs';
-import { PageShellComponent } from '../../page-shell/page-shell';
-import { ProgressTransferComponent } from '../progress-transfer/progress-transfer';
-import { TransferComponent } from '../transfer.abstract';
+import { PageShellComponent } from '../../page-shell/page-shell.component';
+import { ProgressTransferComponent } from '../progress-transfer/progress-transfer.component';
+import { TransferComponent } from '../transfer.component';
 import { TransferMetricsStore } from '../transfer-metrics.store';
 
 /** Statuses that show a transfer in flight. */
@@ -74,7 +74,7 @@ const verifyingOf = (status: ReceiveStatus): boolean =>
   providers: [TransferMetricsStore],
   host: { class: 'block' },
   changeDetection: ChangeDetectionStrategy.OnPush,
-  templateUrl: './receiver-transfer.html',
+  templateUrl: './receiver-transfer.component.html',
 })
 export class ReceiverTransferComponent extends TransferComponent {
   constructor() {

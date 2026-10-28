@@ -15,7 +15,7 @@ import type {
   TransferMode,
   TransferRoute
 } from '../../../interfaces/transfer.interface';
-import { TransferFileSummaryComponent } from '../transfer-file-summary/transfer-file-summary';
+import { TransferFileSummaryComponent } from '../transfer-file-summary/transfer-file-summary.component';
 
 export interface ProgressTransfer {
   fileName: string;
@@ -44,7 +44,7 @@ export interface ProgressTransfer {
   ],
   host: { class: 'block w-full' },
   changeDetection: ChangeDetectionStrategy.OnPush,
-  templateUrl: './progress-transfer.html'
+  templateUrl: './progress-transfer.component.html'
 })
 export class ProgressTransferComponent {
   readonly mode = input.required<TransferMode>();

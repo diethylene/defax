@@ -12,9 +12,9 @@ import * as Match from 'effect/Match';
 import {
   type FileSummary,
   FingerprintCardComponent
-} from '../../../core/components/fingerprint-card/fingerprint-card';
-import { PageShellComponent } from '../../../core/components/page-shell/page-shell';
-import { SasNumberComponent } from '../../../core/components/sas-number/sas-number';
+} from '../../../core/components/fingerprint-card/fingerprint-card.component';
+import { PageShellComponent } from '../../../core/components/page-shell/page-shell.component';
+import { SasNumberComponent } from '../../../core/components/sas-number/sas-number.component';
 import { SendActions } from '../../../store/send/send.actions';
 import {
   hashDigestOf,

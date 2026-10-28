@@ -4,17 +4,17 @@ import { NgIcon, provideIcons } from '@ng-icons/core';
 import { lucideHelpCircle, lucideLock } from '@ng-icons/lucide';
 import { signalState } from '@ngrx/signals';
 import { HlmButton } from '@spartan-ng/helm/button';
-import { StatusPill } from './status-pill';
-import { type StatusBarStatus, statusStates } from './status-state';
+import { StatusPillComponent } from './status-pill.component';
+import { type StatusBarStatus, statusStates } from './status-state.model';
 
 @Component({
   selector: 'app-status-bar',
-  imports: [RouterLink, NgIcon, StatusPill, HlmButton],
+  imports: [RouterLink, NgIcon, StatusPillComponent, HlmButton],
   providers: [provideIcons({ lucideHelpCircle, lucideLock })],
   changeDetection: ChangeDetectionStrategy.OnPush,
-  templateUrl: './status-bar.html'
+  templateUrl: './status-bar.component.html'
 })
-export class StatusBar {
+export class StatusBarComponent {
   private readonly state = signalState({
     status: 'positive' as StatusBarStatus
   });

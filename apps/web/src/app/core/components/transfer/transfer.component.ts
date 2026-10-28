@@ -6,7 +6,7 @@ import { match } from 'ts-pattern';
 import type { FileMetadata } from '@contract/signal/file-metadata.model';
 import type { Identity } from '@contract/signal/identity.model';
 import type { TransferSnapshot } from '../../interfaces/transfer.interface';
-import type { ProgressTransfer } from './progress-transfer/progress-transfer';
+import type { ProgressTransfer } from './progress-transfer/progress-transfer.component';
 import { TransferMetricsStore } from './transfer-metrics.store';
 
 const SAMPLE_INTERVAL_MS = 1000;

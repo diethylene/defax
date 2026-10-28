@@ -34,7 +34,7 @@ import {
     </div>
   `
 })
-export class VerificationCard {
+export class VerificationCardComponent {
   readonly title = input.required<string>();
   readonly description = input.required<string>();
   readonly linkText = input.required<string>();

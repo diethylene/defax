@@ -8,7 +8,7 @@ import { Store } from '@ngrx/store';
 import { ReceiveActions } from '@web/store/receive/receive.actions';
 import { receiveFeature } from '@web/store/receive/receive.reducer';
 import * as Match from 'effect/Match';
-import { TransferCompleteComponent } from '../../../core/components/transfer/transfer-complete/transfer-complete';
+import { TransferCompleteComponent } from '../../../core/components/transfer/transfer-complete/transfer-complete.component';
 
 @Component({
   selector: 'app-receive-complete',

@@ -6,7 +6,7 @@ import {
 } from '@angular/core';
 import { HlmBadge } from '@spartan-ng/helm/badge';
 import { StatusLightComponent } from '../../../shared/components/status-light/status-light';
-import { type StatusBarStatus, statusStates } from './status-state';
+import { type StatusBarStatus, statusStates } from './status-state.model';
 
 @Component({
   selector: 'app-status-pill',
@@ -21,7 +21,7 @@ import { type StatusBarStatus, statusStates } from './status-state';
     </span>
   `
 })
-export class StatusPill {
+export class StatusPillComponent {
   readonly status = input.required<StatusBarStatus>();
 
   protected readonly state = computed(() => statusStates[this.status()]);

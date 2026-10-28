@@ -13,13 +13,13 @@ import { Store } from '@ngrx/store';
 import { map } from 'rxjs';
 import { NavComponent } from '../../../shared/components/nav/nav';
 import type { NavItem } from '../../../shared/components/nav/nav-item';
-import { ThemeToggle } from '../theme-toggle/theme-toggle';
+import { ThemeToggleComponent } from '../theme-toggle/theme-toggle.component';
 
 const { selectUrl } = getRouterSelectors();
 
 @Component({
   selector: 'app-navbar',
-  imports: [RouterLink, NgIcon, NavComponent, ThemeToggle],
+  imports: [RouterLink, NgIcon, NavComponent, ThemeToggleComponent],
   providers: [
     provideIcons({
       lucideArrowLeftRight,
@@ -29,9 +29,9 @@ const { selectUrl } = getRouterSelectors();
     })
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
-  templateUrl: './navbar.html'
+  templateUrl: './navbar.component.html'
 })
-export class Navbar {
+export class NavbarComponent {
   private readonly store = inject(Store);
 
   protected readonly activeRoute = toSignal(

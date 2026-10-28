@@ -31,7 +31,7 @@ import { applicationConfigFeature } from '../../../store/application-config/appl
     </button>
   `
 })
-export class ThemeToggle {
+export class ThemeToggleComponent {
   private readonly store = inject(Store);
 
   private readonly mode = toSignal(

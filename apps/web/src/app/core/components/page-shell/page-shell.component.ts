@@ -21,7 +21,7 @@ const stepsFade = trigger('stepsFade', [
   host: { class: 'block' },
   animations: [stepsFade],
   changeDetection: ChangeDetectionStrategy.OnPush,
-  templateUrl: './page-shell.html'
+  templateUrl: './page-shell.component.html'
 })
 export class PageShellComponent {
   readonly heading = input.required<string>();

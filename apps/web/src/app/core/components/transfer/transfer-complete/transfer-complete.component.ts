@@ -13,8 +13,8 @@ import { HlmSeparator } from '@spartan-ng/helm/separator';
 import { match } from 'ts-pattern';
 import { chunk } from '../../../../shared/utilities/chunk';
 import type { TransferMode } from '../../../interfaces/transfer.interface';
-import { PageShellComponent } from '../../page-shell/page-shell';
-import { TransferFileSummaryComponent } from '../transfer-file-summary/transfer-file-summary';
+import { PageShellComponent } from '../../page-shell/page-shell.component';
+import { TransferFileSummaryComponent } from '../transfer-file-summary/transfer-file-summary.component';
 
 const CHECKSUM_GROUP_SIZE = 4;
 
@@ -31,7 +31,7 @@ const CHECKSUM_GROUP_SIZE = 4;
   ],
   providers: [provideIcons({ lucideCheck })],
   changeDetection: ChangeDetectionStrategy.OnPush,
-  templateUrl: './transfer-complete.html'
+  templateUrl: './transfer-complete.component.html'
 })
 export class TransferCompleteComponent {
   readonly mode = input.required<TransferMode>();

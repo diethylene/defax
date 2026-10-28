@@ -3,7 +3,7 @@ import { Store } from '@ngrx/store';
 import {
   PageShellComponent,
   type PageStep
-} from '../../../core/components/page-shell/page-shell';
+} from '../../../core/components/page-shell/page-shell.component';
 import { DropzoneComponent } from '../../../shared/components/dropzone/dropzone.component';
 import type { DropzoneResult } from '../../../shared/components/dropzone/dropzone.model';
 import { SendActions } from '../../../store/send/send.actions';

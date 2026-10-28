@@ -1,6 +1,6 @@
 import type { Routes } from '@angular/router';
-import { ReceiverTransferComponent } from './core/components/transfer/receiver-transfer/receiver-transfer';
-import { SenderTransferComponent } from './core/components/transfer/sender-transfer/sender-transfer';
+import { ReceiverTransferComponent } from './core/components/transfer/receiver-transfer/receiver-transfer.component';
+import { SenderTransferComponent } from './core/components/transfer/sender-transfer/sender-transfer.component';
 import {
   receiveCanActivate,
   receiveCanDeactivate
