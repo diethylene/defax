@@ -56,7 +56,7 @@ export class NavComponent {
    * @returns Path without query, fragment, or trailing slash.
    */
   private path(url: string): string {
-    const pathname = url.split(/[?#]/)[0];
+    const pathname = url.replace(/[?#][\s\S]*$/, '');
     const stripped = pathname.replace(/\/+$/, '');
     return stripped || '/';
   }

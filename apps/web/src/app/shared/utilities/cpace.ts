@@ -50,8 +50,10 @@ export const secretFromBytes = (bytes: Uint8Array): bigint => {
   if (bytes.length !== 32) {
     throw new Error('secret requires exactly 32 bytes');
   }
-  const scalarBytes = new Uint8Array(bytes);
-  scalarBytes[31] &= 0x0f; // clear bits above the 252-bit group size
+  const scalarBytes = Uint8Array.from(
+    bytes,
+    (byte, index) => (index === 31 ? byte & 0x0f : byte), // clear bits above the 252-bit group size
+  );
   const scalar = bytesToNumberLE(scalarBytes);
   if (scalar === 0n) {
     throw new Error('secret must not be zero');

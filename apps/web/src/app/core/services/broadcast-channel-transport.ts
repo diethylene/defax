@@ -253,7 +253,9 @@ export class BroadcastChannelTransport extends SignalTransport {
    * @returns Room id in the 100000 to 999999 range.
    */
   private generateRoomId(): RoomId {
-    const value = crypto.getRandomValues(new Uint32Array(1))[0] % 900000;
+    const words = crypto.getRandomValues(new Uint32Array(1));
+    // biome-ignore lint/style/noNonNullAssertion: a one-word Uint32Array always yields index 0.
+    const value = words[0]! % 900000;
     return String(value + 100000);
   }
 }

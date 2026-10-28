@@ -37,8 +37,10 @@ describe('aead', () => {
   it('rejects tampered ciphertext', async () => {
     const key = await testKey();
     const sealed = await seal(key, encoder.encode('hello'), '482913', 'initiator');
-    sealed[sealed.length - 1] ^= 0xff;
-    await expect(open(key, sealed, '482913', 'initiator')).rejects.toThrow();
+    const tampered = sealed.map((byte, index) =>
+      index === sealed.length - 1 ? byte ^ 0xff : byte,
+    );
+    await expect(open(key, tampered, '482913', 'initiator')).rejects.toThrow();
   });
 
   it('rejects a sealed message that is too short', async () => {
