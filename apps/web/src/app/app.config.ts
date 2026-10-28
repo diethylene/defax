@@ -25,10 +25,18 @@ import { SignalTransport } from './shared/interfaces/signal-transport';
 import { provideMaskedUrls } from './shared/services/masking-location-strategy';
 import { setMode } from './store/actions/application-config.actions';
 import { ApplicationConfigEffects } from './store/effects/application-config.effects';
-import { ReceiveEffects } from './store/effects/receive.effects';
 import { SendEffects } from './store/effects/send.effects';
+import {
+  closeRoom$ as closeReceiveRoom$,
+  connect$ as connectReceive$,
+  disconnect$ as disconnectReceive$,
+  fileHash$ as fileHashReceive$,
+  peerDisconnected$ as peerDisconnectedReceive$,
+  routeToPhase$ as routeToReceivePhase$,
+  startTransfer$ as startReceiveTransfer$,
+} from './store/receive/receive.effects';
+import { receiveFeature } from './store/receive/receive.reducer';
 import { applicationConfigReducer } from './store/reducers/application-config.reducer';
-import { receiveReducer } from './store/reducers/receive.reducer';
 import { sendReducer } from './store/reducers/send.reducer';
 
 export const appConfig: ApplicationConfig = {
@@ -38,10 +46,18 @@ export const appConfig: ApplicationConfig = {
     provideStore({
       applicationConfig: applicationConfigReducer,
       send: sendReducer,
-      receive: receiveReducer,
-      router: routerReducer
+      receive: receiveFeature.reducer,
+      router: routerReducer,
     }),
-    provideEffects(ApplicationConfigEffects, SendEffects, ReceiveEffects),
+    provideEffects(ApplicationConfigEffects, SendEffects, {
+      routeToPhase: routeToReceivePhase$,
+      connect: connectReceive$,
+      closeRoom: closeReceiveRoom$,
+      disconnect: disconnectReceive$,
+      peerDisconnected: peerDisconnectedReceive$,
+      fileHash: fileHashReceive$,
+      startTransfer: startReceiveTransfer$,
+    }),
     provideRouter(
       routes,
       withViewTransitions({

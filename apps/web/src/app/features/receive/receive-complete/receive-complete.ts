@@ -2,18 +2,13 @@ import {
   ChangeDetectionStrategy,
   Component,
   computed,
-  inject
+  inject,
 } from '@angular/core';
-import { toSignal } from '@angular/core/rxjs-interop';
 import { Store } from '@ngrx/store';
+import { ReceiveActions } from '@web/store/receive/receive.actions';
+import { receiveFeature } from '@web/store/receive/receive.reducer';
+import * as Match from 'effect/Match';
 import { TransferCompleteComponent } from '../../../core/components/transfer/transfer-complete/transfer-complete';
-import { receiveReset } from '../../../store/actions/receive.actions';
-import {
-  selectReceiveDigest,
-  selectReceiveFile,
-  selectReceivePeerIdentity,
-  selectReceiveTransferDurationMs
-} from '../../../store/selectors/receive.selectors';
 
 @Component({
   selector: 'app-receive-complete',
@@ -30,41 +25,34 @@ import {
       [checksum]="digest()"
       (restart)="onRestart()"
     />
-  `
+  `,
 })
 export class ReceiveCompleteComponent {
   private readonly store = inject(Store);
 
-  private readonly file = toSignal(this.store.select(selectReceiveFile), {
-    initialValue: null
-  });
+  private readonly status = this.store.selectSignal(receiveFeature.selectStatus);
 
-  private readonly peerIdentity = toSignal(
-    this.store.select(selectReceivePeerIdentity),
-    { initialValue: null }
+  private readonly done = computed(() =>
+    Match.value(this.status()).pipe(
+      Match.when({ _tag: 'Done' }, (status) => status),
+      Match.orElse(() => undefined),
+    ),
   );
 
-  protected readonly digest = toSignal(this.store.select(selectReceiveDigest), {
-    initialValue: null
-  });
+  protected readonly digest = computed(() => this.done()?.digest ?? null);
 
-  private readonly durationMs = toSignal(
-    this.store.select(selectReceiveTransferDurationMs),
-    { initialValue: null }
-  );
-
-  protected readonly fileName = computed(() => this.file()?.name ?? '');
-  protected readonly fileSize = computed(() => this.file()?.size ?? 0);
+  protected readonly fileName = computed(() => this.done()?.file.name ?? '');
+  protected readonly fileSize = computed(() => this.done()?.file.size ?? 0);
   protected readonly peerBrowser = computed(
-    () => this.peerIdentity()?.browser ?? ''
+    () => this.done()?.peerIdentity.browser ?? '',
   );
-  protected readonly peerOs = computed(() => this.peerIdentity()?.os ?? '');
+  protected readonly peerOs = computed(() => this.done()?.peerIdentity.os ?? '');
   protected readonly timeTaken = computed(() => {
-    const ms = this.durationMs();
-    return ms === null ? null : ms / 1000;
+    const done = this.done();
+    return done === undefined ? null : done.elapsedMs / 1000;
   });
 
   protected onRestart(): void {
-    this.store.dispatch(receiveReset());
+    this.store.dispatch(ReceiveActions.reset());
   }
 }

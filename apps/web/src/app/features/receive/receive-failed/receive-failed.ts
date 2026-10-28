@@ -1,7 +1,6 @@
 import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
-import { toSignal } from '@angular/core/rxjs-interop';
 import { Store } from '@ngrx/store';
-import { selectReceiveError } from '../../../store/selectors/receive.selectors';
+import { selectReceiveErrorMessage } from '@web/store/receive/receive.selectors';
 
 @Component({
   selector: 'app-receive-failed',
@@ -13,12 +12,10 @@ import { selectReceiveError } from '../../../store/selectors/receive.selectors';
         <p class="mt-2 text-sm text-muted-foreground">{{ error() }}</p>
       }
     </div>
-  `
+  `,
 })
 export class ReceiveFailedComponent {
   private readonly store = inject(Store);
 
-  protected readonly error = toSignal(this.store.select(selectReceiveError), {
-    initialValue: null
-  });
+  protected readonly error = this.store.selectSignal(selectReceiveErrorMessage);
 }
