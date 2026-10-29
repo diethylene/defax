@@ -4,7 +4,12 @@ import { Actions, createEffect, ofType } from '@ngrx/effects';
 import { type Action, Store } from '@ngrx/store';
 import { toast } from '@spartan-ng/brain/sonner';
 import { SignalingService } from '@web/core/services/signaling.service';
-import { type TransferEvent, TransferService } from '@web/core/services/transfer.service';
+import { TransferService } from '@web/core/services/transfer.service';
+import {
+  type TransferEventActionSink,
+  transferEventActionFor,
+} from '@web/core/utils/transfer-event-action.util';
+import { timeTransferEvents } from '@web/core/utils/transfer-event-time.operator';
 import {
   phaseForStatus,
   routeForPhase,
@@ -18,69 +23,24 @@ import {
   map,
   type Observable,
   of,
-  scan,
   skip,
   switchMap,
   takeUntil,
   tap,
-  timestamp,
   withLatestFrom,
 } from 'rxjs';
 import { ReceiveActions } from './receive.actions';
 import { receiveFeature } from './receive.reducer';
 import type { ReceiveStatus } from './receive-transitions';
 
-/** A transfer event paired with the clock readings used to time the transfer. */
-interface TransferMoment {
-  /** Event the service emitted. */
-  readonly event: TransferEvent;
-  /** When the started event arrived, in milliseconds. */
-  readonly startedAt: number;
-  /** When this event arrived, in milliseconds. */
-  readonly at: number;
-}
-
-/**
- * Stamps each transfer event with its arrival time and the transfer start time.
- * @param events$ Events the transfer service emits.
- * @returns The same events with their clock readings.
- */
-const timed = (events$: Observable<TransferEvent>): Observable<TransferMoment> =>
-  events$.pipe(
-    timestamp(),
-    scan(
-      (moment, { value, timestamp: at }): TransferMoment => ({
-        event: value,
-        at,
-        startedAt: value.type === 'started' ? at : moment.startedAt,
-      }),
-      // Scan never emits its seed, and the first real event is always 'started'.
-      { event: { type: 'complete' }, at: 0, startedAt: 0 } satisfies TransferMoment,
-    ),
-  );
-
-/**
- * Turns a stamped transfer event into the action the reducer expects.
- * @param moment Transfer event with its clock readings.
- * @returns Action carrying the event.
- */
-const toAction = ({ event, startedAt, at }: TransferMoment): Action =>
-  Match.value(event).pipe(
-    Match.when({ type: 'started' }, (started) =>
-      ReceiveActions.transferStarted({ total: started.total }),
-    ),
-    Match.when({ type: 'progress' }, (progress) =>
-      ReceiveActions.transferProgress({ received: progress.transferred }),
-    ),
-    Match.when({ type: 'complete' }, () => ReceiveActions.transferComplete()),
-    Match.when({ type: 'verified' }, () =>
-      ReceiveActions.transferVerified({ elapsed: at - startedAt }),
-    ),
-    Match.when({ type: 'failed' }, (failure) =>
-      ReceiveActions.transferFailed({ error: failure.error }),
-    ),
-    Match.exhaustive,
-  );
+/** Receive actions each transfer event becomes. */
+const receiveSink: TransferEventActionSink = {
+  started: (total) => ReceiveActions.transferStarted({ total }),
+  progress: (received) => ReceiveActions.transferProgress({ received }),
+  complete: () => ReceiveActions.transferComplete(),
+  verified: (elapsed) => ReceiveActions.transferVerified({ elapsed }),
+  failed: (error) => ReceiveActions.transferFailed({ error }),
+};
 
 /**
  * Hands a transferring status to the transfer service until it settles.
@@ -97,8 +57,8 @@ const receiveEvents = (
   Match.value(status).pipe(
     Match.when({ _tag: 'Transferring' }, (active) =>
       transfer.receive({ metadata: active.file, digest: active.digest }).pipe(
-        timed,
-        map(toAction),
+        timeTransferEvents(),
+        map(transferEventActionFor(receiveSink)),
         catchError(() => of(ReceiveActions.transferFailed({ error: 'transfer-failed' }))),
         takeUntil(
           actions$.pipe(
