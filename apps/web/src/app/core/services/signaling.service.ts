@@ -6,6 +6,7 @@ import {
   DisconnectNotice as DisconnectNoticeSchema,
   FileHash,
 } from '@contract/signal/payload.model';
+import { opposite, type Role } from '@contract/signal/role.model';
 import type { SealedKind } from '@contract/signal/sealed-kind.model';
 import { utf8ToBytes } from '@noble/hashes/utils.js';
 import * as Match from 'effect/Match';
@@ -28,7 +29,7 @@ import {
 } from 'rxjs';
 import type { RoomId } from '../../shared/interfaces/signal-session';
 import { SignalTransport } from '../../shared/interfaces/signal-transport';
-import { open, type SignalRole, seal } from '../../shared/utilities/aead';
+import { open, seal } from '../../shared/utilities/aead';
 import { decodeBase64Url, encodeBase64Url } from '../../shared/utilities/base64url';
 import { parseFileMetadata } from '../../shared/utilities/file-metadata';
 import { parseIdentity } from '../../shared/utilities/identity';
@@ -72,7 +73,7 @@ interface EstablishedConnection {
   /** Room both peers bind their payloads to. */
   readonly roomId: RoomId;
   /** Role this side plays in the pair. */
-  readonly role: SignalRole;
+  readonly role: Role;
 }
 
 /** Lifecycle state of the signalling connection. */
@@ -81,17 +82,11 @@ type Connection = IdleConnection | EstablishedConnection;
 /** State before the handshake completes. */
 const IDLE: Connection = { _tag: 'idle' };
 
-/** Role the peer plays for each local role. */
-const PEER_ROLE = {
-  initiator: 'responder',
-  responder: 'initiator',
-} as const satisfies Record<SignalRole, SignalRole>;
-
 /** Disconnect notice each role sends when it cancels. */
 const CANCELLED_BY = {
   initiator: 'sender',
   responder: 'receiver',
-} as const satisfies Record<SignalRole, DisconnectNotice['cancelledBy']>;
+} as const satisfies Record<Role, DisconnectNotice['cancelledBy']>;
 
 /** Decoder for the decrypted payloads. */
 const decoder = new TextDecoder();
@@ -347,7 +342,7 @@ export class SignalingService {
         connection.signalingKey,
         decodeBase64Url(message.ct) as Uint8Array<ArrayBuffer>,
         connection.roomId,
-        PEER_ROLE[connection.role],
+        opposite(connection.role),
       ),
     ).pipe(map((bytes) => parse(decoder.decode(bytes))));
   }
