@@ -1,12 +1,10 @@
 import { Injectable } from '@angular/core';
 import { PROTOCOL_VERSION } from '@contract/signal/protocol-version.constant';
-import { decodeSid as decodeWireSid } from '@contract/signal/sid.model';
+import { sidFromBytes } from '@contract/signal/sid.model';
 import * as Match from 'effect/Match';
-import * as Option from 'effect/Option';
 import { Subject } from 'rxjs';
 import type { RoomCreated, RoomId, Sid } from '../../shared/interfaces/signal-session';
 import { SignalTransport } from '../../shared/interfaces/signal-transport';
-import { createSid, decodeSid, encodeSid } from '../../shared/utilities/sid';
 import type { SignalMessage } from '../../shared/utilities/signal-message';
 import { parseSignalMessage } from '../../shared/utilities/signal-message';
 
@@ -97,7 +95,7 @@ export class BroadcastChannelTransport extends SignalTransport {
    */
   override createRoom(): RoomCreated {
     this.close();
-    const sid = createSid();
+    const sid = sidFromBytes(crypto.getRandomValues(new Uint8Array(16)));
     this.phase = { _tag: 'host-waiting', sid, outgoing: [] };
     const roomId = this.generateRoomId();
     this.openChannel(roomId);
@@ -163,7 +161,7 @@ export class BroadcastChannelTransport extends SignalTransport {
   private handleInbound(message: SignalMessage): void {
     Match.value(message).pipe(
       Match.when({ type: 'join' }, (join) => this.handleJoin(join)),
-      Match.when({ type: 'joined' }, (joined) => this.resolveJoin(decodeSid(joined.sid))),
+      Match.when({ type: 'joined' }, (joined) => this.resolveJoin(joined.sid)),
       Match.when({ type: 'error' }, (error) => this.rejectJoin(new Error(error.code))),
       Match.orElse(() => undefined),
     );
@@ -208,10 +206,7 @@ export class BroadcastChannelTransport extends SignalTransport {
     phase.outgoing.forEach((message) => {
       this.post(message);
     });
-    this.post({
-      type: 'joined',
-      sid: Option.getOrThrow(decodeWireSid(encodeSid(phase.sid))),
-    });
+    this.post({ type: 'joined', sid: phase.sid });
   }
 
   /**

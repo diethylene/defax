@@ -2,9 +2,11 @@ import type { Provider } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import type { FileMetadata } from '@contract/signal/file-metadata.model';
 import type { Identity } from '@contract/signal/identity.model';
+import { sidFromBytes } from '@contract/signal/sid.model';
 import { Actions } from '@ngrx/effects';
 import type { Action } from '@ngrx/store';
 import { Store } from '@ngrx/store';
+import type { InitiatorSession } from '@web/core/services/handshake.service';
 import { HashService } from '@web/core/services/hash.service';
 import { SignalingService } from '@web/core/services/signaling.service';
 import { TransferService } from '@web/core/services/transfer.service';
@@ -22,6 +24,8 @@ const peerIdentity: Identity = {
   timeZone: 'Europe/London',
   language: 'en-GB',
 };
+
+const sid = sidFromBytes(new Uint8Array(16).fill(1));
 
 const metadata: FileMetadata = {
   name: 'report.pdf',
@@ -71,9 +75,9 @@ describe('sendStartSession$', () => {
         {
           provide: SignalingService,
           useValue: {
-            createSession: () => ({
+            createSession: (): InitiatorSession => ({
               roomId: 'room-1',
-              sid: new Uint8Array(16),
+              sid,
               password: 'pw',
             }),
             connectAsInitiator: () => of({ sas: '123456', peerIdentity }),
@@ -97,9 +101,9 @@ describe('sendStartSession$', () => {
         {
           provide: SignalingService,
           useValue: {
-            createSession: () => ({
+            createSession: (): InitiatorSession => ({
               roomId: 'room-1',
-              sid: new Uint8Array(16),
+              sid,
               password: 'pw',
             }),
             connectAsInitiator: () => throwError(() => new Error('nope')),

@@ -5,12 +5,11 @@ import { BroadcastChannelTransport } from './broadcast-channel-transport';
 const pakeY = encodeBase64Url(new Uint8Array(32).fill(1));
 
 describe('BroadcastChannelTransport room lifecycle', () => {
-  it('creates a room with a room id and a 16-byte sid', () => {
+  it('creates a room with a room id and a base64url sid', () => {
     const host = new BroadcastChannelTransport();
     const room = host.createRoom();
     expect(room.roomId).toMatch(/^\d{6}$/);
-    expect(room.sid).toBeInstanceOf(Uint8Array);
-    expect(room.sid.length).toBe(16);
+    expect(room.sid).toMatch(/^[A-Za-z0-9_-]{22}$/);
     host.close();
   });
 

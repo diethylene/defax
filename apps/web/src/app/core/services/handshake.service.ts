@@ -1,4 +1,5 @@
 import { Injectable } from '@angular/core';
+import { sidToBytes } from '@contract/signal/sid.model';
 import { utf8ToBytes } from '@noble/hashes/utils.js';
 import {
   combineLatest,
@@ -108,7 +109,7 @@ export class HandshakeService {
    */
   private deriveKeyPair(sid: Sid, password: string): { secret: bigint; publicKey: Uint8Array } {
     const generator = mapToGroup(
-      deriveGeneratorString(sid, utf8ToBytes(normalizePassword(password))),
+      deriveGeneratorString(sidToBytes(sid), utf8ToBytes(normalizePassword(password))),
     );
     const secret = this.generateSecret();
     return { secret, publicKey: derivePublicKey(secret, generator) };
@@ -186,12 +187,13 @@ export class HandshakeService {
     const sharedSecret = deriveSharedSecret(secret, peerPublicKey, ownPublicKey);
     const yInitiator = ownIsInitiator ? ownPublicKey : peerPublicKey;
     const yResponder = ownIsInitiator ? peerPublicKey : ownPublicKey;
-    const isk = deriveIsk(sid, sharedSecret, yInitiator, yResponder);
+    const sidBytes = sidToBytes(sid);
+    const isk = deriveIsk(sidBytes, sharedSecret, yInitiator, yResponder);
     sharedSecret.fill(0);
 
     // Noble types widen to ArrayBufferLike; WebCrypto requires ArrayBuffer.
-    return from(
-      deriveSessionKeys(isk as Uint8Array<ArrayBuffer>, sid as Uint8Array<ArrayBuffer>),
-    ).pipe(map(({ signalingKey, sas }) => ({ signalingKey, sas, roomId })));
+    return from(deriveSessionKeys(isk as Uint8Array<ArrayBuffer>, sidBytes)).pipe(
+      map(({ signalingKey, sas }) => ({ signalingKey, sas, roomId })),
+    );
   }
 }
