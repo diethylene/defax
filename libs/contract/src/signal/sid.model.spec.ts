@@ -4,7 +4,7 @@ import * as Schema from 'effect/Schema';
 import fc from 'fast-check';
 import { describe, expect, it } from 'vitest';
 import { base64UrlBytes } from './base64url-bytes.model';
-import { decodeSid, Sid } from './sid.model';
+import { decodeSid, Sid, sidFromBytes, sidToBytes } from './sid.model';
 
 const Bytes = Schema.Uint8ArrayFromBase64Url;
 
@@ -33,6 +33,14 @@ describe('Sid', () => {
 
     it('returns None from decodeSid for garbage', () => {
       expect(decodeSid('not base64url!!')).toEqual(Option.none());
+    });
+
+    it('round-trips 16 bytes through sidFromBytes and sidToBytes', () => {
+      fc.assert(
+        fc.property(fc.uint8Array({ minLength: 16, maxLength: 16 }), (bytes) => {
+          expect(sidToBytes(sidFromBytes(bytes))).toEqual(bytes);
+        }),
+      );
     });
   });
 
@@ -66,6 +74,17 @@ describe('Sid', () => {
     it('returns None from decodeSid for a sid of the wrong length', () => {
       expect(decodeSid(encodeBytes(new Uint8Array(15)))).toEqual(Option.none());
       expect(decodeSid(encodeBytes(new Uint8Array(17)))).toEqual(Option.none());
+    });
+
+    it('throws from sidFromBytes for bytes other than 16', () => {
+      fc.assert(
+        fc.property(
+          fc.uint8Array({ maxLength: 64 }).filter((bytes) => bytes.length !== 16),
+          (bytes) => {
+            expect(() => sidFromBytes(bytes)).toThrow();
+          },
+        ),
+      );
     });
   });
 });
