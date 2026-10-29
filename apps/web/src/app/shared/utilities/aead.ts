@@ -1,9 +1,7 @@
+import type { Role } from '@contract/signal/role.model';
 import { concatBytes } from '@noble/curves/utils.js';
 import { utf8ToBytes } from '@noble/hashes/utils.js';
 import { lvCat } from './lv-cat';
-
-/** Side of the handshake that sealed a message. */
-export type SignalRole = 'initiator' | 'responder';
 
 /** AES-GCM nonce length in bytes. */
 const NONCE_LENGTH = 12;
@@ -17,7 +15,7 @@ const MIN_SEALED_LENGTH = NONCE_LENGTH + 16;
  * @param sealedBy Role that sealed the message.
  * @returns The length-prefixed additional data.
  */
-const buildAad = (roomId: string, sealedBy: SignalRole): Uint8Array<ArrayBuffer> =>
+const buildAad = (roomId: string, sealedBy: Role): Uint8Array<ArrayBuffer> =>
   lvCat(utf8ToBytes(roomId), utf8ToBytes(sealedBy));
 
 /**
@@ -32,7 +30,7 @@ export const seal = async (
   key: CryptoKey,
   plaintext: Uint8Array<ArrayBuffer>,
   roomId: string,
-  sealedBy: SignalRole,
+  sealedBy: Role,
 ): Promise<Uint8Array<ArrayBuffer>> => {
   const nonce = crypto.getRandomValues(new Uint8Array(NONCE_LENGTH));
   const ciphertext = await crypto.subtle.encrypt(
@@ -55,7 +53,7 @@ export const open = async (
   key: CryptoKey,
   sealed: Uint8Array<ArrayBuffer>,
   roomId: string,
-  sealedBy: SignalRole,
+  sealedBy: Role,
 ): Promise<Uint8Array<ArrayBuffer>> => {
   if (sealed.length < MIN_SEALED_LENGTH) {
     throw new Error('sealed message is too short');
