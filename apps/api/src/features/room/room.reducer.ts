@@ -1,9 +1,9 @@
 import type { ErrorCode } from '@contract/signal/error-code.model';
 import type { InboundMessage, OutboundMessage } from '@contract/signal/message.model';
 import { PROTOCOL_VERSION } from '@contract/signal/protocol-version.constant';
+import { opposite, type Role } from '@contract/signal/role.model';
 import type { Sid } from '@contract/signal/sid.model';
 import * as Match from 'effect/Match';
-import { opposite, type Role } from './role.model';
 
 /** The signaling phases a room moves through. */
 export type Phase = 'waiting' | 'pake' | 'initiator-pake' | 'responder-pake' | 'relay';
