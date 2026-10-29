@@ -25,7 +25,8 @@ export const timeTransferEvents =
           at,
           startedAt: value.type === 'started' ? at : timed.startedAt,
         }),
-        // Scan never emits its seed, and the first real event is always 'started'.
+        // Scan never emits its seed, and failed never reads startedAt,
+        // so a non-started first event is harmless.
         { event: { type: 'complete' }, at: 0, startedAt: 0 } satisfies TimedTransferEvent,
       ),
     );

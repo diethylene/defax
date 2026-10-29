@@ -1,7 +1,7 @@
 import type { Action } from '@ngrx/store';
 import * as Match from 'effect/Match';
 import type { TransferErrorTag } from '../services/transfer.service';
-import type { TimedTransferEvent } from './transfer-event-time.operator';
+import type { TimedTransferEvent } from './transfer-event-time.util';
 
 /** Store actions a transfer event can become, one method per event kind. */
 export interface TransferEventActionSink {

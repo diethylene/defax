@@ -2,7 +2,7 @@ import type { Action } from '@ngrx/store';
 import { describe, expect, it } from 'vitest';
 import type { TransferEvent } from '../services/transfer.service';
 import { type TransferEventActionSink, transferEventActionFor } from './transfer-event-action.util';
-import type { TimedTransferEvent } from './transfer-event-time.operator';
+import type { TimedTransferEvent } from './transfer-event-time.util';
 
 /**
  * Builds a sink that records each call by its name and payload.

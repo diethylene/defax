@@ -9,7 +9,7 @@ import {
   type TransferEventActionSink,
   transferEventActionFor,
 } from '@web/core/utils/transfer-event-action.util';
-import { timeTransferEvents } from '@web/core/utils/transfer-event-time.operator';
+import { timeTransferEvents } from '@web/core/utils/transfer-event-time.util';
 import {
   phaseForStatus,
   routeForPhase,
