@@ -1,5 +1,4 @@
 import { inject } from '@angular/core';
-import { Router } from '@angular/router';
 import { Actions, createEffect, ofType } from '@ngrx/effects';
 import { type Action, Store } from '@ngrx/store';
 import { toast } from '@spartan-ng/brain/sonner';
@@ -7,18 +6,17 @@ import * as Match from 'effect/Match';
 import {
   catchError,
   concat,
-  distinctUntilChanged,
   EMPTY,
   filter,
   map,
   of,
-  skip,
   switchMap,
   take,
   takeUntil,
   tap,
   withLatestFrom,
 } from 'rxjs';
+import { createRouteToPhaseEffect } from '../../core/effects/route-to-phase.effect';
 import { HashService } from '../../core/services/hash.service';
 import { SignalingService } from '../../core/services/signaling.service';
 import { type TransferErrorTag, TransferService } from '../../core/services/transfer.service';
@@ -75,20 +73,11 @@ const isConnected = (status: SendStatus): boolean =>
   );
 
 /** Navigates to the route that matches the send status. */
-export const sendRouteToPhase$ = createEffect(
-  (store = inject(Store), router = inject(Router)) =>
-    store.select(selectSendPhase).pipe(
-      distinctUntilChanged(),
-      skip(1),
-      tap((phase: SendPhase) => {
-        const url = routeForPhase(phase);
-        if (router.url !== url) {
-          void router.navigateByUrl(url);
-        }
-      }),
-    ),
-  { dispatch: false, functional: true },
-);
+export const sendRouteToPhase$ = createRouteToPhaseEffect<SendPhase, SendPhase>({
+  selectStatus: selectSendPhase,
+  phaseForStatus: (phase) => phase,
+  routeForPhase,
+});
 
 /** Creates the room and runs the handshake when a file is chosen. */
 export const sendStartSession$ = createEffect(

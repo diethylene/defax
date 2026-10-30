@@ -1,8 +1,8 @@
 import { inject } from '@angular/core';
-import { Router } from '@angular/router';
 import { Actions, createEffect, ofType } from '@ngrx/effects';
 import { type Action, Store } from '@ngrx/store';
 import { toast } from '@spartan-ng/brain/sonner';
+import { createRouteToPhaseEffect } from '@web/core/effects/route-to-phase.effect';
 import { SignalingService } from '@web/core/services/signaling.service';
 import { TransferService } from '@web/core/services/transfer.service';
 import {
@@ -12,18 +12,17 @@ import {
 import { timeTransferEvents } from '@web/core/utils/transfer-event-time.util';
 import {
   phaseForStatus,
+  type ReceivePhase,
   routeForPhase,
 } from '@web/features/receive/receive-phase/receive-phase.model';
 import { IdentityService } from '@web/shared/services/identity.service';
 import * as Match from 'effect/Match';
 import {
   catchError,
-  distinctUntilChanged,
   filter,
   map,
   type Observable,
   of,
-  skip,
   switchMap,
   takeUntil,
   tap,
@@ -71,21 +70,11 @@ const receiveEvents = (
   );
 
 /** Navigates to the route that shows the current status. */
-export const routeToPhase$ = createEffect(
-  (store = inject(Store), router = inject(Router)) =>
-    store.select(receiveFeature.selectStatus).pipe(
-      map(phaseForStatus),
-      distinctUntilChanged(),
-      skip(1),
-      tap((phase) => {
-        const url = routeForPhase(phase);
-        if (router.url !== url) {
-          void router.navigateByUrl(url);
-        }
-      }),
-    ),
-  { functional: true, dispatch: false },
-);
+export const routeToPhase$ = createRouteToPhaseEffect<ReceiveStatus, ReceivePhase>({
+  selectStatus: receiveFeature.selectStatus,
+  phaseForStatus,
+  routeForPhase,
+});
 
 /** Connects to the sender once a code is entered. */
 export const connect$ = createEffect(
