@@ -17,6 +17,7 @@ import { HlmCard, HlmCardContent } from '@spartan-ng/helm/card';
 import { HlmInput } from '@spartan-ng/helm/input';
 import { HlmLabel } from '@spartan-ng/helm/label';
 import { HlmSeparator } from '@spartan-ng/helm/separator';
+import * as Option from 'effect/Option';
 import { SpinnerComponent } from '../../../core/components/spinner/spinner.component';
 import { parseReceiveCode } from '../../../shared/utilities/passcode';
 
@@ -93,7 +94,7 @@ export class ReceiveCodeFormComponent {
   protected readonly codeForm = form(this.model, (path) => {
     validate(path.code, (ctx) => {
       const value = ctx.value();
-      return value.trim().length === 0 || parseReceiveCode(value) !== null
+      return value.trim().length === 0 || Option.isSome(parseReceiveCode(value))
         ? null
         : { kind: 'receiveCode' };
     });
@@ -130,9 +131,10 @@ export class ReceiveCodeFormComponent {
     this.submitted.set(true);
     // async: signal forms' submit() requires the action to return a Promise.
     void submit(this.codeForm, async () => {
-      const parsed = parseReceiveCode(this.model().code);
-      if (parsed === null) return;
-      this.connect.emit(`${parsed.roomId}-${parsed.password}`);
+      Option.match(parseReceiveCode(this.model().code), {
+        onSome: ({ roomId, password }) => this.connect.emit(`${roomId}-${password}`),
+        onNone: () => undefined,
+      });
     });
   }
 }
