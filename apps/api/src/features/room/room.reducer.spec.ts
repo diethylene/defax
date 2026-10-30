@@ -1,13 +1,11 @@
 import { decodeSid, type Sid } from '@contract/signal/sid.model';
 import * as Option from 'effect/Option';
-import * as Schema from 'effect/Schema';
 import { describe, expect, it } from 'vitest';
+import { sidFixture } from './room.factory';
 import { admit, initialRoomState, type Occupancy, type RoomState, reduce } from './room.reducer';
 
 /** A valid 16-byte session id, branded, reused across cases. */
-const sid: Sid = Option.getOrThrow(
-  decodeSid(Schema.encodeSync(Schema.Uint8ArrayFromBase64Url)(new Uint8Array(16))),
-);
+const sid: Sid = Option.getOrThrow(decodeSid(sidFixture()));
 
 /** Both parties occupy the room. */
 const both: Occupancy = { initiator: true, responder: true };

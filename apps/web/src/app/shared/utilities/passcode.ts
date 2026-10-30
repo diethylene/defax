@@ -1,3 +1,4 @@
+import * as Option from 'effect/Option';
 import { PGP_WORDS } from '../constants/pgp-wordlist';
 import type { RoomId } from '../interfaces/signal-session';
 import { normalizePassword } from './password';
@@ -71,11 +72,13 @@ export const parsePasscode = (code: string): { roomId: RoomId; password: string 
 /**
  * Reads a receive code from user input.
  * @param input Text typed or pasted by the user.
- * @returns The decoded receive code, or null when the text is not one.
+ * @returns The decoded receive code, or none when the text is not one.
  */
-export const parseReceiveCode = (input: string): ReceiveCode | null => {
+export const parseReceiveCode = (input: string): Option.Option<ReceiveCode> => {
   const parts = splitCode(normalizePassword(input));
-  if (!parts) return null;
+  if (!parts) return Option.none();
   const [roomId, password] = parts;
-  return isRoomId(roomId) && isPgpPair(password) ? { roomId, password } : null;
+  return isRoomId(roomId) && isPgpPair(password)
+    ? Option.some({ roomId, password })
+    : Option.none();
 };

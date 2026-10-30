@@ -1,3 +1,4 @@
+import * as Option from 'effect/Option';
 import { parsePasscode, parseReceiveCode } from './passcode';
 
 describe('parsePasscode', () => {
@@ -24,35 +25,39 @@ describe('parsePasscode', () => {
 
 describe('parseReceiveCode', () => {
   it('accepts a six-digit room id and two pgp words', () => {
-    expect(parseReceiveCode('123456-apple-orca')).toEqual({
-      roomId: '123456',
-      password: 'apple-orca',
-    });
+    expect(parseReceiveCode('123456-apple-orca')).toEqual(
+      Option.some({
+        roomId: '123456',
+        password: 'apple-orca',
+      }),
+    );
   });
 
   it('normalizes case and separators', () => {
-    expect(parseReceiveCode(' 123456 Apple ORCA ')).toEqual({
-      roomId: '123456',
-      password: 'apple-orca',
-    });
+    expect(parseReceiveCode(' 123456 Apple ORCA ')).toEqual(
+      Option.some({
+        roomId: '123456',
+        password: 'apple-orca',
+      }),
+    );
   });
 
   it('rejects a room id that is not six digits', () => {
-    expect(parseReceiveCode('12345-apple-orca')).toBeNull();
-    expect(parseReceiveCode('1234567-apple-orca')).toBeNull();
-    expect(parseReceiveCode('abcdef-apple-orca')).toBeNull();
+    expect(parseReceiveCode('12345-apple-orca')).toEqual(Option.none());
+    expect(parseReceiveCode('1234567-apple-orca')).toEqual(Option.none());
+    expect(parseReceiveCode('abcdef-apple-orca')).toEqual(Option.none());
   });
 
   it('rejects a password that is not exactly two pgp words', () => {
-    expect(parseReceiveCode('123456-apple')).toBeNull();
-    expect(parseReceiveCode('123456-apple-orca-bird')).toBeNull();
-    expect(parseReceiveCode('123456-apple-notaword')).toBeNull();
+    expect(parseReceiveCode('123456-apple')).toEqual(Option.none());
+    expect(parseReceiveCode('123456-apple-orca-bird')).toEqual(Option.none());
+    expect(parseReceiveCode('123456-apple-notaword')).toEqual(Option.none());
   });
 
   it('rejects malformed or empty input', () => {
-    expect(parseReceiveCode('123456')).toBeNull();
-    expect(parseReceiveCode('123456-')).toBeNull();
-    expect(parseReceiveCode('-apple-orca')).toBeNull();
-    expect(parseReceiveCode('')).toBeNull();
+    expect(parseReceiveCode('123456')).toEqual(Option.none());
+    expect(parseReceiveCode('123456-')).toEqual(Option.none());
+    expect(parseReceiveCode('-apple-orca')).toEqual(Option.none());
+    expect(parseReceiveCode('')).toEqual(Option.none());
   });
 });
