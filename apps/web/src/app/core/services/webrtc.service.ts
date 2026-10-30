@@ -1,4 +1,5 @@
 import { Injectable, inject } from '@angular/core';
+import { RtcAnswer, RtcIce, RtcOffer } from '@contract/signal/payload.model';
 import type { SealedKind } from '@contract/signal/sealed-kind.model';
 import {
   catchError,
@@ -17,11 +18,7 @@ import {
   DATA_CHANNEL_LABEL,
   RTC_CONFIGURATION,
 } from '../../shared/constants/transfer-protocol';
-import {
-  parseRtcAnswer,
-  parseRtcIce,
-  parseRtcOffer,
-} from '../../shared/utilities/transfer-message';
+import { decodeJson } from '../../shared/utilities/decode-json.util';
 import { SignalingService } from './signaling.service';
 
 /** Open data channel handed to the transfer once the peer connection is up. */
@@ -112,7 +109,9 @@ export class WebRtcService {
     return from(peer.createOffer()).pipe(
       switchMap((offer) => from(peer.setLocalDescription(offer))),
       tap(() => this.sendSignal('rtc-offer', { sdp: peer.localDescription?.sdp ?? '' })),
-      switchMap(() => this.signaling.receiveSealed('rtc-answer', parseRtcAnswer)),
+      switchMap(() =>
+        this.signaling.receiveSealed('rtc-answer', (json) => decodeJson(RtcAnswer, json)),
+      ),
       switchMap((answer) => from(peer.setRemoteDescription({ type: 'answer', sdp: answer.sdp }))),
       tap(() => ice.flush()),
       switchMap(() => this.openChannel(channel, peer)),
@@ -131,15 +130,17 @@ export class WebRtcService {
     incoming: Observable<RTCDataChannel>,
     ice: IceHandle,
   ): Observable<RtcChannel> {
-    return this.signaling.receiveSealed('rtc-offer', parseRtcOffer).pipe(
-      switchMap((offer) => from(peer.setRemoteDescription({ type: 'offer', sdp: offer.sdp }))),
-      tap(() => ice.flush()),
-      switchMap(() => from(peer.createAnswer())),
-      switchMap((answer) => from(peer.setLocalDescription(answer))),
-      tap(() => this.sendSignal('rtc-answer', { sdp: peer.localDescription?.sdp ?? '' })),
-      switchMap(() => incoming),
-      switchMap((channel) => this.openChannel(channel, peer)),
-    );
+    return this.signaling
+      .receiveSealed('rtc-offer', (json) => decodeJson(RtcOffer, json))
+      .pipe(
+        switchMap((offer) => from(peer.setRemoteDescription({ type: 'offer', sdp: offer.sdp }))),
+        tap(() => ice.flush()),
+        switchMap(() => from(peer.createAnswer())),
+        switchMap((answer) => from(peer.setLocalDescription(answer))),
+        tap(() => this.sendSignal('rtc-answer', { sdp: peer.localDescription?.sdp ?? '' })),
+        switchMap(() => incoming),
+        switchMap((channel) => this.openChannel(channel, peer)),
+      );
   }
 
   /**
@@ -157,7 +158,7 @@ export class WebRtcService {
       });
     };
     const sub = this.signaling
-      .sealed$('rtc-ice', parseRtcIce)
+      .sealed$('rtc-ice', (json) => decodeJson(RtcIce, json))
       .subscribe(({ candidate, sdpMid, sdpMLineIndex }) => {
         if (candidate === null) return;
         const init: RTCIceCandidateInit = { candidate, sdpMid, sdpMLineIndex };

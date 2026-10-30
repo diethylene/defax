@@ -1,5 +1,6 @@
 import { Injectable, inject } from '@angular/core';
 import type { FileMetadata } from '@contract/signal/file-metadata.model';
+import { Accept, VerifyResult } from '@contract/signal/payload.model';
 import * as Match from 'effect/Match';
 import {
   catchError,
@@ -21,7 +22,7 @@ import {
   tap,
 } from 'rxjs';
 import { TRANSFER_CHUNK_SIZE } from '../../shared/constants/transfer-protocol';
-import { parseAccept, parseVerifyResult } from '../../shared/utilities/transfer-message';
+import { decodeJson } from '../../shared/utilities/decode-json.util';
 import { HashService } from './hash.service';
 import { SignalingService } from './signaling.service';
 import { StorageService } from './storage.service';
@@ -69,12 +70,14 @@ export class TransferService {
    * @returns Observable of transfer events.
    */
   send(file: File): Observable<TransferEvent> {
-    return this.signaling.sealed$('accept', parseAccept).pipe(
-      take(1),
-      switchMap(() =>
-        concat(of<TransferEvent>({ type: 'started', total: file.size }), this.streamOut(file)),
-      ),
-    );
+    return this.signaling
+      .sealed$('accept', (json) => decodeJson(Accept, json))
+      .pipe(
+        take(1),
+        switchMap(() =>
+          concat(of<TransferEvent>({ type: 'started', total: file.size }), this.streamOut(file)),
+        ),
+      );
   }
 
   /**
@@ -143,7 +146,7 @@ export class TransferService {
    */
   private awaitVerification(): Observable<TransferEvent> {
     return this.signaling
-      .receiveSealed('verify-result', parseVerifyResult)
+      .receiveSealed('verify-result', (json) => decodeJson(VerifyResult, json))
       .pipe(
         map(
           (result): TransferEvent =>

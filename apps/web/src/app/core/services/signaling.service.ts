@@ -1,16 +1,11 @@
 import { Injectable, inject } from '@angular/core';
-import type { FileMetadata } from '@contract/signal/file-metadata.model';
-import type { Identity } from '@contract/signal/identity.model';
-import type { DisconnectNotice } from '@contract/signal/payload.model';
-import {
-  DisconnectNotice as DisconnectNoticeSchema,
-  FileHash,
-} from '@contract/signal/payload.model';
+import { FileMetadata } from '@contract/signal/file-metadata.model';
+import { Identity } from '@contract/signal/identity.model';
+import { DisconnectNotice, FileHash } from '@contract/signal/payload.model';
 import { opposite, type Role } from '@contract/signal/role.model';
 import type { SealedKind } from '@contract/signal/sealed-kind.model';
 import { utf8ToBytes } from '@noble/hashes/utils.js';
 import * as Match from 'effect/Match';
-import * as Schema from 'effect/Schema';
 import {
   catchError,
   combineLatest,
@@ -31,8 +26,7 @@ import type { RoomId } from '../../shared/interfaces/signal-session';
 import { SignalTransport } from '../../shared/interfaces/signal-transport';
 import { open, seal } from '../../shared/utilities/aead';
 import { decodeBase64Url, encodeBase64Url } from '../../shared/utilities/base64url';
-import { parseFileMetadata } from '../../shared/utilities/file-metadata';
-import { parseIdentity } from '../../shared/utilities/identity';
+import { decodeJson } from '../../shared/utilities/decode-json.util';
 import { generatePassword } from '../../shared/utilities/password';
 import type { SignalMessage } from '../../shared/utilities/signal-message';
 import { HandshakeService, type InitiatorSession } from './handshake.service';
@@ -91,22 +85,6 @@ const CANCELLED_BY = {
 /** Decoder for the decrypted payloads. */
 const decoder = new TextDecoder();
 
-/**
- * Parses a disconnect notice received from the peer.
- * @param json Payload of the sealed disconnect message.
- * @returns The validated notice.
- */
-const parseDisconnect = (json: string): DisconnectNotice =>
-  Schema.decodeUnknownSync(Schema.fromJsonString(DisconnectNoticeSchema))(json);
-
-/**
- * Parses a file digest received from the peer.
- * @param json Payload of the sealed file hash message.
- * @returns The validated digest.
- */
-const parseFileHash = (json: string): string =>
-  Schema.decodeUnknownSync(Schema.fromJsonString(FileHash))(json).digest;
-
 /** Exchanges sealed signalling payloads over a transport. */
 @Injectable({ providedIn: 'root' })
 export class SignalingService {
@@ -130,10 +108,12 @@ export class SignalingService {
 
   /** Forwards the peer's disconnect notice and file digest. */
   constructor() {
-    this.sealed$('disconnect', parseDisconnect).subscribe((notice) =>
+    this.sealed$('disconnect', (json) => decodeJson(DisconnectNotice, json)).subscribe((notice) =>
       this.disconnect$.next(notice),
     );
-    this.sealed$('file-hash', parseFileHash).subscribe((digest) => this.fileHash$.next(digest));
+    this.sealed$('file-hash', (json) => decodeJson(FileHash, json).digest).subscribe((digest) =>
+      this.fileHash$.next(digest),
+    );
   }
 
   /**
@@ -357,7 +337,7 @@ export class SignalingService {
     return combineLatest([
       this.sendSealed('peer-info', identity),
       this.sendSealed('file', file),
-    ]).pipe(switchMap(() => this.receiveSealed('peer-info', parseIdentity)));
+    ]).pipe(switchMap(() => this.receiveSealed('peer-info', (json) => decodeJson(Identity, json))));
   }
 
   /**
@@ -370,8 +350,8 @@ export class SignalingService {
   ): Observable<{ peerIdentity: Identity; fileInfo: FileMetadata | null }> {
     const sendIdentity$ = this.sendSealed('peer-info', identity);
     return combineLatest([
-      this.receiveSealed('peer-info', parseIdentity),
-      this.receiveSealed('file', parseFileMetadata),
+      this.receiveSealed('peer-info', (json) => decodeJson(Identity, json)),
+      this.receiveSealed('file', (json) => decodeJson(FileMetadata, json)),
     ]).pipe(
       switchMap(([peerIdentity, fileInfo]) =>
         sendIdentity$.pipe(map(() => ({ peerIdentity, fileInfo }))),
