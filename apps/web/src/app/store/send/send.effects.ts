@@ -11,9 +11,7 @@ import {
   EMPTY,
   filter,
   map,
-  type OperatorFunction,
   of,
-  scan,
   skip,
   switchMap,
   take,
@@ -23,11 +21,12 @@ import {
 } from 'rxjs';
 import { HashService } from '../../core/services/hash.service';
 import { SignalingService } from '../../core/services/signaling.service';
+import { type TransferErrorTag, TransferService } from '../../core/services/transfer.service';
 import {
-  type TransferErrorTag,
-  type TransferEvent,
-  TransferService,
-} from '../../core/services/transfer.service';
+  type TransferEventActionSink,
+  transferEventActionFor,
+} from '../../core/utils/transfer-event-action.util';
+import { timeTransferEvents } from '../../core/utils/transfer-event-time.util';
 import { routeForPhase, type SendPhase } from '../../features/send/send-phase/send-phase.model';
 import { IdentityService } from '../../shared/services/identity.service';
 import type { FileHashEvent } from '../../shared/utilities/hash-protocol';
@@ -35,58 +34,20 @@ import { SendActions } from './send.actions';
 import { selectSendPhase, selectSendStatus } from './send.selectors';
 import type { SendErrorTag, SendStatus } from './send-transitions';
 
-/** Transfer event paired with the moment the transfer started. */
-interface TimedTransferEvent {
-  /** Event reported by the transfer service. */
-  readonly event: TransferEvent;
-  /** When the transfer reported it started, or null before that. */
-  readonly startedAt: number | null;
-}
-
 /** Store tag for each reason the transfer service reports. */
 const sendErrorFor = {
   'storage-full': 'transfer-failed',
   'verification-failed': 'verification-failed',
 } satisfies Record<TransferErrorTag, SendErrorTag>;
 
-/**
- * Follows a transfer and keeps its start time beside every event.
- * @returns Operator pairing each event with the start time.
- */
-const timeTransferEvents = (): OperatorFunction<TransferEvent, TimedTransferEvent> => (source) =>
-  source.pipe(
-    scan(
-      (timed: TimedTransferEvent | null, event: TransferEvent): TimedTransferEvent | null => ({
-        event,
-        startedAt: event.type === 'started' ? Date.now() : (timed?.startedAt ?? null),
-      }),
-      null,
-    ),
-    filter((timed): timed is TimedTransferEvent => timed !== null),
-  );
-
-/**
- * Turns one transfer event into the action the store expects.
- * @param timed Transfer event with its start time.
- * @returns The matching send action.
- */
-const transferActionFor = ({ event, startedAt }: TimedTransferEvent): Action =>
-  Match.value(event).pipe(
-    Match.discriminator('type')('started', ({ total }) => SendActions.transferStarted({ total })),
-    Match.discriminator('type')('progress', ({ transferred }) =>
-      SendActions.transferProgress({ sent: transferred }),
-    ),
-    Match.discriminator('type')('complete', () => SendActions.transferComplete()),
-    Match.discriminator('type')('verified', () =>
-      SendActions.transferVerified({
-        elapsed: Date.now() - (startedAt ?? Date.now()),
-      }),
-    ),
-    Match.discriminator('type')('failed', ({ error }) =>
-      SendActions.transferFailed({ error: sendErrorFor[error] }),
-    ),
-    Match.exhaustive,
-  );
+/** Send actions each transfer event becomes. */
+const sendSink: TransferEventActionSink = {
+  started: (total) => SendActions.transferStarted({ total }),
+  progress: (sent) => SendActions.transferProgress({ sent }),
+  complete: () => SendActions.transferComplete(),
+  verified: (elapsed) => SendActions.transferVerified({ elapsed }),
+  failed: (error) => SendActions.transferFailed({ error: sendErrorFor[error] }),
+};
 
 /**
  * Turns one hash event into the action the store expects.
@@ -237,7 +198,7 @@ export const sendStartTransfer$ = createEffect(
           Match.tag('SasConfirm', ({ file }) =>
             transfer.send(file).pipe(
               timeTransferEvents(),
-              map(transferActionFor),
+              map(transferEventActionFor(sendSink)),
               catchError(() =>
                 of(
                   SendActions.transferFailed({
