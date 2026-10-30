@@ -1,4 +1,5 @@
 import { Injectable } from '@angular/core';
+import { decodeBase64Url, encodeBase64Url } from '@contract/signal/base64url.util';
 import { sidToBytes } from '@contract/signal/sid.model';
 import { utf8ToBytes } from '@noble/hashes/utils.js';
 import {
@@ -14,7 +15,6 @@ import {
 } from 'rxjs';
 import type { RoomId, Sid } from '../../shared/interfaces/signal-session';
 import type { SignalTransport } from '../../shared/interfaces/signal-transport';
-import { decodeBase64Url, encodeBase64Url } from '../../shared/utilities/base64url';
 import {
   deriveGeneratorString,
   derivePublicKey,

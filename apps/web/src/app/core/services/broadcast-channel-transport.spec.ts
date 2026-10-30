@@ -1,4 +1,4 @@
-import { encodeBase64Url } from '../../shared/utilities/base64url';
+import { encodeBase64Url } from '@contract/signal/base64url.util';
 import type { SignalMessage } from '../../shared/utilities/signal-message';
 import { BroadcastChannelTransport } from './broadcast-channel-transport';
 

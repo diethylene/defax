@@ -1,4 +1,5 @@
 import { Injectable, inject } from '@angular/core';
+import { decodeBase64Url, encodeBase64Url } from '@contract/signal/base64url.util';
 import { FileMetadata } from '@contract/signal/file-metadata.model';
 import { Identity } from '@contract/signal/identity.model';
 import { DisconnectNotice, FileHash } from '@contract/signal/payload.model';
@@ -25,7 +26,6 @@ import {
 import type { RoomId } from '../../shared/interfaces/signal-session';
 import { SignalTransport } from '../../shared/interfaces/signal-transport';
 import { open, seal } from '../../shared/utilities/aead';
-import { decodeBase64Url, encodeBase64Url } from '../../shared/utilities/base64url';
 import { decodeJson } from '../../shared/utilities/decode-json.util';
 import { generatePassword } from '../../shared/utilities/password';
 import type { SignalMessage } from '../../shared/utilities/signal-message';
@@ -320,7 +320,7 @@ export class SignalingService {
     return from(
       open(
         connection.signalingKey,
-        decodeBase64Url(message.ct) as Uint8Array<ArrayBuffer>,
+        decodeBase64Url(message.ct),
         connection.roomId,
         opposite(connection.role),
       ),
