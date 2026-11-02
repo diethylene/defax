@@ -1,8 +1,6 @@
 import type { ActivatedRouteSnapshot } from '@angular/router';
 import * as Match from 'effect/Match';
-
-/** Direction the router transition should animate. */
-export type NavDirection = 'forward' | 'backward';
+import type { NavDirection } from '../types/nav-direction.type';
 
 /** Transfer flow a route belongs to. */
 type Flow = 'send' | 'receive';
