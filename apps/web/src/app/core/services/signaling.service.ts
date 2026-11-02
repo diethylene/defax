@@ -28,12 +28,13 @@ import { open, seal } from '../../shared/utils/aead.util';
 import { decodeJson } from '../../shared/utils/decode-json.util';
 import { generatePassword } from '../../shared/utils/password.util';
 import type { SignalMessage } from '../../shared/utils/signal-message.util';
+import type { InitiatorSession } from '../interfaces/handshake.interface';
 import type {
   InitiatorConnection,
   ResponderConnection,
 } from '../interfaces/signaling-connection.interface';
 import type { Connection, EstablishedConnection } from '../types/connection.type';
-import { HandshakeService, type InitiatorSession } from './handshake.service';
+import { HandshakeService } from './handshake.service';
 
 /** Sealed message carrying one kind of signalling payload. */
 type SealedMessage = Extract<SignalMessage, { type: 'sealed' }>;
