@@ -1,6 +1,6 @@
 import { encodeBase64Url } from '@contract/signal/base64url.util';
 import type { SignalMessage } from '../../shared/utils/signal-message';
-import { BroadcastChannelTransport } from './broadcast-channel-transport';
+import { BroadcastChannelTransport } from './broadcast-channel-transport.service';
 
 const pakeY = encodeBase64Url(new Uint8Array(32).fill(1));
 

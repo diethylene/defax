@@ -3,7 +3,7 @@ import type { FileMetadata } from '@contract/signal/file-metadata.model';
 import type { Identity } from '@contract/signal/identity.model';
 import { firstValueFrom } from 'rxjs';
 import { SignalTransport } from '../../shared/interfaces/signal-transport';
-import { BroadcastChannelTransport } from './broadcast-channel-transport';
+import { BroadcastChannelTransport } from './broadcast-channel-transport.service';
 import { HandshakeService } from './handshake.service';
 import { SignalingService } from './signaling.service';
 
