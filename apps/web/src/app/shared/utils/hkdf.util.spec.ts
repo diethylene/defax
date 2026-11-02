@@ -1,4 +1,4 @@
-import { deriveSessionKeys, formatSas } from './hkdf';
+import { deriveSessionKeys, formatSas } from './hkdf.util';
 
 const encoder = new TextEncoder();
 

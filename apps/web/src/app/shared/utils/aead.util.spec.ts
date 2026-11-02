@@ -1,4 +1,4 @@
-import { open, seal } from './aead';
+import { open, seal } from './aead.util';
 
 const encoder = new TextEncoder();
 const decoder = new TextDecoder();

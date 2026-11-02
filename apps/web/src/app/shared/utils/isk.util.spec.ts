@@ -1,6 +1,6 @@
 import { hexToBytes } from '@noble/curves/utils.js';
 import { utf8ToBytes } from '@noble/hashes/utils.js';
-import { deriveIsk } from './isk';
+import { deriveIsk } from './isk.util';
 
 describe('deriveIsk', () => {
   it('matches the draft ristretto255 test vector', () => {

@@ -6,7 +6,7 @@ import {
   isValidPublicKey,
   mapToGroup,
   secretFromBytes,
-} from './cpace';
+} from './cpace.util';
 
 const encoder = new TextEncoder();
 const sid = new Uint8Array(16);

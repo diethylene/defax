@@ -1,5 +1,5 @@
 import type { Observable } from 'rxjs';
-import type { SignalMessage } from '../utils/signal-message';
+import type { SignalMessage } from '../utils/signal-message.util';
 import type { RoomCreated, RoomId, Sid } from './signal-session';
 
 /** Transport exchanging signaling messages with the other peer. */

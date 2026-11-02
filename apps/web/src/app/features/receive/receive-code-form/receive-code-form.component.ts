@@ -19,7 +19,7 @@ import { HlmLabel } from '@spartan-ng/helm/label';
 import { HlmSeparator } from '@spartan-ng/helm/separator';
 import * as Option from 'effect/Option';
 import { SpinnerComponent } from '../../../core/components/spinner/spinner.component';
-import { parseReceiveCode } from '../../../shared/utils/passcode';
+import { parseReceiveCode } from '../../../shared/utils/passcode.util';
 
 /** Text the receive form edits. */
 interface ReceiveCodeModel {

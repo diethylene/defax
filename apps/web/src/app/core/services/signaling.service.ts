@@ -25,10 +25,10 @@ import {
 } from 'rxjs';
 import type { RoomId } from '../../shared/interfaces/signal-session';
 import { SignalTransport } from '../../shared/interfaces/signal-transport';
-import { open, seal } from '../../shared/utils/aead';
+import { open, seal } from '../../shared/utils/aead.util';
 import { decodeJson } from '../../shared/utils/decode-json.util';
-import { generatePassword } from '../../shared/utils/password';
-import type { SignalMessage } from '../../shared/utils/signal-message';
+import { generatePassword } from '../../shared/utils/password.util';
+import type { SignalMessage } from '../../shared/utils/signal-message.util';
 import { HandshakeService, type InitiatorSession } from './handshake.service';
 
 /** Connection the initiator reports once the peer answers. */

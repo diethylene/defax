@@ -1,5 +1,5 @@
 import * as Option from 'effect/Option';
-import { parsePasscode, parseReceiveCode } from './passcode';
+import { parsePasscode, parseReceiveCode } from './passcode.util';
 
 describe('parsePasscode', () => {
   it('splits room id and password on the first hyphen', () => {

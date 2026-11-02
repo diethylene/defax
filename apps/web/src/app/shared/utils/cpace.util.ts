@@ -2,7 +2,7 @@ import { ristretto255, ristretto255_hasher } from '@noble/curves/ed25519.js';
 import { bytesToNumberLE, equalBytes } from '@noble/curves/utils.js';
 import { sha512 } from '@noble/hashes/sha2.js';
 import { CPACE_CI, CPACE_DSI, SHA512_BLOCK_SIZE } from '../constants/cpace';
-import { lvCat, prependLen } from './lv-cat';
+import { lvCat, prependLen } from './lv-cat.util';
 
 /** A ristretto255 group element. */
 type GroupElement = InstanceType<typeof ristretto255.Point>;

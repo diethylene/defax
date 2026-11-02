@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import { EMPTY, type Observable } from 'rxjs';
 import type { RoomCreated, RoomId, Sid } from '../../shared/interfaces/signal-session';
 import { SignalTransport } from '../../shared/interfaces/signal-transport';
-import type { SignalMessage } from '../../shared/utils/signal-message';
+import type { SignalMessage } from '../../shared/utils/signal-message.util';
 
 /** Placeholder transport used outside dev mode until the relay client lands. */
 @Injectable()
