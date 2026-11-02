@@ -1,7 +1,7 @@
 import { ChangeDetectionStrategy, Component, computed, input } from '@angular/core';
 import { HlmSkeleton } from '@spartan-ng/helm/skeleton';
 import { CopyButtonComponent } from '../../../shared/components/copy-button/copy-button.component';
-import { chunk } from '../../../shared/utilities/chunk';
+import { chunk } from '../../../shared/utils/chunk';
 
 /** Digits shown per checksum group. */
 const GROUP_SIZE = 4;

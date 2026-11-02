@@ -18,7 +18,7 @@ import {
   DATA_CHANNEL_LABEL,
   RTC_CONFIGURATION,
 } from '../../shared/constants/transfer-protocol';
-import { decodeJson } from '../../shared/utilities/decode-json.util';
+import { decodeJson } from '../../shared/utils/decode-json.util';
 import { SignalingService } from './signaling.service';
 
 /** Open data channel handed to the transfer once the peer connection is up. */

@@ -2,7 +2,7 @@ import { ChangeDetectionStrategy, Component, computed, input } from '@angular/co
 import type { Identity } from '@contract/signal/identity.model';
 import { HlmSkeleton } from '@spartan-ng/helm/skeleton';
 import { FileSizePipe } from '../../../shared/pipes/file-size.pipe';
-import { chunk } from '../../../shared/utilities/chunk';
+import { chunk } from '../../../shared/utils/chunk';
 
 /** Name and size of the file being verified. */
 export interface FileSummary {
