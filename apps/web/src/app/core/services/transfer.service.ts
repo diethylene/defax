@@ -23,11 +23,12 @@ import {
 import { TRANSFER_CHUNK_SIZE } from '../../shared/constants/transfer-protocol';
 import { decodeJson } from '../../shared/utils/decode-json.util';
 import type { ReceiveRequest } from '../interfaces/receive-request.interface';
+import type { RtcChannel } from '../interfaces/rtc-channel.interface';
 import type { TransferEvent } from '../types/transfer-event.type';
 import { HashService } from './hash.service';
 import { SignalingService } from './signaling.service';
 import { StorageService } from './storage.service';
-import { type RtcChannel, WebRtcService } from './webrtc.service';
+import { WebRtcService } from './webrtc.service';
 
 /** Moves file bytes over a WebRTC data channel. */
 @Injectable({ providedIn: 'root' })
