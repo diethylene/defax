@@ -19,7 +19,8 @@ import {
 import { createRouteToPhaseEffect } from '../../core/effects/route-to-phase.effect';
 import { HashService } from '../../core/services/hash.service';
 import { SignalingService } from '../../core/services/signaling.service';
-import { type TransferErrorTag, TransferService } from '../../core/services/transfer.service';
+import { TransferService } from '../../core/services/transfer.service';
+import type { TransferErrorTag } from '../../core/types/transfer-event.type';
 import {
   type TransferEventActionSink,
   transferEventActionFor,

@@ -1,5 +1,5 @@
 import { type OperatorFunction, scan, timestamp } from 'rxjs';
-import type { TransferEvent } from '../services/transfer.service';
+import type { TransferEvent } from '../types/transfer-event.type';
 
 /** A transfer event paired with the clock readings used to time the transfer. */
 export interface TimedTransferEvent {

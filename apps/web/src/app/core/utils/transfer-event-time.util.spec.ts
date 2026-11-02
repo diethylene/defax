@@ -1,6 +1,6 @@
 import { firstValueFrom, Subject, take, toArray } from 'rxjs';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import type { TransferEvent } from '../services/transfer.service';
+import type { TransferEvent } from '../types/transfer-event.type';
 import { type TimedTransferEvent, timeTransferEvents } from './transfer-event-time.util';
 
 /**
