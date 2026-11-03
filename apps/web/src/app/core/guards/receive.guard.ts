@@ -1,9 +1,9 @@
 import type { CanActivateFn, CanDeactivateFn } from '@angular/router';
+import type { ReceivePhase } from '@web/features/receive/receive-phase/receive-phase.type';
 import {
   phaseForStatus,
-  type ReceivePhase,
   routeForPhase,
-} from '@web/features/receive/receive-phase/receive-phase.model';
+} from '@web/features/receive/receive-phase/receive-phase.util';
 import { ReceiveActions } from '@web/store/receive/receive.actions';
 import { receiveFeature } from '@web/store/receive/receive.reducer';
 import type { ReceiveStatus } from '@web/store/receive/receive-transitions';

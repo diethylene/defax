@@ -10,11 +10,11 @@ import {
   transferEventActionFor,
 } from '@web/core/utils/transfer-event-action.util';
 import { timeTransferEvents } from '@web/core/utils/transfer-event-time.util';
+import type { ReceivePhase } from '@web/features/receive/receive-phase/receive-phase.type';
 import {
   phaseForStatus,
-  type ReceivePhase,
   routeForPhase,
-} from '@web/features/receive/receive-phase/receive-phase.model';
+} from '@web/features/receive/receive-phase/receive-phase.util';
 import { IdentityService } from '@web/shared/services/identity.service';
 import * as Match from 'effect/Match';
 import {
