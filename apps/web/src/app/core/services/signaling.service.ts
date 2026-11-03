@@ -3,7 +3,8 @@ import { decodeBase64Url, encodeBase64Url } from '@contract/signal/base64url.uti
 import { FileMetadata } from '@contract/signal/file-metadata.model';
 import { Identity } from '@contract/signal/identity.model';
 import { DisconnectNotice, FileHash } from '@contract/signal/payload.model';
-import { opposite, type Role } from '@contract/signal/role.model';
+import type { Role } from '@contract/signal/role.type';
+import { opposite } from '@contract/signal/role.util';
 import type { SealedKind } from '@contract/signal/sealed-kind.model';
 import { utf8ToBytes } from '@noble/hashes/utils.js';
 import * as Match from 'effect/Match';

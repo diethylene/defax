@@ -1,4 +1,4 @@
-import type { Role } from '@contract/signal/role.model';
+import type { Role } from '@contract/signal/role.type';
 import { concatBytes } from '@noble/curves/utils.js';
 import { utf8ToBytes } from '@noble/hashes/utils.js';
 import { lvCat } from './lv-cat.util';
