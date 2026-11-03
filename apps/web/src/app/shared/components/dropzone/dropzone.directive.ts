@@ -29,15 +29,14 @@ import {
 } from 'rxjs';
 import { AbstractControlValueAccessor } from '../../abstractions/control-value-accessor';
 import { parseDropzoneConfig } from './dropzone.config';
+import type { DropzoneResult, ExtractedDrop } from './dropzone.interface';
+import { DropzoneStore } from './dropzone.store';
 import type {
   DragDelta,
   DragState,
   DropzoneRejectionMode,
-  DropzoneResult,
   DropzoneValidator,
-  ExtractedDrop,
-} from './dropzone.model';
-import { DropzoneStore } from './dropzone.store';
+} from './dropzone.type';
 import { matchesMimeType } from './dropzone-accept.util';
 import { evaluateFiles } from './dropzone-validator.util';
 

@@ -1,6 +1,6 @@
 import * as Result from 'effect/Result';
 import * as Schema from 'effect/Schema';
-import type { DropzoneRejectionMode, DropzoneValidator } from './dropzone.model';
+import type { DropzoneRejectionMode, DropzoneValidator } from './dropzone.type';
 import { normalizeAccept } from './dropzone-accept.util';
 
 /** Decodes a caller-supplied file validator. */

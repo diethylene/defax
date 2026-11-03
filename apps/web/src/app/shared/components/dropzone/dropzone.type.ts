@@ -15,22 +15,6 @@ export type DropzoneValidator = (file: File) => DropzoneReason | DropzoneReason[
 /** How a batch with rejections is handled. */
 export type DropzoneRejectionMode = 'all' | 'partial';
 
-/** One rejected file with every reason it failed. */
-export interface RejectedFile {
-  /** File that was rejected. */
-  file: File;
-  /** Reasons the file failed. */
-  reasons: DropzoneReason[];
-}
-
-/** Outcome of one drop or picker selection. */
-export interface DropzoneResult {
-  /** Files accepted into the selection. */
-  accepted: File[];
-  /** Files left out of the selection. */
-  rejected: RejectedFile[];
-}
-
 /** Drag state inferred from the dragged data transfer. */
 export type DragState = null | 'valid' | 'invalid' | 'unknown';
 
@@ -39,14 +23,6 @@ export type DropzoneInteraction = 'idle' | 'drag-over' | 'picker-open';
 
 /** Interaction the dropzone is in, including the disabled state. */
 export type DropzonePhase = DropzoneInteraction | 'disabled';
-
-/** Files and directories pulled out of one data transfer. */
-export interface ExtractedDrop {
-  /** Files in the transfer. */
-  files: File[];
-  /** Directories in the transfer, represented by placeholder files. */
-  directories: File[];
-}
 
 /** One drag depth change. */
 export type DragDelta = { kind: 'enter' } | { kind: 'leave' } | { kind: 'reset' };

@@ -1,12 +1,7 @@
 import { computed } from '@angular/core';
 import { patchState, signalStore, withComputed, withMethods, withState } from '@ngrx/signals';
-import type {
-  DragState,
-  DropzoneInteraction,
-  DropzonePhase,
-  DropzoneResult,
-  RejectedFile,
-} from './dropzone.model';
+import type { DropzoneResult, RejectedFile } from './dropzone.interface';
+import type { DragState, DropzoneInteraction, DropzonePhase } from './dropzone.type';
 
 /** State held by the dropzone signal store. */
 interface DropzoneStoreState {
