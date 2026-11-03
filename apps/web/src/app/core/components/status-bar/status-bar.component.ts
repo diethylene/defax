@@ -5,7 +5,8 @@ import { lucideHelpCircle, lucideLock } from '@ng-icons/lucide';
 import { signalState } from '@ngrx/signals';
 import { HlmButton } from '@spartan-ng/helm/button';
 import { StatusPillComponent } from './status-pill.component';
-import { type StatusBarStatus, statusStates } from './status-state.model';
+import type { StatusBarStatus } from './status-state.type';
+import { statusStates } from './status-states.mapping';
 
 /** Footer bar with the connection status and the relay help link. */
 @Component({

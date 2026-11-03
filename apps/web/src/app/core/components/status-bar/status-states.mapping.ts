@@ -1,20 +1,8 @@
-import type { StatusLightVariant } from '../../../shared/components/status-light/status-light.component';
-
-/** Connection statuses the bar can show. */
-export type StatusBarStatus = Exclude<StatusLightVariant, 'info'>;
-
-/** Copy shown for one connection status. */
-export interface StatusState {
-  /** Label on wide screens. */
-  label: string;
-  /** Shorter label on narrow screens. */
-  labelMobile: string;
-  /** One-line explanation. */
-  description: string;
-}
+import type { StatusState } from './status-state.interface';
+import type { StatusBarStatus } from './status-state.type';
 
 /** Copy for every connection status. */
-export const statusStates: Record<StatusBarStatus, StatusState> = {
+export const statusStates = {
   neutral: {
     label: 'Checking your network',
     labelMobile: 'Checking network',
@@ -35,4 +23,4 @@ export const statusStates: Record<StatusBarStatus, StatusState> = {
     labelMobile: 'Offline',
     description: "Can't reach the connection service. Check your internet.",
   },
-};
+} satisfies Record<StatusBarStatus, StatusState>;
