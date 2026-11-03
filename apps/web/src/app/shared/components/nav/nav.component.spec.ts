@@ -3,7 +3,7 @@ import { provideRouter } from '@angular/router';
 import { provideIcons } from '@ng-icons/core';
 import { lucideDownload, lucideUpload } from '@ng-icons/lucide';
 import { NavComponent } from './nav.component';
-import type { NavItem } from './nav-item.model';
+import type { NavItem } from './nav-item.interface';
 
 /** Links shared by the nav tests. */
 const items: NavItem[] = [

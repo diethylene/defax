@@ -1,7 +1,7 @@
 import { ChangeDetectionStrategy, Component, computed, input } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { NgIcon } from '@ng-icons/core';
-import type { NavItem } from './nav-item.model';
+import type { NavItem } from './nav-item.interface';
 
 /** Base classes shared by every nav link. */
 const itemBase =

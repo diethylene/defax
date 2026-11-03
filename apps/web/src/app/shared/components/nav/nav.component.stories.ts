@@ -3,7 +3,7 @@ import { provideIcons } from '@ng-icons/core';
 import { lucideDownload, lucideUpload } from '@ng-icons/lucide';
 import { applicationConfig, type Meta, type StoryObj } from '@storybook/angular-vite';
 import { NavComponent } from './nav.component';
-import type { NavItem } from './nav-item.model';
+import type { NavItem } from './nav-item.interface';
 
 /** Links shown in the nav stories. */
 const items: NavItem[] = [
