@@ -1,15 +1,7 @@
-/** Page a send status shows. */
-export type SendPhase =
-  | 'idle'
-  | 'awaitingPeer'
-  | 'sasConfirm'
-  | 'transferring'
-  | 'verifying'
-  | 'done'
-  | 'failed';
+import type { SendPhase } from './send-phase.type';
 
 /** Route that shows each send phase. */
-const sendPhaseRoutes: Record<SendPhase, string> = {
+const sendPhaseRoutes = {
   idle: '/send',
   awaitingPeer: '/send/code',
   sasConfirm: '/send/approve',
@@ -17,7 +9,7 @@ const sendPhaseRoutes: Record<SendPhase, string> = {
   verifying: '/send/transfer',
   done: '/send/complete',
   failed: '/send/failed',
-};
+} satisfies Record<SendPhase, string>;
 
 /**
  * Reads the route that shows a send phase.
