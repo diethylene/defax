@@ -6,7 +6,7 @@ import { ApiMeta } from './api-meta.model';
  * @param data Schema of the endpoint's payload.
  * @returns The enveloped success schema.
  */
-export const apiEnvelopeOf = <A>(data: Schema.Schema<A>) =>
+export const apiEnvelopeOf = <A, I>(data: Schema.Codec<A, I, never, never>) =>
   Schema.Struct({
     /** Always `success` on a successful response. */
     status: Schema.Literal('success'),
