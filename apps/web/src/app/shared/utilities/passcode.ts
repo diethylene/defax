@@ -1,10 +1,7 @@
+import { decodeRoomId, type RoomId } from '@contract/signal/room-id.model';
 import * as Option from 'effect/Option';
 import { PGP_WORDS } from '../constants/pgp-wordlist';
-import type { RoomId } from '../interfaces/signal-session';
 import { normalizePassword } from './password';
-
-/** Shape of a six-digit room id. */
-const ROOM_ID_PATTERN = /^\d{6}$/;
 
 /** PGP word list entries, lowercased for comparison. */
 const PGP_WORD_SET = new Set(PGP_WORDS.map((word) => word.toLowerCase()));
@@ -39,11 +36,15 @@ const splitCode = (code: string): readonly [string, string] | null => {
 };
 
 /**
- * Checks that text is a six-digit room id.
+ * Decodes a room id from text, throwing when it is invalid.
  * @param value Candidate room id.
- * @returns True when the text is six digits.
+ * @returns The validated room id.
  */
-const isRoomId = (value: string): boolean => ROOM_ID_PATTERN.test(value);
+const requireRoomId = (value: string): RoomId =>
+  Option.getOrThrowWith(
+    decodeRoomId(value),
+    () => new Error('passcode room id must be six digits without a leading zero'),
+  );
 
 /**
  * Checks that a password is two known PGP words.
@@ -66,7 +67,7 @@ export const parsePasscode = (code: string): { roomId: RoomId; password: string 
     throw new Error('passcode must be <roomId>-<password>');
   }
   const [roomId, password] = parts;
-  return { roomId, password };
+  return { roomId: requireRoomId(roomId), password };
 };
 
 /**
@@ -78,7 +79,8 @@ export const parseReceiveCode = (input: string): Option.Option<ReceiveCode> => {
   const parts = splitCode(normalizePassword(input));
   if (!parts) return Option.none();
   const [roomId, password] = parts;
-  return isRoomId(roomId) && isPgpPair(password)
-    ? Option.some({ roomId, password })
-    : Option.none();
+  return Option.map(
+    Option.filter(decodeRoomId(roomId), () => isPgpPair(password)),
+    (decoded) => ({ roomId: decoded, password }),
+  );
 };
