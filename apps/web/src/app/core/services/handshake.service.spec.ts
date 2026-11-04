@@ -1,7 +1,8 @@
 import { firstValueFrom } from 'rxjs';
 import { open, seal } from '../../shared/utils/aead.util';
+import type { HandshakeResult } from '../interfaces/handshake.interface';
 import { BroadcastChannelTransport } from './broadcast-channel-transport.service';
-import { type HandshakeResult, HandshakeService } from './handshake.service';
+import { HandshakeService } from './handshake.service';
 
 const runHandshakePair = async (
   initiatorPassword: string,

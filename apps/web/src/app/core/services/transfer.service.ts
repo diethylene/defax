@@ -1,5 +1,4 @@
 import { Injectable, inject } from '@angular/core';
-import type { FileMetadata } from '@contract/signal/file-metadata.model';
 import { Accept, VerifyResult } from '@contract/signal/payload.model';
 import * as Match from 'effect/Match';
 import {
@@ -23,34 +22,13 @@ import {
 } from 'rxjs';
 import { TRANSFER_CHUNK_SIZE } from '../../shared/constants/transfer-protocol';
 import { decodeJson } from '../../shared/utils/decode-json.util';
+import type { ReceiveRequest } from '../interfaces/receive-request.interface';
+import type { RtcChannel } from '../interfaces/rtc-channel.interface';
+import type { TransferEvent } from '../types/transfer-event.type';
 import { HashService } from './hash.service';
 import { SignalingService } from './signaling.service';
 import { StorageService } from './storage.service';
-import { type RtcChannel, WebRtcService } from './webrtc.service';
-
-/** Why a transfer stopped, at the granularity the store reports. */
-export type TransferErrorTag = 'storage-full' | 'verification-failed';
-
-/** Progress and outcome of one file transfer. */
-export type TransferEvent =
-  /** Transfer began, carrying the total byte count. */
-  | { readonly type: 'started'; readonly total: number }
-  /** Bytes moved so far. */
-  | { readonly type: 'progress'; readonly transferred: number }
-  /** Every byte has been sent or received. */
-  | { readonly type: 'complete' }
-  /** The receiver confirmed the file digest. */
-  | { readonly type: 'verified' }
-  /** The transfer stopped, carrying the reason. */
-  | { readonly type: 'failed'; readonly error: TransferErrorTag };
-
-/** Everything needed to receive one file. */
-export interface ReceiveRequest {
-  /** Metadata the sender announced. */
-  readonly metadata: FileMetadata;
-  /** Digest the sender announced, used to verify the file. */
-  readonly digest: string;
-}
+import { WebRtcService } from './webrtc.service';
 
 /** Moves file bytes over a WebRTC data channel. */
 @Injectable({ providedIn: 'root' })

@@ -28,26 +28,7 @@ import { deriveIsk } from '../../shared/utils/isk.util';
 import { parsePasscode } from '../../shared/utils/passcode.util';
 import { normalizePassword } from '../../shared/utils/password.util';
 import type { SignalMessage } from '../../shared/utils/signal-message.util';
-
-/** Keys and code both peers hold after the handshake. */
-export interface HandshakeResult {
-  /** Key sealing and opening the signalling payloads. */
-  signalingKey: CryptoKey;
-  /** Short authentication string both peers compare out of band. */
-  sas: string;
-  /** Room the handshake ran in. */
-  roomId: RoomId;
-}
-
-/** Session the initiator creates before waiting for a peer. */
-export interface InitiatorSession {
-  /** Room id the responder joins. */
-  roomId: RoomId;
-  /** Session id the responder receives on join. */
-  sid: Sid;
-  /** Password both peers derive the handshake from. */
-  password: string;
-}
+import type { HandshakeResult, InitiatorSession } from '../interfaces/handshake.interface';
 
 /** PAKE message carrying the sender's public key. */
 type PakeMessage = Extract<SignalMessage, { type: 'pake' }>;

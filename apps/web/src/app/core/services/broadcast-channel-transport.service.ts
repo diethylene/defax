@@ -7,63 +7,7 @@ import type { RoomCreated, RoomId, Sid } from '../../shared/interfaces/signal-se
 import { SignalTransport } from '../../shared/interfaces/signal-transport';
 import type { SignalMessage } from '../../shared/utils/signal-message.util';
 import { parseSignalMessage } from '../../shared/utils/signal-message.util';
-
-/** Transport phase with no room open. */
-interface IdlePhase {
-  /** Discriminant. */
-  readonly _tag: 'idle';
-}
-
-/** Host waiting for a guest to join. */
-interface HostWaitingPhase {
-  /** Discriminant. */
-  readonly _tag: 'host-waiting';
-  /** Session id the host will hand to the guest. */
-  readonly sid: Sid;
-  /** Messages held until the guest joins. */
-  readonly outgoing: readonly SignalMessage[];
-}
-
-/** Host with a guest connected. */
-interface HostJoinedPhase {
-  /** Discriminant. */
-  readonly _tag: 'host-joined';
-  /** Session id handed to the guest. */
-  readonly sid: Sid;
-}
-
-/** Callbacks awaiting a join answer. */
-interface PendingJoin {
-  /** Resolves with the host session id. */
-  readonly resolve: (sid: Sid) => void;
-  /** Rejects with the join failure. */
-  readonly reject: (error: Error) => void;
-}
-
-/** Guest waiting for the host to answer its join request. */
-interface GuestConnectingPhase {
-  /** Discriminant. */
-  readonly _tag: 'guest-connecting';
-  /** Callbacks for the pending join. */
-  readonly pending: PendingJoin;
-}
-
-/** Guest whose join attempt has settled. */
-interface GuestSettledPhase {
-  /** Discriminant. */
-  readonly _tag: 'guest-settled';
-}
-
-/** Host phases that answer join requests. */
-type HostPhase = HostWaitingPhase | HostJoinedPhase;
-
-/** Lifecycle phase of the transport. */
-type Phase =
-  | IdlePhase
-  | HostWaitingPhase
-  | HostJoinedPhase
-  | GuestConnectingPhase
-  | GuestSettledPhase;
+import type { HostPhase, HostWaitingPhase, IdlePhase, Phase } from '../types/transport-phase.type';
 
 /** Initial phase before any room is created or joined. */
 const IDLE: IdlePhase = { _tag: 'idle' };

@@ -1,5 +1,6 @@
 import { Injectable } from '@angular/core';
 import { defer, from, map, Observable, switchMap, tap } from 'rxjs';
+import type { StorageClosed, StorageState } from '../types/storage-state.type';
 
 /** Database name used for transfer chunks. */
 const DB_NAME = 'defax-transfer';
@@ -91,23 +92,6 @@ const deleteDatabase$ = (): Observable<void> =>
     };
     request.onerror = () => subscriber.error(request.error ?? new Error('indexeddb delete failed'));
   });
-
-/** Database state before it is opened or after it is closed. */
-interface StorageClosed {
-  /** Discriminant. */
-  readonly _tag: 'closed';
-}
-
-/** Database state with an open connection. */
-interface StorageOpen {
-  /** Discriminant. */
-  readonly _tag: 'open';
-  /** Open database connection. */
-  readonly db: IDBDatabase;
-}
-
-/** Lifecycle state of the transfer database. */
-type StorageState = StorageClosed | StorageOpen;
 
 /** Initial state before the database is opened. */
 const CLOSED: StorageClosed = { _tag: 'closed' };

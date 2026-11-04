@@ -39,3 +39,14 @@ export type DropzoneInteraction = 'idle' | 'drag-over' | 'picker-open';
 
 /** Interaction the dropzone is in, including the disabled state. */
 export type DropzonePhase = DropzoneInteraction | 'disabled';
+
+/** Files and directories pulled out of one data transfer. */
+export interface ExtractedDrop {
+  /** Files in the transfer. */
+  files: File[];
+  /** Directories in the transfer, represented by placeholder files. */
+  directories: File[];
+}
+
+/** One drag depth change. */
+export type DragDelta = { kind: 'enter' } | { kind: 'leave' } | { kind: 'reset' };

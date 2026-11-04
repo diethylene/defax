@@ -1,6 +1,6 @@
 import type { Action } from '@ngrx/store';
 import { describe, expect, it } from 'vitest';
-import type { TransferEvent } from '../services/transfer.service';
+import type { TransferEvent } from '../types/transfer-event.type';
 import { type TransferEventActionSink, transferEventActionFor } from './transfer-event-action.util';
 import type { TimedTransferEvent } from './transfer-event-time.util';
 
