@@ -15,7 +15,10 @@ const createRoom = Effect.gen(function* () {
   const response = yield* Effect.tryPromise({
     try: () => stub.fetch('https://room/init', { method: 'POST', body: sid }),
     catch: () => new RoomCreationFailed(),
-  });
+  }).pipe(
+    Effect.timeout('5 seconds'),
+    Effect.mapError(() => new RoomCreationFailed()),
+  );
   if (response.status !== 204) return yield* new RoomCreationFailed();
   return { roomId, sid };
 });
