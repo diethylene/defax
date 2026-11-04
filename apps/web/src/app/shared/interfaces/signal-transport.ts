@@ -1,6 +1,8 @@
+import type { RoomCreated } from '@contract/signal/room-created.model';
+import type { RoomId } from '@contract/signal/room-id.model';
+import type { Sid } from '@contract/signal/sid.model';
 import type { Observable } from 'rxjs';
 import type { SignalMessage } from '../utilities/signal-message';
-import type { RoomCreated, RoomId, Sid } from './signal-session';
 
 /** Transport exchanging signaling messages with the other peer. */
 export abstract class SignalTransport {

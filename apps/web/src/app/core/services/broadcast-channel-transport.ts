@@ -1,10 +1,10 @@
 import { Injectable } from '@angular/core';
 import { PROTOCOL_VERSION } from '@contract/signal/protocol-version.constant';
-import { randomRoomId } from '@contract/signal/room-id.model';
-import { randomSid } from '@contract/signal/sid.model';
+import type { RoomCreated } from '@contract/signal/room-created.model';
+import { type RoomId, randomRoomId } from '@contract/signal/room-id.model';
+import { randomSid, type Sid } from '@contract/signal/sid.model';
 import * as Match from 'effect/Match';
 import { Subject } from 'rxjs';
-import type { RoomCreated, RoomId, Sid } from '../../shared/interfaces/signal-session';
 import { SignalTransport } from '../../shared/interfaces/signal-transport';
 import type { SignalMessage } from '../../shared/utilities/signal-message';
 import { parseSignalMessage } from '../../shared/utilities/signal-message';

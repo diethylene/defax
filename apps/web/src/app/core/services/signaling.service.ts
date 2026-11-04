@@ -4,6 +4,7 @@ import { FileMetadata } from '@contract/signal/file-metadata.model';
 import { Identity } from '@contract/signal/identity.model';
 import { DisconnectNotice, FileHash } from '@contract/signal/payload.model';
 import { opposite, type Role } from '@contract/signal/role.model';
+import type { RoomId } from '@contract/signal/room-id.model';
 import type { SealedKind } from '@contract/signal/sealed-kind.model';
 import { utf8ToBytes } from '@noble/hashes/utils.js';
 import * as Match from 'effect/Match';
@@ -23,7 +24,6 @@ import {
   takeUntil,
   tap,
 } from 'rxjs';
-import type { RoomId } from '../../shared/interfaces/signal-session';
 import { SignalTransport } from '../../shared/interfaces/signal-transport';
 import { open, seal } from '../../shared/utilities/aead';
 import { decodeJson } from '../../shared/utilities/decode-json.util';

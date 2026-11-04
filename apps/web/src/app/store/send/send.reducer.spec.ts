@@ -1,8 +1,12 @@
 import type { FileMetadata } from '@contract/signal/file-metadata.model';
 import type { Identity } from '@contract/signal/identity.model';
+import { roomIdFromValue } from '@contract/signal/room-id.model';
 import { describe, expect, it } from 'vitest';
 import { SendActions } from './send.actions';
 import { initialSendState, type SendState, sendFeature } from './send.reducer';
+
+/** A valid room code for the tests. */
+const roomId = roomIdFromValue(0);
 
 const peerIdentity: Identity = {
   browser: 'Firefox 121',
@@ -30,7 +34,7 @@ const reduce = (state: SendState, ...actions: Parameters<typeof sendFeature.redu
 const awaiting: SendState = reduce(
   initialSendState,
   SendActions.fileSelected({ file, metadata }),
-  SendActions.roomCreated({ roomId: 'room-1' }),
+  SendActions.roomCreated({ roomId }),
   SendActions.passwordGenerated({ password: 'pw' }),
 );
 
@@ -51,7 +55,6 @@ describe('sendFeature.reducer', () => {
         _tag: 'AwaitingPeer',
         file,
         metadata,
-        roomId: '',
         password: '',
         hash: { _tag: 'Idle' },
       });
@@ -60,7 +63,7 @@ describe('sendFeature.reducer', () => {
     it('records the room and password while awaiting the peer', () => {
       expect(awaiting.status).toMatchObject({
         _tag: 'AwaitingPeer',
-        roomId: 'room-1',
+        roomId,
         password: 'pw',
       });
     });
@@ -119,12 +122,22 @@ describe('sendFeature.reducer', () => {
 
   describe('invariants', () => {
     it('ignores a room created before a file is selected', () => {
-      const next = sendFeature.reducer(
-        initialSendState,
-        SendActions.roomCreated({ roomId: 'room-1' }),
-      );
+      const next = sendFeature.reducer(initialSendState, SendActions.roomCreated({ roomId }));
 
       expect(next).toEqual(initialSendState);
+    });
+
+    it('ignores a sas before the room is created', () => {
+      const selected = sendFeature.reducer(
+        initialSendState,
+        SendActions.fileSelected({ file, metadata }),
+      );
+      const next = sendFeature.reducer(
+        selected,
+        SendActions.sasComputed({ sas: '123456', peerIdentity }),
+      );
+
+      expect(next).toEqual(selected);
     });
 
     it('moves to Failed with the handshake tag', () => {

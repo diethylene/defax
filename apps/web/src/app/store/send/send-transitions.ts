@@ -1,7 +1,8 @@
 import type { FileMetadata } from '@contract/signal/file-metadata.model';
 import type { Identity } from '@contract/signal/identity.model';
+import type { RoomId } from '@contract/signal/room-id.model';
 import * as Match from 'effect/Match';
-import type { RoomId } from '../../shared/interfaces/signal-session';
+import * as Option from 'effect/Option';
 
 /** Progress of the file hash computed while the receiver is matched. */
 export type HashStatus =
@@ -49,7 +50,8 @@ export type SendStatus =
       readonly _tag: 'AwaitingPeer';
       readonly file: File;
       readonly metadata: FileMetadata;
-      readonly roomId: RoomId;
+      /** Room both peers joined, absent until the session is created. */
+      readonly roomId?: RoomId;
       readonly password: string;
       readonly hash: HashStatus;
     }
@@ -110,12 +112,18 @@ export const withPassword = (status: SendStatus, password: string): SendStatus =
  */
 export const withSas = (status: SendStatus, sas: string, peerIdentity: Identity): SendStatus =>
   Match.value(status).pipe(
-    Match.tag('AwaitingPeer', (current) => ({
-      ...current,
-      _tag: 'SasConfirm' as const,
-      sas,
-      peerIdentity,
-    })),
+    Match.tag('AwaitingPeer', (current) =>
+      Option.match(Option.fromUndefinedOr(current.roomId), {
+        onNone: () => status,
+        onSome: (roomId) => ({
+          ...current,
+          _tag: 'SasConfirm' as const,
+          roomId,
+          sas,
+          peerIdentity,
+        }),
+      }),
+    ),
     Match.orElse(() => status),
   );
 

@@ -2,6 +2,7 @@ import type { Provider } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import type { FileMetadata } from '@contract/signal/file-metadata.model';
 import type { Identity } from '@contract/signal/identity.model';
+import { roomIdFromValue } from '@contract/signal/room-id.model';
 import { sidFromBytes } from '@contract/signal/sid.model';
 import { Actions } from '@ngrx/effects';
 import type { Action } from '@ngrx/store';
@@ -27,6 +28,9 @@ const peerIdentity: Identity = {
 
 const sid = sidFromBytes(new Uint8Array(16).fill(1));
 
+/** A valid room code for the tests. */
+const roomId = roomIdFromValue(0);
+
 const metadata: FileMetadata = {
   name: 'report.pdf',
   size: 3,
@@ -43,7 +47,7 @@ const file = new File(['abc'], 'report.pdf', {
 const readyStatus = (): SendStatus =>
   [
     SendActions.fileSelected({ file, metadata }),
-    SendActions.roomCreated({ roomId: 'room-1' }),
+    SendActions.roomCreated({ roomId }),
     SendActions.passwordGenerated({ password: 'pw' }),
     SendActions.sasComputed({ sas: '123456', peerIdentity }),
   ].reduce<SendStatus>(
@@ -76,7 +80,7 @@ describe('sendStartSession$', () => {
           provide: SignalingService,
           useValue: {
             createSession: (): InitiatorSession => ({
-              roomId: 'room-1',
+              roomId,
               sid,
               password: 'pw',
             }),
@@ -87,7 +91,7 @@ describe('sendStartSession$', () => {
       ]);
 
       expect(emitted).toEqual([
-        SendActions.roomCreated({ roomId: 'room-1' }),
+        SendActions.roomCreated({ roomId }),
         SendActions.passwordGenerated({ password: 'pw' }),
         SendActions.sasComputed({ sas: '123456', peerIdentity }),
       ]);
@@ -102,7 +106,7 @@ describe('sendStartSession$', () => {
           provide: SignalingService,
           useValue: {
             createSession: (): InitiatorSession => ({
-              roomId: 'room-1',
+              roomId,
               sid,
               password: 'pw',
             }),
