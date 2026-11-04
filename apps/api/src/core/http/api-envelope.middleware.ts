@@ -3,7 +3,7 @@ import type { ApiMeta } from '@contract/http/api-meta.model';
 import type { ProblemDetails } from '@contract/http/problem-details.model';
 import * as Effect from 'effect/Effect';
 import { HttpServerResponse } from 'effect/http';
-import { type HttpApiEndpoint, HttpApiMiddleware } from 'effect/http-api';
+import { type HttpApiEndpoint, HttpApiError, HttpApiMiddleware } from 'effect/http-api';
 import * as Layer from 'effect/Layer';
 import * as Option from 'effect/Option';
 import * as Schema from 'effect/Schema';
@@ -122,8 +122,10 @@ const errorStatus = (endpoint: HttpApiEndpoint.Top): number => {
 const middlewareFor =
   (apiVersion: string): HttpApiMiddleware.HttpApiMiddleware<never, never, AppConfig> =>
   (httpEffect, { endpoint }) =>
-    Effect.catch(httpEffect, () =>
-      Effect.succeed(HttpServerResponse.empty({ status: errorStatus(endpoint) })),
+    Effect.catch(httpEffect, (error) =>
+      HttpApiError.HttpApiSchemaError.is(error)
+        ? Effect.fail(error)
+        : Effect.succeed(HttpServerResponse.empty({ status: errorStatus(endpoint) })),
     ).pipe(Effect.map((response) => wrapResponse(response, apiVersion)));
 
 /** Wraps every endpoint response in the success envelope or in problem+json. */
