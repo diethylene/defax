@@ -2,15 +2,13 @@ import * as Option from 'effect/Option';
 import * as Schema from 'effect/Schema';
 import fc from 'fast-check';
 import { describe, expect, it } from 'vitest';
-import { RoomId } from './room-id.model';
+import { RoomId, roomIdFromValue } from './room-id.model';
 
 /** Decodes a candidate room code, yielding None when it is invalid. */
 const decode = Schema.decodeUnknownOption(RoomId);
 
-/** Generates every six-digit code, zero-padded. */
-const sixDigits = fc
-  .integer({ min: 0, max: 999_999 })
-  .map((value) => value.toString().padStart(6, '0'));
+/** Generates every room code, which never starts with a zero. */
+const roomCodes = fc.integer({ min: 100_000, max: 999_999 }).map(String);
 
 describe('RoomId', () => {
   describe('success', () => {
@@ -18,9 +16,9 @@ describe('RoomId', () => {
       expect(decode('123456')).toEqual(Option.some('123456'));
     });
 
-    it('accepts every six-digit code', () => {
+    it('accepts every room code', () => {
       fc.assert(
-        fc.property(sixDigits, (code) => {
+        fc.property(roomCodes, (code) => {
           expect(Option.isSome(decode(code))).toBe(true);
         }),
       );
@@ -40,18 +38,44 @@ describe('RoomId', () => {
       expect(decode('12a456')).toEqual(Option.none());
     });
 
+    it('rejects a code with a leading zero', () => {
+      expect(decode('012345')).toEqual(Option.none());
+    });
+
     it('rejects input that is not a string', () => {
       expect(decode(123456)).toEqual(Option.none());
     });
 
-    it('rejects every string that is not exactly six digits', () => {
+    it('rejects every string that is not a room code', () => {
       fc.assert(
         fc.property(
-          fc.string().filter((value) => !/^\d{6}$/.test(value)),
+          fc.string().filter((value) => !/^[1-9]\d{5}$/.test(value)),
           (value) => {
             expect(Option.isNone(decode(value))).toBe(true);
           },
         ),
+      );
+    });
+  });
+});
+
+describe('roomIdFromValue', () => {
+  describe('success', () => {
+    it('maps the bottom of the draw range to the lowest room code', () => {
+      expect(roomIdFromValue(0)).toBe('100000');
+    });
+
+    it('maps the top of the draw range to the highest room code', () => {
+      expect(roomIdFromValue(899_999)).toBe('999999');
+    });
+  });
+
+  describe('invariants', () => {
+    it('returns a room code for any non-negative integer draw', () => {
+      fc.assert(
+        fc.property(fc.nat(), (value) => {
+          expect(roomIdFromValue(value)).toMatch(/^[1-9]\d{5}$/);
+        }),
       );
     });
   });

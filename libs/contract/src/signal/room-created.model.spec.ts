@@ -24,7 +24,7 @@ describe('RoomCreated', () => {
         fc.property(fc.uint8Array({ minLength: 16, maxLength: 16 }), (bytes) => {
           const sid = sidFromBytes(bytes);
 
-          expect(Option.isSome(decode({ roomId: '000000', sid }))).toBe(true);
+          expect(Option.isSome(decode({ roomId: '100000', sid }))).toBe(true);
         }),
       );
     });
