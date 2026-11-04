@@ -11,6 +11,9 @@ export const RoomId = Schema.String.pipe(
 /** A validated room code. */
 export type RoomId = typeof RoomId.Type;
 
+/** Decodes a room code, returning None when the input is not a valid room code. */
+export const decodeRoomId = Schema.decodeUnknownOption(RoomId);
+
 /**
  * Derives the room code a draw maps to.
  * @param value Draw to map.
