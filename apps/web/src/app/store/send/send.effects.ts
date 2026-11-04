@@ -26,7 +26,8 @@ import {
   transferEventActionFor,
 } from '../../core/utils/transfer-event-action.util';
 import { timeTransferEvents } from '../../core/utils/transfer-event-time.util';
-import { routeForPhase, type SendPhase } from '../../features/send/send-phase/send-phase.model';
+import type { SendPhase } from '../../features/send/send-phase/send-phase.type';
+import { routeForPhase } from '../../features/send/send-phase/send-phase.util';
 import { IdentityService } from '../../shared/services/identity.service';
 import type { FileHashEvent } from '../../shared/utils/hash-protocol.interface';
 import { SendActions } from './send.actions';

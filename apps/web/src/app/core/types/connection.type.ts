@@ -1,4 +1,4 @@
-import type { Role } from '@contract/signal/role.model';
+import type { Role } from '@contract/signal/role.type';
 import type { RoomId } from '../../shared/interfaces/signal-session';
 
 /** Connection with no handshake completed. */

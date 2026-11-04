@@ -5,7 +5,7 @@ import {
   type PageStep,
 } from '../../../core/components/page-shell/page-shell.component';
 import { DropzoneComponent } from '../../../shared/components/dropzone/dropzone.component';
-import type { DropzoneResult } from '../../../shared/components/dropzone/dropzone.model';
+import type { DropzoneResult } from '../../../shared/components/dropzone/dropzone.interface';
 import { SendActions } from '../../../store/send/send.actions';
 import { toFileMetadata } from '../file-metadata/file-metadata.util';
 

@@ -1,11 +1,7 @@
 import * as Match from 'effect/Match';
 import type { DropzoneConfig } from './dropzone.config';
-import type {
-  DropzoneReason,
-  DropzoneResult,
-  DropzoneValidator,
-  RejectedFile,
-} from './dropzone.model';
+import type { DropzoneResult, RejectedFile } from './dropzone.interface';
+import type { DropzoneReason, DropzoneValidator } from './dropzone.type';
 import { matchesAccept } from './dropzone-accept.util';
 
 /**

@@ -1,11 +1,10 @@
-/** A party in a signaling room. */
-export type Role = 'initiator' | 'responder';
+import type { Role } from './role.type';
 
 /** Maps each role to the other party. */
-const OPPOSITE: Record<Role, Role> = {
+const OPPOSITE = {
   initiator: 'responder',
   responder: 'initiator',
-};
+} satisfies Record<Role, Role>;
 
 /**
  * Returns the other party's role.

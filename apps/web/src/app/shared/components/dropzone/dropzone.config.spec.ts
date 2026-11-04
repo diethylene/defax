@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { parseDropzoneConfig } from './dropzone.config';
-import type { DropzoneValidator } from './dropzone.model';
+import type { DropzoneValidator } from './dropzone.type';
 
 describe('parseDropzoneConfig', () => {
   afterEach(() => {

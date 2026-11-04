@@ -1,6 +1,6 @@
 import { DurableObject } from 'cloudflare:workers';
 import { decodeInbound } from '@contract/signal/message.model';
-import type { Role } from '@contract/signal/role.model';
+import type { Role } from '@contract/signal/role.type';
 import { decodeSid } from '@contract/signal/sid.model';
 import * as Match from 'effect/Match';
 import * as Option from 'effect/Option';
