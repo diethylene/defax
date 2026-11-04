@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { PROTOCOL_VERSION } from '@contract/signal/protocol-version.constant';
-import { sidFromBytes } from '@contract/signal/sid.model';
+import { randomRoomId } from '@contract/signal/room-id.model';
+import { randomSid } from '@contract/signal/sid.model';
 import * as Match from 'effect/Match';
 import { Subject } from 'rxjs';
 import type { RoomCreated, RoomId, Sid } from '../../shared/interfaces/signal-session';
@@ -95,9 +96,9 @@ export class BroadcastChannelTransport extends SignalTransport {
    */
   override createRoom(): RoomCreated {
     this.close();
-    const sid = sidFromBytes(crypto.getRandomValues(new Uint8Array(16)));
+    const sid = randomSid();
     this.phase = { _tag: 'host-waiting', sid, outgoing: [] };
-    const roomId = this.generateRoomId();
+    const roomId = randomRoomId();
     this.openChannel(roomId);
     return { roomId, sid };
   }
@@ -243,15 +244,5 @@ export class BroadcastChannelTransport extends SignalTransport {
    */
   private post(message: SignalMessage): void {
     this.channel?.postMessage(message);
-  }
-
-  /**
-   * Generates a six-digit room id.
-   * @returns Room id in the 100000 to 999999 range.
-   */
-  private generateRoomId(): RoomId {
-    const words = crypto.getRandomValues(new Uint32Array(1));
-    const value = (words[0] ?? 0) % 900000;
-    return String(value + 100000);
   }
 }

@@ -8,7 +8,7 @@ describe('BroadcastChannelTransport room lifecycle', () => {
   it('creates a room with a room id and a base64url sid', () => {
     const host = new BroadcastChannelTransport();
     const room = host.createRoom();
-    expect(room.roomId).toMatch(/^\d{6}$/);
+    expect(room.roomId).toMatch(/^[1-9]\d{5}$/);
     expect(room.sid).toMatch(/^[A-Za-z0-9_-]{22}$/);
     host.close();
   });
