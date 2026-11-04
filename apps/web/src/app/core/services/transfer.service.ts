@@ -22,7 +22,7 @@ import {
   tap,
 } from 'rxjs';
 import { TRANSFER_CHUNK_SIZE } from '../../shared/constants/transfer-protocol';
-import { decodeJson } from '../../shared/utilities/decode-json.util';
+import { decodeJson } from '../../shared/utils/decode-json.util';
 import { HashService } from './hash.service';
 import { SignalingService } from './signaling.service';
 import { StorageService } from './storage.service';

@@ -1,7 +1,7 @@
 import * as Option from 'effect/Option';
 import { PGP_WORDS } from '../constants/pgp-wordlist';
 import type { RoomId } from '../interfaces/signal-session';
-import { normalizePassword } from './password';
+import { normalizePassword } from './password.util';
 
 /** Shape of a six-digit room id. */
 const ROOM_ID_PATTERN = /^\d{6}$/;

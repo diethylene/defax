@@ -22,12 +22,12 @@ import {
   isValidPublicKey,
   mapToGroup,
   secretFromBytes,
-} from '../../shared/utilities/cpace';
-import { deriveSessionKeys } from '../../shared/utilities/hkdf';
-import { deriveIsk } from '../../shared/utilities/isk';
-import { parsePasscode } from '../../shared/utilities/passcode';
-import { normalizePassword } from '../../shared/utilities/password';
-import type { SignalMessage } from '../../shared/utilities/signal-message';
+} from '../../shared/utils/cpace.util';
+import { deriveSessionKeys } from '../../shared/utils/hkdf.util';
+import { deriveIsk } from '../../shared/utils/isk.util';
+import { parsePasscode } from '../../shared/utils/passcode.util';
+import { normalizePassword } from '../../shared/utils/password.util';
+import type { SignalMessage } from '../../shared/utils/signal-message.util';
 
 /** Keys and code both peers hold after the handshake. */
 export interface HandshakeResult {

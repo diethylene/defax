@@ -1,7 +1,7 @@
 import type { Role } from '@contract/signal/role.model';
 import { concatBytes } from '@noble/curves/utils.js';
 import { utf8ToBytes } from '@noble/hashes/utils.js';
-import { lvCat } from './lv-cat';
+import { lvCat } from './lv-cat.util';
 
 /** AES-GCM nonce length in bytes. */
 const NONCE_LENGTH = 12;

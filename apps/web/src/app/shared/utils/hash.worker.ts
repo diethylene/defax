@@ -1,7 +1,7 @@
 /// <reference lib="webworker" />
 import { sha256 } from '@noble/hashes/sha2.js';
 import { bytesToHex } from '@noble/hashes/utils.js';
-import type { FileHashRequest, FileHashWorkerMessage } from './hash-protocol';
+import type { FileHashRequest, FileHashWorkerMessage } from './hash-protocol.interface';
 
 /**
  * Extracts a message from an unknown error value.

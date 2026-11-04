@@ -2,7 +2,7 @@ import { concatBytes } from '@noble/curves/utils.js';
 import { sha512 } from '@noble/hashes/sha2.js';
 import { utf8ToBytes } from '@noble/hashes/utils.js';
 import { CPACE_DSI } from '../constants/cpace';
-import { lvCat } from './lv-cat';
+import { lvCat } from './lv-cat.util';
 
 /** Associated data placeholder for a side that sent none. */
 const EMPTY = new Uint8Array(0);

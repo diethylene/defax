@@ -1,5 +1,5 @@
 import { encodeBase64Url } from '@contract/signal/base64url.util';
-import { parseSignalMessage } from './signal-message';
+import { parseSignalMessage } from './signal-message.util';
 
 const sid = encodeBase64Url(new Uint8Array(16).fill(1));
 const shortSid = encodeBase64Url(new Uint8Array(8).fill(1));

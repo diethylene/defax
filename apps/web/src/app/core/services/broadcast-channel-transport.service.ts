@@ -5,8 +5,8 @@ import * as Match from 'effect/Match';
 import { Subject } from 'rxjs';
 import type { RoomCreated, RoomId, Sid } from '../../shared/interfaces/signal-session';
 import { SignalTransport } from '../../shared/interfaces/signal-transport';
-import type { SignalMessage } from '../../shared/utilities/signal-message';
-import { parseSignalMessage } from '../../shared/utilities/signal-message';
+import type { SignalMessage } from '../../shared/utils/signal-message.util';
+import { parseSignalMessage } from '../../shared/utils/signal-message.util';
 
 /** Transport phase with no room open. */
 interface IdlePhase {
