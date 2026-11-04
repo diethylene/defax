@@ -1,16 +1,16 @@
 import { AppApi } from '@api/core/http/app.api';
-import { sidFromBytes } from '@contract/signal/sid.model';
+import { randomRoomId } from '@contract/signal/room-id.model';
+import { randomSid } from '@contract/signal/sid.model';
 import * as Effect from 'effect/Effect';
 import { HttpApiBuilder } from 'effect/http-api';
-import { generateRoomCode } from './room-code.util';
 import { RoomCreationFailed } from './rooms.api';
 import { RoomsNamespace } from './rooms-namespace.service';
 
 /** Creates a room and initializes its Durable Object. */
 const createRoom = Effect.gen(function* () {
   const { namespace } = yield* RoomsNamespace;
-  const roomId = generateRoomCode();
-  const sid = sidFromBytes(crypto.getRandomValues(new Uint8Array(16)));
+  const roomId = randomRoomId();
+  const sid = randomSid();
   const stub = namespace.get(namespace.idFromName(roomId));
   const response = yield* Effect.tryPromise({
     try: () => stub.fetch('https://room/init', { method: 'POST', body: sid }),

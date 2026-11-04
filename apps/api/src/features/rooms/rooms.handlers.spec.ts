@@ -46,7 +46,7 @@ describe('POST /rooms/create', () => {
 
       expect(response.status).toBe(201);
       expect(envelope.status).toBe('success');
-      expect(envelope.data.roomId).toMatch(/^\d{6}$/);
+      expect(envelope.data.roomId).toMatch(/^[1-9]\d{5}$/);
       expect(envelope.data.sid).toMatch(/^[A-Za-z0-9_-]{22}$/);
       expect(envelope.meta.apiVersion).toBe('1.2.3');
       expect(envelope.meta.requestId).toBe(response.headers.get('x-request-id'));
