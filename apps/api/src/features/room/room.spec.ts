@@ -1,3 +1,5 @@
+import { ProblemDetails } from '@contract/http/problem-details.model';
+import * as Schema from 'effect/Schema';
 import { beforeEach, describe, expect, it } from 'vitest';
 import { Room, type RoomEnv } from './room';
 import { sidFixture, yFixture } from './room.factory';
@@ -39,6 +41,14 @@ const wsUrl = 'http://x/rooms/r1/ws';
  */
 const init = (room: Room, sid: string): Promise<Response> =>
   room.fetch(new Request(initUrl, { method: 'POST', body: sid }));
+
+/**
+ * Reads a handshake failure as problem+json.
+ * @param response Failure response.
+ * @returns The decoded problem details.
+ */
+const problemOf = async (response: Response) =>
+  Schema.decodeUnknownSync(ProblemDetails)(await response.json());
 
 describe('Room', () => {
   beforeEach(() => {
@@ -116,8 +126,23 @@ describe('Room', () => {
       expect(state.getWebSockets()).toHaveLength(2);
 
       const third = await room.fetch(new Request(wsUrl));
+      const problem = await problemOf(third);
       expect(third.status).toBe(409);
-      expect(await third.json()).toEqual({ code: 'room-full' });
+      expect(third.headers.get('content-type')).toContain('application/problem+json');
+      expect(problem.type).toBe('about:blank');
+      expect(problem.title).toBe('Room full');
+      expect(problem.status).toBe(409);
+    });
+
+    it('rejects an init with a malformed sid', async () => {
+      const { room } = setup();
+
+      const response = await init(room, 'not-a-sid');
+      const problem = await problemOf(response);
+
+      expect(response.status).toBe(400);
+      expect(problem.title).toBe('Invalid sid');
+      expect(problem.status).toBe(400);
     });
 
     it('rejects an initiator with a mismatched sid', async () => {
@@ -125,12 +150,22 @@ describe('Room', () => {
       const sid = sidFixture();
 
       await init(room, sid);
-      expect((await room.fetch(new Request(`${wsUrl}?sid=wrong`))).status).toBe(403);
+      const response = await room.fetch(new Request(`${wsUrl}?sid=wrong`));
+      const problem = await problemOf(response);
+
+      expect(response.status).toBe(403);
+      expect(problem.title).toBe('Forbidden');
+      expect(problem.status).toBe(403);
     });
 
     it('rejects a connection before the room is initialized', async () => {
       const { room } = setup();
-      expect((await room.fetch(new Request(wsUrl))).status).toBe(404);
+      const response = await room.fetch(new Request(wsUrl));
+      const problem = await problemOf(response);
+
+      expect(response.status).toBe(404);
+      expect(problem.title).toBe('Not found');
+      expect(problem.status).toBe(404);
     });
 
     it('kills on a protocol version mismatch', async () => {
