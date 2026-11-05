@@ -33,7 +33,6 @@ export const sendFeature = createFeature({
           _tag: 'AwaitingPeer',
           file,
           metadata,
-          roomId: '',
           password: '',
           hash: { _tag: 'Idle' },
         },

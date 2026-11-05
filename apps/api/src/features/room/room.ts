@@ -1,11 +1,6 @@
 import { DurableObject } from 'cloudflare:workers';
 import { decodeInbound } from '@contract/signal/message.model';
 import type { Role } from '@contract/signal/role.type';
-import { decodeSid } from '@contract/signal/sid.model';
-import * as Match from 'effect/Match';
-import * as Option from 'effect/Option';
-import * as Result from 'effect/Result';
-import { positiveNumber } from '../../shared/utils/positive-number.util';
 import {
   admit,
   initialRoomState,
@@ -15,7 +10,13 @@ import {
   type RoomState,
   reduce,
   type Step,
-} from './room.reducer';
+} from '@contract/signal/room.reducer';
+import { decodeSid } from '@contract/signal/sid.model';
+import * as Match from 'effect/Match';
+import * as Option from 'effect/Option';
+import * as Result from 'effect/Result';
+import { positiveNumber } from '../../shared/utils/positive-number.util';
+import { problemResponse } from './problem-response.util';
 
 /** Room lifetime in milliseconds when the environment does not set one. */
 export const DEFAULT_TTL_MS = 300_000;
@@ -52,7 +53,7 @@ export class Room extends DurableObject<RoomEnv> {
     return Match.value([action, request.method] as const).pipe(
       Match.when(['init', 'POST'], () => this.init(request)),
       Match.when(['ws', 'GET'], () => this.upgrade(request)),
-      Match.orElse(() => new Response('not found', { status: 404 })),
+      Match.orElse(() => problemResponse(404, 'Not found')),
     );
   }
 
@@ -102,7 +103,7 @@ export class Room extends DurableObject<RoomEnv> {
   private async init(request: Request): Promise<Response> {
     const sid = await request.text();
     if (!Option.isSome(decodeSid(sid))) {
-      return new Response('invalid sid', { status: 400 });
+      return problemResponse(400, 'Invalid sid');
     }
     await this.ctx.storage.put({ sid, state: initialRoomState });
     await this.ctx.storage.setAlarm(Date.now() + this.ttlMs);
@@ -118,16 +119,13 @@ export class Room extends DurableObject<RoomEnv> {
     const presentedSid = new URL(request.url).searchParams.get('sid');
     const role: Role = presentedSid === null ? 'responder' : 'initiator';
     const storedSid = await this.storedSid();
-    if (storedSid === null) return new Response('not found', { status: 404 });
+    if (storedSid === null) return problemResponse(404, 'Not found');
 
     const decision = admit(role, this.occupancy(), storedSid, presentedSid);
     if (decision._tag === 'reject') {
       return decision.status === 409
-        ? new Response(JSON.stringify({ code: 'room-full' }), {
-            status: 409,
-            headers: { 'content-type': 'application/json' },
-          })
-        : new Response('forbidden', { status: 403 });
+        ? problemResponse(409, 'Room full')
+        : problemResponse(403, 'Forbidden');
     }
 
     const pair = new WebSocketPair();

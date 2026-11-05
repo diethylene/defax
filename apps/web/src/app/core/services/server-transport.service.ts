@@ -1,6 +1,8 @@
 import { Injectable } from '@angular/core';
+import type { RoomCreated } from '@contract/signal/room-created.model';
+import type { RoomId } from '@contract/signal/room-id.model';
+import type { Sid } from '@contract/signal/sid.model';
 import { EMPTY, type Observable } from 'rxjs';
-import type { RoomCreated, RoomId, Sid } from '../../shared/interfaces/signal-session';
 import { SignalTransport } from '../../shared/interfaces/signal-transport';
 import type { SignalMessage } from '../../shared/utils/signal-message.util';
 

@@ -8,12 +8,12 @@ describe('BroadcastChannelTransport room lifecycle', () => {
   it('creates a room with a room id and a base64url sid', () => {
     const host = new BroadcastChannelTransport();
     const room = host.createRoom();
-    expect(room.roomId).toMatch(/^\d{6}$/);
+    expect(room.roomId).toMatch(/^[1-9]\d{5}$/);
     expect(room.sid).toMatch(/^[A-Za-z0-9_-]{22}$/);
     host.close();
   });
 
-  it('notifies the host, delivers queued messages, and returns the sid on join', async () => {
+  it('notifies the host, hands out the sid, and relays messages sent after the join', async () => {
     const host = new BroadcastChannelTransport();
     const guest = new BroadcastChannelTransport();
     const guestReceived: SignalMessage[] = [];
@@ -22,14 +22,32 @@ describe('BroadcastChannelTransport room lifecycle', () => {
     host.messages$.subscribe((message) => hostReceived.push(message));
 
     const room = host.createRoom();
-    host.send({ type: 'pake', y: pakeY });
-
     const sid = await guest.joinRoom(room.roomId);
+    host.send({ type: 'pake', y: pakeY });
+    await new Promise((resolve) => setTimeout(resolve, 20));
 
     expect(sid).toEqual(room.sid);
-    expect(guestReceived[0]).toEqual({ type: 'pake', y: pakeY });
-    expect(guestReceived[1]?.type).toBe('joined');
+    expect(guestReceived[0]).toEqual({ type: 'joined', sid: room.sid });
+    expect(guestReceived[1]).toEqual({ type: 'pake', y: pakeY });
     expect(hostReceived.some((message) => message.type === 'peer-joined')).toBe(true);
+
+    host.close();
+    guest.close();
+  });
+
+  it('does not hold messages sent before a guest joins', async () => {
+    const host = new BroadcastChannelTransport();
+    const guest = new BroadcastChannelTransport();
+    const guestReceived: SignalMessage[] = [];
+    guest.messages$.subscribe((message) => guestReceived.push(message));
+
+    const room = host.createRoom();
+    host.send({ type: 'pake', y: pakeY });
+
+    await guest.joinRoom(room.roomId);
+    await new Promise((resolve) => setTimeout(resolve, 20));
+
+    expect(guestReceived).toEqual([{ type: 'joined', sid: room.sid }]);
 
     host.close();
     guest.close();

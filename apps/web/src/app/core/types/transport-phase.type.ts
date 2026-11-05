@@ -1,5 +1,4 @@
 import type { Sid } from '@contract/signal/sid.model';
-import type { SignalMessage } from '../../shared/utils/signal-message.util';
 
 /** Transport phase with no room open. */
 export interface IdlePhase {
@@ -13,8 +12,6 @@ export interface HostWaitingPhase {
   readonly _tag: 'host-waiting';
   /** Session id the host will hand to the guest. */
   readonly sid: Sid;
-  /** Messages held until the guest joins. */
-  readonly outgoing: readonly SignalMessage[];
 }
 
 /** Host with a guest connected. */

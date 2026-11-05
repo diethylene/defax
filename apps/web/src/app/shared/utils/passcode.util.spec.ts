@@ -21,6 +21,16 @@ describe('parsePasscode', () => {
     expect(() => parsePasscode('123456-')).toThrow();
     expect(() => parsePasscode('-apple-bird')).toThrow();
   });
+
+  it('rejects a room id with a leading zero', () => {
+    expect(() => parsePasscode('000123-apple-bird')).toThrow();
+  });
+
+  it('rejects a room id that is not six digits', () => {
+    expect(() => parsePasscode('12345-apple-bird')).toThrow();
+    expect(() => parsePasscode('1234567-apple-bird')).toThrow();
+    expect(() => parsePasscode('abcdef-apple-bird')).toThrow();
+  });
 });
 
 describe('parseReceiveCode', () => {
@@ -46,6 +56,10 @@ describe('parseReceiveCode', () => {
     expect(parseReceiveCode('12345-apple-orca')).toEqual(Option.none());
     expect(parseReceiveCode('1234567-apple-orca')).toEqual(Option.none());
     expect(parseReceiveCode('abcdef-apple-orca')).toEqual(Option.none());
+  });
+
+  it('rejects a room id with a leading zero', () => {
+    expect(parseReceiveCode('000123-apple-orca')).toEqual(Option.none());
   });
 
   it('rejects a password that is not exactly two pgp words', () => {

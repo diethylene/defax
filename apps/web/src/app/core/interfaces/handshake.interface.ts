@@ -1,4 +1,5 @@
-import type { RoomId, Sid } from '../../shared/interfaces/signal-session';
+import type { RoomId } from '@contract/signal/room-id.model';
+import type { Sid } from '@contract/signal/sid.model';
 
 /** Keys and code both peers hold after the handshake. */
 export interface HandshakeResult {

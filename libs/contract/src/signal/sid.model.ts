@@ -1,4 +1,5 @@
 import * as Schema from 'effect/Schema';
+import { randomBytes } from '../shared/random.util';
 import { base64UrlBytes } from './base64url-bytes.model';
 
 /** A 16-byte session id in its base64url wire form. */
@@ -25,3 +26,9 @@ export const sidToBytes = (sid: Sid): Uint8Array<ArrayBuffer> =>
  */
 export const sidFromBytes = (bytes: Uint8Array): Sid =>
   Schema.decodeUnknownSync(Sid)(Schema.encodeSync(Schema.Uint8ArrayFromBase64Url)(bytes));
+
+/**
+ * Draws a fresh session id.
+ * @returns The session id in wire form.
+ */
+export const randomSid = (): Sid => sidFromBytes(randomBytes(16));

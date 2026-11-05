@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { decodeBase64Url, encodeBase64Url } from '@contract/signal/base64url.util';
-import { sidToBytes } from '@contract/signal/sid.model';
+import type { RoomId } from '@contract/signal/room-id.model';
+import { type Sid, sidToBytes } from '@contract/signal/sid.model';
 import { utf8ToBytes } from '@noble/hashes/utils.js';
 import {
   combineLatest,
@@ -13,7 +14,6 @@ import {
   take,
   tap,
 } from 'rxjs';
-import type { RoomId, Sid } from '../../shared/interfaces/signal-session';
 import type { SignalTransport } from '../../shared/interfaces/signal-transport';
 import {
   deriveGeneratorString,
