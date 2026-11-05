@@ -1,5 +1,14 @@
 import { Injectable } from '@angular/core';
 import { PROTOCOL_VERSION } from '@contract/signal/protocol-version.constant';
+import {
+  admit,
+  initialRoomState,
+  type Occupancy,
+  type Outbound,
+  type RoomState,
+  reduce,
+  type Step,
+} from '@contract/signal/room.reducer';
 import type { RoomCreated } from '@contract/signal/room-created.model';
 import { type RoomId, randomRoomId } from '@contract/signal/room-id.model';
 import { randomSid, type Sid } from '@contract/signal/sid.model';
@@ -15,22 +24,16 @@ interface IdlePhase {
   readonly _tag: 'idle';
 }
 
-/** Host waiting for a guest to join. */
-interface HostWaitingPhase {
+/** Host with a room open, driven by the shared room reducer. */
+interface HostPhase {
   /** Discriminant. */
-  readonly _tag: 'host-waiting';
-  /** Session id the host will hand to the guest. */
+  readonly _tag: 'host';
+  /** Session id the host hands to the guest. */
   readonly sid: Sid;
-  /** Messages held until the guest joins. */
-  readonly outgoing: readonly SignalMessage[];
-}
-
-/** Host with a guest connected. */
-interface HostJoinedPhase {
-  /** Discriminant. */
-  readonly _tag: 'host-joined';
-  /** Session id handed to the guest. */
-  readonly sid: Sid;
+  /** Reducer state of the room. */
+  readonly state: RoomState;
+  /** Whether the responder has connected. */
+  readonly responderConnected: boolean;
 }
 
 /** Callbacks awaiting a join answer. */
@@ -55,19 +58,14 @@ interface GuestSettledPhase {
   readonly _tag: 'guest-settled';
 }
 
-/** Host phases that answer join requests. */
-type HostPhase = HostWaitingPhase | HostJoinedPhase;
-
 /** Lifecycle phase of the transport. */
-type Phase =
-  | IdlePhase
-  | HostWaitingPhase
-  | HostJoinedPhase
-  | GuestConnectingPhase
-  | GuestSettledPhase;
+type Phase = IdlePhase | HostPhase | GuestConnectingPhase | GuestSettledPhase;
 
 /** Initial phase before any room is created or joined. */
 const IDLE: IdlePhase = { _tag: 'idle' };
+
+/** Occupancy of a room with both parties connected. */
+const FULL: Occupancy = { initiator: true, responder: true };
 
 /** In-browser transport exchanging messages over a BroadcastChannel. */
 @Injectable()
@@ -97,7 +95,7 @@ export class BroadcastChannelTransport extends SignalTransport {
   override createRoom(): RoomCreated {
     this.close();
     const sid = randomSid();
-    this.phase = { _tag: 'host-waiting', sid, outgoing: [] };
+    this.phase = { _tag: 'host', sid, state: initialRoomState, responderConnected: false };
     const roomId = randomRoomId();
     this.openChannel(roomId);
     return { roomId, sid };
@@ -118,16 +116,11 @@ export class BroadcastChannelTransport extends SignalTransport {
   }
 
   /**
-   * Sends a message, queueing it while the host has no guest.
+   * Sends a message on the open channel.
    * @param message Message to send.
    */
   override send(message: SignalMessage): void {
-    Match.value(this.phase).pipe(
-      Match.when({ _tag: 'host-waiting' }, (phase) => {
-        this.phase = { ...phase, outgoing: [...phase.outgoing, message] };
-      }),
-      Match.orElse(() => this.post(message)),
-    );
+    this.post(message);
   }
 
   /** Closes the channel, rejects a pending join, and resets to idle. */
@@ -174,40 +167,63 @@ export class BroadcastChannelTransport extends SignalTransport {
    */
   private handleJoin(message: Extract<SignalMessage, { type: 'join' }>): void {
     Match.value(this.phase).pipe(
-      Match.when({ _tag: 'host-waiting' }, (phase) => this.answerJoin(phase, message)),
-      Match.when({ _tag: 'host-joined' }, (phase) => this.answerJoin(phase, message)),
+      Match.when({ _tag: 'host' }, (phase) => this.answerJoin(phase, message)),
       Match.orElse(() => undefined),
     );
   }
 
   /**
-   * Validates the protocol and admits or turns away the guest.
+   * Admits or turns away the guest through the shared reducer.
    * @param phase Host phase answering the request.
    * @param message Join request.
    */
   private answerJoin(phase: HostPhase, message: Extract<SignalMessage, { type: 'join' }>): void {
-    if (message.protocol !== PROTOCOL_VERSION) {
-      this.post({ type: 'error', code: 'protocol-mismatch' });
-      return;
-    }
-    Match.value(phase).pipe(
-      Match.when({ _tag: 'host-waiting' }, (waiting) => this.acceptJoin(waiting)),
-      Match.when({ _tag: 'host-joined' }, () => this.post({ type: 'error', code: 'room-full' })),
+    const occupancy: Occupancy = { initiator: true, responder: phase.responderConnected };
+    Match.value(admit('responder', occupancy, phase.sid, null)).pipe(
+      Match.tag('reject', () => this.post({ type: 'error', code: 'room-full' })),
+      Match.tag('admit', () =>
+        this.applyStep(
+          phase,
+          reduce(phase.state, FULL, { _tag: 'message', role: 'responder', message }, phase.sid),
+        ),
+      ),
       Match.exhaustive,
     );
   }
 
   /**
-   * Admits a waiting guest and flushes the queued messages.
-   * @param phase Host phase waiting for a guest.
+   * Applies a reducer step and dispatches its outbound messages.
+   * @param phase Host phase that produced the step.
+   * @param step The reducer step.
    */
-  private acceptJoin(phase: HostWaitingPhase): void {
-    this.phase = { _tag: 'host-joined', sid: phase.sid };
-    this.messages.next({ type: 'peer-joined' });
-    phase.outgoing.forEach((message) => {
-      this.post(message);
-    });
-    this.post({ type: 'joined', sid: phase.sid });
+  private applyStep(phase: HostPhase, step: Step): void {
+    Match.value(step).pipe(
+      Match.tag('advance', (next) => {
+        this.phase = { ...phase, state: next.state, responderConnected: true };
+        next.outbound.forEach((outbound) => {
+          this.dispatch(outbound);
+        });
+      }),
+      Match.tag('kill', (next) => {
+        next.outbound.forEach((outbound) => {
+          this.dispatch(outbound);
+        });
+        this.close();
+      }),
+      Match.exhaustive,
+    );
+  }
+
+  /**
+   * Routes an outbound message to the party it addresses.
+   * @param outbound Message and its recipient.
+   */
+  private dispatch(outbound: Outbound): void {
+    Match.value(outbound.to).pipe(
+      Match.when('initiator', () => this.messages.next(outbound.message)),
+      Match.when('responder', () => this.post(outbound.message)),
+      Match.exhaustive,
+    );
   }
 
   /**
