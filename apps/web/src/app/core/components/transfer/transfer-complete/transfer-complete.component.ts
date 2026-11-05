@@ -5,7 +5,7 @@ import { HlmButton } from '@spartan-ng/helm/button';
 import { HlmCard, HlmCardContent } from '@spartan-ng/helm/card';
 import { HlmSeparator } from '@spartan-ng/helm/separator';
 import * as Match from 'effect/Match';
-import { chunk } from '../../../../shared/utilities/chunk';
+import { chunk } from '../../../../shared/utils/chunk.util';
 import type { TransferMode } from '../../../interfaces/transfer.interface';
 import { PageShellComponent } from '../../page-shell/page-shell.component';
 import { TransferFileSummaryComponent } from '../transfer-file-summary/transfer-file-summary.component';

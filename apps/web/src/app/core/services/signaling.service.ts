@@ -3,8 +3,8 @@ import { decodeBase64Url, encodeBase64Url } from '@contract/signal/base64url.uti
 import { FileMetadata } from '@contract/signal/file-metadata.model';
 import { Identity } from '@contract/signal/identity.model';
 import { DisconnectNotice, FileHash } from '@contract/signal/payload.model';
-import { opposite, type Role } from '@contract/signal/role.model';
-import type { RoomId } from '@contract/signal/room-id.model';
+import type { Role } from '@contract/signal/role.type';
+import { opposite } from '@contract/signal/role.util';
 import type { SealedKind } from '@contract/signal/sealed-kind.model';
 import { utf8ToBytes } from '@noble/hashes/utils.js';
 import * as Match from 'effect/Match';
@@ -25,53 +25,20 @@ import {
   tap,
 } from 'rxjs';
 import { SignalTransport } from '../../shared/interfaces/signal-transport';
-import { open, seal } from '../../shared/utilities/aead';
-import { decodeJson } from '../../shared/utilities/decode-json.util';
-import { generatePassword } from '../../shared/utilities/password';
-import type { SignalMessage } from '../../shared/utilities/signal-message';
-import { HandshakeService, type InitiatorSession } from './handshake.service';
-
-/** Connection the initiator reports once the peer answers. */
-export interface InitiatorConnection {
-  /** Short authentication string both peers compare out of band. */
-  sas: string;
-  /** Details the responder sent about itself. */
-  peerIdentity: Identity;
-}
-
-/** Connection the responder reports once the peer answers. */
-export interface ResponderConnection {
-  /** Short authentication string both peers compare out of band. */
-  sas: string;
-  /** Details the initiator sent about itself. */
-  peerIdentity: Identity;
-  /** Metadata of the file the initiator is sending. */
-  fileInfo: FileMetadata | null;
-}
+import { open, seal } from '../../shared/utils/aead.util';
+import { decodeJson } from '../../shared/utils/decode-json.util';
+import { generatePassword } from '../../shared/utils/password.util';
+import type { SignalMessage } from '../../shared/utils/signal-message.util';
+import type { InitiatorSession } from '../interfaces/handshake.interface';
+import type {
+  InitiatorConnection,
+  ResponderConnection,
+} from '../interfaces/signaling-connection.interface';
+import type { Connection, EstablishedConnection } from '../types/connection.type';
+import { HandshakeService } from './handshake.service';
 
 /** Sealed message carrying one kind of signalling payload. */
 type SealedMessage = Extract<SignalMessage, { type: 'sealed' }>;
-
-/** Connection with no handshake completed. */
-interface IdleConnection {
-  /** Discriminant. */
-  readonly _tag: 'idle';
-}
-
-/** Connection whose handshake produced the signalling key. */
-interface EstablishedConnection {
-  /** Discriminant. */
-  readonly _tag: 'established';
-  /** Key sealing and opening the signalling payloads. */
-  readonly signalingKey: CryptoKey;
-  /** Room both peers bind their payloads to. */
-  readonly roomId: RoomId;
-  /** Role this side plays in the pair. */
-  readonly role: Role;
-}
-
-/** Lifecycle state of the signalling connection. */
-type Connection = IdleConnection | EstablishedConnection;
 
 /** State before the handshake completes. */
 const IDLE: Connection = { _tag: 'idle' };

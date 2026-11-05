@@ -29,26 +29,16 @@ import {
 } from 'rxjs';
 import { AbstractControlValueAccessor } from '../../abstractions/control-value-accessor';
 import { parseDropzoneConfig } from './dropzone.config';
+import type { DropzoneResult, ExtractedDrop } from './dropzone.interface';
+import { DropzoneStore } from './dropzone.store';
 import type {
+  DragDelta,
   DragState,
   DropzoneRejectionMode,
-  DropzoneResult,
   DropzoneValidator,
-} from './dropzone.model';
-import { DropzoneStore } from './dropzone.store';
+} from './dropzone.type';
 import { matchesMimeType } from './dropzone-accept.util';
 import { evaluateFiles } from './dropzone-validator.util';
-
-/** Files and directories pulled out of one data transfer. */
-interface ExtractedDrop {
-  /** Files in the transfer. */
-  files: File[];
-  /** Directories in the transfer, represented by placeholder files. */
-  directories: File[];
-}
-
-/** One drag depth change. */
-type DragDelta = { kind: 'enter' } | { kind: 'leave' } | { kind: 'reset' };
 
 /** Empty drop used when an item yields neither files nor directories. */
 const EMPTY_DROP: ExtractedDrop = { files: [], directories: [] };

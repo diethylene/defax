@@ -2,7 +2,7 @@ import { inject } from '@angular/core';
 import { Actions, createEffect, ofType } from '@ngrx/effects';
 import { Store } from '@ngrx/store';
 import { tap, withLatestFrom } from 'rxjs';
-import { applyMode, persistMode } from '../../core/services/theme-preference';
+import { applyMode, persistMode } from '../../core/utils/theme-preference.util';
 import { ApplicationConfigActions } from './application-config.actions';
 import { applicationConfigFeature } from './application-config.reducer';
 

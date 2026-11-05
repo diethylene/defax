@@ -1,7 +1,8 @@
 import type { ErrorCode } from '@contract/signal/error-code.model';
 import type { InboundMessage, OutboundMessage } from '@contract/signal/message.model';
 import { PROTOCOL_VERSION } from '@contract/signal/protocol-version.constant';
-import { opposite, type Role } from '@contract/signal/role.model';
+import type { Role } from '@contract/signal/role.type';
+import { opposite } from '@contract/signal/role.util';
 import type { Sid } from '@contract/signal/sid.model';
 import * as Match from 'effect/Match';
 

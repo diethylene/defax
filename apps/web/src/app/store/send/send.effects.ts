@@ -19,15 +19,17 @@ import {
 import { createRouteToPhaseEffect } from '../../core/effects/route-to-phase.effect';
 import { HashService } from '../../core/services/hash.service';
 import { SignalingService } from '../../core/services/signaling.service';
-import { type TransferErrorTag, TransferService } from '../../core/services/transfer.service';
+import { TransferService } from '../../core/services/transfer.service';
+import type { TransferErrorTag } from '../../core/types/transfer-event.type';
 import {
   type TransferEventActionSink,
   transferEventActionFor,
 } from '../../core/utils/transfer-event-action.util';
 import { timeTransferEvents } from '../../core/utils/transfer-event-time.util';
-import { routeForPhase, type SendPhase } from '../../features/send/send-phase/send-phase.model';
+import type { SendPhase } from '../../features/send/send-phase/send-phase.type';
+import { routeForPhase } from '../../features/send/send-phase/send-phase.util';
 import { IdentityService } from '../../shared/services/identity.service';
-import type { FileHashEvent } from '../../shared/utilities/hash-protocol';
+import type { FileHashEvent } from '../../shared/utils/hash-protocol.interface';
 import { SendActions } from './send.actions';
 import { selectSendPhase, selectSendStatus } from './send.selectors';
 import type { SendErrorTag, SendStatus } from './send-transitions';

@@ -14,12 +14,12 @@ import { provideRouterStore, routerReducer } from '@ngrx/router-store';
 import { provideStore, Store } from '@ngrx/store';
 import { provideSpartanHlm } from '@spartan-ng/helm/utils';
 import { routes } from './app.routes';
-import { BroadcastChannelTransport } from './core/services/broadcast-channel-transport';
-import { navDirection } from './core/services/navigation-direction';
-import { ServerTransport } from './core/services/server-transport';
-import { applyMode, resolveInitialMode } from './core/services/theme-preference';
+import { BroadcastChannelTransport } from './core/services/broadcast-channel-transport.service';
+import { ServerTransport } from './core/services/server-transport.service';
+import { navDirection } from './core/utils/navigation-direction.util';
+import { applyMode, resolveInitialMode } from './core/utils/theme-preference.util';
 import { SignalTransport } from './shared/interfaces/signal-transport';
-import { provideMaskedUrls } from './shared/services/masking-location-strategy';
+import { provideMaskedUrls } from './shared/services/masking-location-strategy.service';
 import { ApplicationConfigActions } from './store/application-config/application-config.actions';
 import {
   applyThemeMode$,

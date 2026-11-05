@@ -1,7 +1,10 @@
 import { Injectable } from '@angular/core';
 import * as Match from 'effect/Match';
 import { Observable } from 'rxjs';
-import type { FileHashEvent, FileHashWorkerMessage } from '../../shared/utilities/hash-protocol';
+import type {
+  FileHashEvent,
+  FileHashWorkerMessage,
+} from '../../shared/utils/hash-protocol.interface';
 
 /** Hashes files in a worker and reports progress as an observable. */
 @Injectable({ providedIn: 'root' })
@@ -13,7 +16,7 @@ export class HashService {
    */
   hashFile(file: File): Observable<FileHashEvent> {
     return new Observable<FileHashEvent>((subscriber) => {
-      const worker = new Worker(new URL('../../shared/utilities/hash.worker.ts', import.meta.url), {
+      const worker = new Worker(new URL('../../shared/utils/hash.worker.ts', import.meta.url), {
         type: 'module',
       });
 

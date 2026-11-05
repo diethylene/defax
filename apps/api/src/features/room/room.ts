@@ -1,6 +1,6 @@
 import { DurableObject } from 'cloudflare:workers';
 import { decodeInbound } from '@contract/signal/message.model';
-import type { Role } from '@contract/signal/role.model';
+import type { Role } from '@contract/signal/role.type';
 import {
   admit,
   initialRoomState,

@@ -18,28 +18,9 @@ import {
   DATA_CHANNEL_LABEL,
   RTC_CONFIGURATION,
 } from '../../shared/constants/transfer-protocol';
-import { decodeJson } from '../../shared/utilities/decode-json.util';
+import { decodeJson } from '../../shared/utils/decode-json.util';
+import type { IceHandle, RtcChannel } from '../interfaces/rtc-channel.interface';
 import { SignalingService } from './signaling.service';
-
-/** Open data channel handed to the transfer once the peer connection is up. */
-export interface RtcChannel {
-  /** Sends one buffer, completing once the channel has taken it. */
-  send(data: ArrayBuffer): Observable<void>;
-  /** Buffers received from the peer. */
-  readonly messages$: Observable<ArrayBuffer>;
-  /** Completes once the send buffer is empty. */
-  drain(): Observable<void>;
-  /** Closes the channel and its peer connection. */
-  close(): void;
-}
-
-/** Holds ICE candidates until the peer has a remote description. */
-interface IceHandle {
-  /** Adds every held candidate to the peer. */
-  flush: () => void;
-  /** Stops listening for candidates. */
-  dispose: () => void;
-}
 
 /** Time a peer connection has to open before the negotiation fails. */
 const CONNECT_TIMEOUT_MS = 30_000;

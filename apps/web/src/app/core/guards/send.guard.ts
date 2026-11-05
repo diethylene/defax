@@ -1,6 +1,7 @@
 import type { CanActivateFn, CanDeactivateFn } from '@angular/router';
 import * as Match from 'effect/Match';
-import { routeForPhase, type SendPhase } from '../../features/send/send-phase/send-phase.model';
+import type { SendPhase } from '../../features/send/send-phase/send-phase.type';
+import { routeForPhase } from '../../features/send/send-phase/send-phase.util';
 import { SendActions } from '../../store/send/send.actions';
 import { phaseForStatus, selectSendStatus } from '../../store/send/send.selectors';
 import type { SendStatus } from '../../store/send/send-transitions';

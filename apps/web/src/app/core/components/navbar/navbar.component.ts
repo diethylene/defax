@@ -12,7 +12,7 @@ import { getRouterSelectors } from '@ngrx/router-store';
 import { Store } from '@ngrx/store';
 import { map } from 'rxjs';
 import { NavComponent } from '../../../shared/components/nav/nav.component';
-import type { NavItem } from '../../../shared/components/nav/nav-item.model';
+import type { NavItem } from '../../../shared/components/nav/nav-item.interface';
 import { ThemeToggleComponent } from '../theme-toggle/theme-toggle.component';
 
 /** Router selectors shared by the navbar. */
