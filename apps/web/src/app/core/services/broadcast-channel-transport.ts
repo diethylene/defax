@@ -5,7 +5,6 @@ import {
   initialRoomState,
   type Occupancy,
   type Outbound,
-  type RoomState,
   reduce,
   type Step,
 } from '@contract/signal/room.reducer';
@@ -24,17 +23,24 @@ interface IdlePhase {
   readonly _tag: 'idle';
 }
 
-/** Host with a room open, driven by the shared room reducer. */
-interface HostPhase {
+/** Host waiting for a guest to join. */
+interface HostWaitingPhase {
   /** Discriminant. */
-  readonly _tag: 'host';
+  readonly _tag: 'host-waiting';
   /** Session id the host hands to the guest. */
   readonly sid: Sid;
-  /** Reducer state of the room. */
-  readonly state: RoomState;
-  /** Whether the responder has connected. */
-  readonly responderConnected: boolean;
 }
+
+/** Host with a guest connected. */
+interface HostJoinedPhase {
+  /** Discriminant. */
+  readonly _tag: 'host-joined';
+  /** Session id handed to the guest. */
+  readonly sid: Sid;
+}
+
+/** Host phases that answer join requests. */
+type HostPhase = HostWaitingPhase | HostJoinedPhase;
 
 /** Callbacks awaiting a join answer. */
 interface PendingJoin {
@@ -59,13 +65,31 @@ interface GuestSettledPhase {
 }
 
 /** Lifecycle phase of the transport. */
-type Phase = IdlePhase | HostPhase | GuestConnectingPhase | GuestSettledPhase;
+type Phase =
+  | IdlePhase
+  | HostWaitingPhase
+  | HostJoinedPhase
+  | GuestConnectingPhase
+  | GuestSettledPhase;
 
 /** Initial phase before any room is created or joined. */
 const IDLE: IdlePhase = { _tag: 'idle' };
 
 /** Occupancy of a room with both parties connected. */
 const FULL: Occupancy = { initiator: true, responder: true };
+
+/** Occupancy of a room in each host phase, with the host as initiator. */
+const OCCUPANCY = {
+  'host-waiting': { initiator: true, responder: false },
+  'host-joined': { initiator: true, responder: true },
+} satisfies Record<HostPhase['_tag'], Occupancy>;
+
+/**
+ * Derives the room occupancy from the host phase.
+ * @param phase Host phase.
+ * @returns Roles currently connected.
+ */
+const occupancyOf = (phase: HostPhase): Occupancy => OCCUPANCY[phase._tag];
 
 /** In-browser transport exchanging messages over a BroadcastChannel. */
 @Injectable()
@@ -95,7 +119,7 @@ export class BroadcastChannelTransport extends SignalTransport {
   override createRoom(): RoomCreated {
     this.close();
     const sid = randomSid();
-    this.phase = { _tag: 'host', sid, state: initialRoomState, responderConnected: false };
+    this.phase = { _tag: 'host-waiting', sid };
     const roomId = randomRoomId();
     this.openChannel(roomId);
     return { roomId, sid };
@@ -167,7 +191,9 @@ export class BroadcastChannelTransport extends SignalTransport {
    */
   private handleJoin(message: Extract<SignalMessage, { type: 'join' }>): void {
     Match.value(this.phase).pipe(
-      Match.when({ _tag: 'host' }, (phase) => this.answerJoin(phase, message)),
+      Match.whenOr({ _tag: 'host-waiting' }, { _tag: 'host-joined' }, (phase) =>
+        this.answerJoin(phase, message),
+      ),
       Match.orElse(() => undefined),
     );
   }
@@ -178,13 +204,17 @@ export class BroadcastChannelTransport extends SignalTransport {
    * @param message Join request.
    */
   private answerJoin(phase: HostPhase, message: Extract<SignalMessage, { type: 'join' }>): void {
-    const occupancy: Occupancy = { initiator: true, responder: phase.responderConnected };
-    Match.value(admit('responder', occupancy, phase.sid, null)).pipe(
+    Match.value(admit('responder', occupancyOf(phase), phase.sid, null)).pipe(
       Match.tag('reject', () => this.post({ type: 'error', code: 'room-full' })),
       Match.tag('admit', () =>
         this.applyStep(
           phase,
-          reduce(phase.state, FULL, { _tag: 'message', role: 'responder', message }, phase.sid),
+          reduce(
+            initialRoomState,
+            FULL,
+            { _tag: 'message', role: 'responder', message },
+            phase.sid,
+          ),
         ),
       ),
       Match.exhaustive,
@@ -199,7 +229,7 @@ export class BroadcastChannelTransport extends SignalTransport {
   private applyStep(phase: HostPhase, step: Step): void {
     Match.value(step).pipe(
       Match.tag('advance', (next) => {
-        this.phase = { ...phase, state: next.state, responderConnected: true };
+        this.phase = { _tag: 'host-joined', sid: phase.sid };
         next.outbound.forEach((outbound) => {
           this.dispatch(outbound);
         });
