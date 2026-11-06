@@ -140,18 +140,37 @@
   }
 }
 
+@keyframes theme-wipe {
+  from {
+    clip-path: inset(0 0 100% 0);
+  }
+
+  to {
+    clip-path: inset(0 0 0 0);
+  }
+}
+
 @media (prefers-reduced-motion: no-preference) {
   ::view-transition-old(root),
   ::view-transition-new(root) {
     animation: none;
   }
 
-  ::view-transition-old(page) {
+  :root[data-nav-direction]::view-transition-old(page) {
     animation: 250ms ease-out both page-slide-out;
   }
 
-  ::view-transition-new(page) {
+  :root[data-nav-direction]::view-transition-new(page) {
     animation: 250ms ease-out both page-slide-in;
+  }
+
+  :root[data-theme-transition]::view-transition-old(root) {
+    mix-blend-mode: normal;
+  }
+
+  :root[data-theme-transition]::view-transition-new(root) {
+    mix-blend-mode: normal;
+    animation: 300ms ease-out both theme-wipe;
   }
 }
 
