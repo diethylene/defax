@@ -110,6 +110,10 @@
   contain: paint;
 }
 
+:root[data-theme-transition] .page-transition {
+  view-transition-name: none;
+}
+
 :root {
   --page-slide-out-x: -100%;
   --page-slide-in-x: 100%;
