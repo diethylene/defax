@@ -24,6 +24,7 @@ import { ApplicationConfigActions } from './store/application-config/application
 import {
   applyThemeMode$,
   persistThemeMode$,
+  transitionThemeMode$,
 } from './store/application-config/application-config.effects';
 import { applicationConfigFeature } from './store/application-config/application-config.reducer';
 import {
@@ -49,7 +50,7 @@ export const appConfig: ApplicationConfig = {
       receive: receiveFeature.reducer,
       router: routerReducer,
     }),
-    provideEffects({ applyThemeMode$, persistThemeMode$ }, sendEffects, {
+    provideEffects({ applyThemeMode$, persistThemeMode$, transitionThemeMode$ }, sendEffects, {
       routeToPhase: routeToReceivePhase$,
       connect: connectReceive$,
       closeRoom: closeReceiveRoom$,
@@ -62,9 +63,12 @@ export const appConfig: ApplicationConfig = {
       routes,
       withViewTransitions({
         skipInitialTransition: true,
-        onViewTransitionCreated: ({ from, to }) => {
+        onViewTransitionCreated: ({ from, to, transition }) => {
           const document = inject(DOCUMENT);
-          document.documentElement.setAttribute('data-nav-direction', navDirection(from, to));
+          const root = document.documentElement;
+          root.setAttribute('data-nav-direction', navDirection(from, to));
+          const clearDirection = (): void => root.removeAttribute('data-nav-direction');
+          void transition.finished.then(clearDirection, clearDirection);
         },
       }),
     ),

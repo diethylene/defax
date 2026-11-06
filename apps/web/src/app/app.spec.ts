@@ -7,6 +7,7 @@ import { App } from './app';
 import {
   applyThemeMode$,
   persistThemeMode$,
+  transitionThemeMode$,
 } from './store/application-config/application-config.effects';
 import { applicationConfigFeature } from './store/application-config/application-config.reducer';
 import { sendFeature } from './store/send/send.reducer';
@@ -22,7 +23,7 @@ describe('App', () => {
           send: sendFeature.reducer,
           router: routerReducer,
         }),
-        provideEffects({ applyThemeMode$, persistThemeMode$ }),
+        provideEffects({ applyThemeMode$, persistThemeMode$, transitionThemeMode$ }),
         provideRouterStore(),
       ],
     }).compileComponents();
