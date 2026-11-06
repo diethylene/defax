@@ -26,6 +26,28 @@ export const applyMode = (mode: ThemeMode): void => {
 };
 
 /**
+ * Applies a mode behind a view transition so the change wipes in.
+ * @param mode Mode to apply.
+ */
+export const transitionMode = (mode: ThemeMode): void => {
+  if (!document.startViewTransition) {
+    applyMode(mode);
+    return;
+  }
+
+  if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+    applyMode(mode);
+    return;
+  }
+
+  const root = document.documentElement;
+  root.setAttribute('data-theme-transition', '');
+  const transition = document.startViewTransition(() => applyMode(mode));
+  const clearFlag = (): void => root.removeAttribute('data-theme-transition');
+  void transition.finished.then(clearFlag, clearFlag);
+};
+
+/**
  * Persists a mode for the next visit.
  * @param mode Mode to persist.
  */
