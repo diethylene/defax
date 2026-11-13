@@ -1,4 +1,5 @@
 import { ApiEnvelopeMiddleware } from '@api/core/http/api-envelope.middleware';
+import { RateLimitMiddleware } from '@api/core/http/rate-limit.middleware';
 import { HealthApi } from '@api/features/health/health.api';
 import { RoomsApi } from '@api/features/rooms/rooms.api';
 import { HttpApi } from 'effect/http-api';
@@ -7,4 +8,5 @@ import { HttpApi } from 'effect/http-api';
 export const AppApi = HttpApi.make('app')
   .add(HealthApi)
   .add(RoomsApi)
-  .middleware(ApiEnvelopeMiddleware);
+  .middleware(ApiEnvelopeMiddleware)
+  .middleware(RateLimitMiddleware);

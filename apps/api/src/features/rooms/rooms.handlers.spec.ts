@@ -1,4 +1,6 @@
 import { AppLayer } from '@api/core/http/app.layer';
+import { FakeRateLimiterNamespace } from '@api/core/rate-limit/rate-limit-namespace.fake';
+import { RateLimiterNamespace } from '@api/core/rate-limit/rate-limit-namespace.service';
 import { apiEnvelopeOf } from '@contract/http/api-envelope.model';
 import { ProblemDetails } from '@contract/http/problem-details.model';
 import { RoomCreated } from '@contract/signal/room-created.model';
@@ -26,6 +28,9 @@ const handlerWith = (
   const { handler, dispose } = HttpRouter.toWebHandler(
     AppLayer.pipe(
       Layer.provide(Layer.succeed(RoomsNamespace, { namespace: rooms })),
+      Layer.provide(
+        Layer.succeed(RateLimiterNamespace, { namespace: new FakeRateLimiterNamespace() }),
+      ),
       Layer.provide(ConfigProvider.layer(ConfigProvider.fromUnknown(env))),
     ),
     { disableLogger: true },

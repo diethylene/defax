@@ -1,4 +1,6 @@
 import { AppLayer } from '@api/core/http/app.layer';
+import { FakeRateLimiterNamespace } from '@api/core/rate-limit/rate-limit-namespace.fake';
+import { RateLimiterNamespace } from '@api/core/rate-limit/rate-limit-namespace.service';
 import { Health } from '@contract/health/health.model';
 import { apiEnvelopeOf } from '@contract/http/api-envelope.model';
 import * as ConfigProvider from 'effect/ConfigProvider';
@@ -21,6 +23,9 @@ const handlerWith = (env: Record<string, string>): ((request: Request) => Promis
   const { handler, dispose } = HttpRouter.toWebHandler(
     AppLayer.pipe(
       Layer.provide(Layer.succeed(RoomsNamespace, { namespace: new FakeRoomsNamespace() })),
+      Layer.provide(
+        Layer.succeed(RateLimiterNamespace, { namespace: new FakeRateLimiterNamespace() }),
+      ),
       Layer.provide(ConfigProvider.layer(ConfigProvider.fromUnknown(env))),
     ),
     { disableLogger: true },
