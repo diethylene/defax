@@ -1,6 +1,6 @@
 import { AppConfig } from '@api/core/config/app-config.service';
+import { problemDetails, REQUEST_ID_HEADER } from '@api/core/http/problem-details.util';
 import type { ApiMeta } from '@contract/http/api-meta.model';
-import type { ProblemDetails } from '@contract/http/problem-details.model';
 import * as Effect from 'effect/Effect';
 import { HttpServerResponse } from 'effect/http';
 import { type HttpApiEndpoint, HttpApiError, HttpApiMiddleware } from 'effect/http-api';
@@ -13,26 +13,6 @@ type ServerResponse = HttpServerResponse.HttpServerResponse;
 
 /** Status at which a response stops being a success. */
 const SUCCESS_STATUS_LIMIT = 300;
-/** Header carrying the request correlation id. */
-const REQUEST_ID_HEADER = 'x-request-id';
-
-/** Standard titles for the error statuses the API returns. */
-const STATUS_TITLES: Record<number, string> = {
-  400: 'Bad Request',
-  401: 'Unauthorized',
-  403: 'Forbidden',
-  404: 'Not Found',
-  409: 'Conflict',
-  422: 'Unprocessable Entity',
-  500: 'Internal Server Error',
-};
-
-/**
- * Reads an error status's standard title.
- * @param status HTTP status code.
- * @returns The title, or a generic fallback for statuses outside the catalog.
- */
-const titleFor = (status: number): string => STATUS_TITLES[status] ?? 'HTTP error';
 
 /**
  * Reads a response's body as text.
@@ -55,21 +35,6 @@ const bodyJson = (response: ServerResponse): unknown => {
     ? null
     : Option.getOrNull(Schema.decodeUnknownOption(Schema.fromJsonString(Schema.Unknown))(text));
 };
-
-/**
- * Builds the problem details for a failed response.
- * @param status HTTP status code.
- * @param requestId Correlation id for this response.
- * @param timestamp When the response was produced.
- * @returns The problem details body.
- */
-const problemDetails = (status: number, requestId: string, timestamp: string): ProblemDetails => ({
-  type: 'about:blank',
-  title: titleFor(status),
-  status,
-  requestId,
-  timestamp,
-});
 
 /**
  * Re-encodes one endpoint response as an envelope or a problem.
