@@ -1,9 +1,3 @@
-import {
-  ConsumeRequestSchema,
-  type ConsumeResult,
-  ConsumeResultSchema,
-} from '@api/core/rate-limit/rate-limit.model';
-import { RateLimiterNamespace } from '@api/core/rate-limit/rate-limit-namespace.service';
 import * as Context from 'effect/Context';
 import * as Data from 'effect/Data';
 import * as Duration from 'effect/Duration';
@@ -12,6 +6,8 @@ import * as Layer from 'effect/Layer';
 import * as Match from 'effect/Match';
 import * as Option from 'effect/Option';
 import * as Schema from 'effect/Schema';
+import { ConsumeRequestSchema, type ConsumeResult, ConsumeResultSchema } from './rate-limit.model';
+import { RateLimiterNamespace } from './rate-limit-namespace.service';
 
 /** URL the limiter Durable Object consumes through. */
 const CONSUME_URL = 'https://rate-limiter/consume';
