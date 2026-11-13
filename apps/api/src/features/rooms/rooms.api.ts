@@ -1,3 +1,4 @@
+import { RateLimit } from '@api/core/rate-limit/rate-limit.model';
 import { RoomCreated } from '@contract/signal/room-created.model';
 import { HttpApiEndpoint, HttpApiGroup, HttpApiSchema } from 'effect/http-api';
 import * as Schema from 'effect/Schema';
@@ -14,5 +15,5 @@ export const RoomsApi = HttpApiGroup.make('rooms').add(
   HttpApiEndpoint.post('createRoom', '/rooms/create', {
     success: RoomCreated.pipe(HttpApiSchema.status(201)),
     error: RoomCreationFailed,
-  }),
+  }).annotate(RateLimit, 5),
 );

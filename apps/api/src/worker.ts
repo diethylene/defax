@@ -1,5 +1,7 @@
 import { env } from 'cloudflare:workers';
 import { AppLayer } from '@api/core/http/app.layer';
+import { RateLimiterNamespace } from '@api/core/rate-limit/rate-limit-namespace.service';
+import { RateLimiterDo } from '@api/core/rate-limit/rate-limiter.do';
 import { Room } from '@api/features/room/room';
 import { roomKeyFromPath } from '@api/features/rooms/room-key.util';
 import { RoomsNamespace } from '@api/features/rooms/rooms-namespace.service';
@@ -7,12 +9,13 @@ import * as ConfigProvider from 'effect/ConfigProvider';
 import { HttpRouter } from 'effect/http';
 import * as Layer from 'effect/Layer';
 
-export { Room };
+export { RateLimiterDo, Room };
 
 /** The app served as a fetch handler, with Worker env vars as its configuration. */
 const app = HttpRouter.toWebHandler(
   AppLayer.pipe(
     Layer.provide(Layer.succeed(RoomsNamespace, { namespace: env.ROOMS })),
+    Layer.provide(Layer.succeed(RateLimiterNamespace, { namespace: env.RATE_LIMITER })),
     Layer.provide(ConfigProvider.layer(ConfigProvider.fromUnknown(env))),
   ),
   { disableLogger: true },
