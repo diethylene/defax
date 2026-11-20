@@ -36,7 +36,7 @@ const snapshotOf = (status: SendStatus): TransferSnapshot => {
   return {
     transferred: progress.sent,
     total: progress.total,
-    route: 'direct',
+    route: progress.route,
     verified: status._tag === 'Done',
   };
 };

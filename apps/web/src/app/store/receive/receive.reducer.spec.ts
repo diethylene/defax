@@ -103,6 +103,31 @@ describe('receiveFeature.reducer', () => {
       });
     });
 
+    it('records the route the channel reports', () => {
+      const next = receiveFeature.reducer(
+        transferring,
+        ReceiveActions.transferRouted({ route: 'relay' }),
+      );
+
+      expect(next.status).toMatchObject({
+        _tag: 'Transferring',
+        progress: { route: 'relay' },
+      });
+    });
+
+    it('keeps the route when the transfer completes', () => {
+      const routed = receiveFeature.reducer(
+        transferring,
+        ReceiveActions.transferRouted({ route: 'relay' }),
+      );
+      const next = receiveFeature.reducer(routed, ReceiveActions.transferComplete());
+
+      expect(next.status).toMatchObject({
+        _tag: 'Verifying',
+        progress: { route: 'relay' },
+      });
+    });
+
     it('records the elapsed time and moves to Done when the file verifies', () => {
       const verifying = receiveFeature.reducer(
         receiveFeature.reducer(transferring, ReceiveActions.transferStarted({ total: 12345 })),
@@ -149,6 +174,15 @@ describe('receiveFeature.reducer', () => {
       const next = receiveFeature.reducer(confirming, ReceiveActions.accepted());
 
       expect(next.status).toEqual({ _tag: 'Failed', error: 'missing-metadata' });
+    });
+
+    it('ignores a route before the transfer starts', () => {
+      const next = receiveFeature.reducer(
+        confirmingWithDigest,
+        ReceiveActions.transferRouted({ route: 'relay' }),
+      );
+
+      expect(next).toEqual(confirmingWithDigest);
     });
 
     it('fails with the tag the transfer carried', () => {

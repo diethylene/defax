@@ -108,6 +108,7 @@ describe('sendFeature.reducer', () => {
         _tag: 'Transferring',
         sent: 3,
         total: 3,
+        route: 'direct',
         hash: { _tag: 'Complete', digest: 'abc' },
       });
       expect(verifying.status._tag).toBe('Verifying');
@@ -115,8 +116,20 @@ describe('sendFeature.reducer', () => {
         _tag: 'Done',
         sent: 3,
         total: 3,
+        route: 'direct',
         durationMs: 1500,
       });
+    });
+
+    it('records the route the channel reports on every transfer state', () => {
+      const transferring = reduce(approved, SendActions.transferStarted({ total: 3 }));
+      const routed = reduce(transferring, SendActions.transferRouted({ route: 'relay' }));
+      const verifying = reduce(routed, SendActions.transferComplete());
+      const done = reduce(verifying, SendActions.transferVerified({ elapsed: 1500 }));
+
+      expect(routed.status).toMatchObject({ _tag: 'Transferring', route: 'relay' });
+      expect(verifying.status).toMatchObject({ _tag: 'Verifying', route: 'relay' });
+      expect(done.status).toMatchObject({ _tag: 'Done', route: 'relay' });
     });
   });
 
@@ -138,6 +151,12 @@ describe('sendFeature.reducer', () => {
       );
 
       expect(next).toEqual(selected);
+    });
+
+    it('ignores a route before the transfer starts', () => {
+      const next = reduce(approved, SendActions.transferRouted({ route: 'relay' }));
+
+      expect(next).toEqual(approved);
     });
 
     it('moves to Failed with the handshake tag', () => {

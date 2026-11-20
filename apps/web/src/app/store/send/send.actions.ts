@@ -2,6 +2,7 @@ import type { FileMetadata } from '@contract/signal/file-metadata.model';
 import type { Identity } from '@contract/signal/identity.model';
 import type { RoomId } from '@contract/signal/room-id.model';
 import { createActionGroup, emptyProps, props } from '@ngrx/store';
+import type { TransferRoute } from '@web/core/interfaces/transfer.interface';
 import type { SendErrorTag } from './send-transitions';
 
 /** Everything that can happen to the send slice. */
@@ -24,6 +25,7 @@ export const SendActions = createActionGroup({
     'Hash Complete': props<{ readonly digest: string }>(),
     'Hash Failed': emptyProps(),
     'Transfer Started': props<{ readonly total: number }>(),
+    'Transfer Routed': props<{ readonly route: TransferRoute }>(),
     'Transfer Progress': props<{ readonly sent: number }>(),
     'Transfer Complete': emptyProps(),
     'Transfer Verified': props<{ readonly elapsed: number }>(),

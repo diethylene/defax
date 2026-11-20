@@ -1,6 +1,7 @@
 import type { FileMetadata } from '@contract/signal/file-metadata.model';
 import type { Identity } from '@contract/signal/identity.model';
 import type { RoomId } from '@contract/signal/room-id.model';
+import type { TransferRoute } from '@web/core/interfaces/transfer.interface';
 import * as Match from 'effect/Match';
 import * as Option from 'effect/Option';
 
@@ -41,6 +42,8 @@ interface TransferProgress {
   readonly sent: number;
   /** Bytes the file holds. */
   readonly total: number;
+  /** Path the bytes travel. */
+  readonly route: TransferRoute;
 }
 
 /** Where the send stands. */
@@ -140,7 +143,20 @@ export const withTransferStarted = (status: SendStatus, total: number): SendStat
       _tag: 'Transferring' as const,
       sent: 0,
       total,
+      route: 'direct' as const,
     })),
+    Match.orElse(() => status),
+  );
+
+/**
+ * Records the path the bytes travel on a running or finished transfer.
+ * @param status Current send status.
+ * @param route Route the channel negotiated.
+ * @returns The status with the route recorded, or the status unchanged.
+ */
+export const withTransferRoute = (status: SendStatus, route: TransferRoute): SendStatus =>
+  Match.value(status).pipe(
+    Match.tag('Transferring', 'Verifying', 'Done', (current) => ({ ...current, route })),
     Match.orElse(() => status),
   );
 

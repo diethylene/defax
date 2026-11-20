@@ -6,6 +6,7 @@ import {
   failed,
   progressed,
   type ReceiveStatus,
+  routed,
   started,
   verified,
   withDigest,
@@ -59,6 +60,12 @@ export const receiveFeature = createFeature({
       ReceiveActions.transferStarted,
       (state, { total }): ReceiveState => ({
         status: started(state.status, total),
+      }),
+    ),
+    on(
+      ReceiveActions.transferRouted,
+      (state, { route }): ReceiveState => ({
+        status: routed(state.status, route),
       }),
     ),
     on(

@@ -1,6 +1,7 @@
 import type { FileMetadata } from '@contract/signal/file-metadata.model';
 import type { Identity } from '@contract/signal/identity.model';
 import { createSelector } from '@ngrx/store';
+import type { TransferRoute } from '@web/core/interfaces/transfer.interface';
 import * as Match from 'effect/Match';
 import type { SendPhase } from '../../features/send/send-phase/send-phase.type';
 import { sendFeature } from './send.reducer';
@@ -109,15 +110,19 @@ export const peerIdentityOf = (status: SendStatus): Identity | undefined =>
   );
 
 /**
- * Bytes moved by the current transfer.
+ * Bytes moved by the current transfer and the path they travel.
  * @param status Current send status.
- * @returns The sent and total bytes, or undefined before the transfer starts.
+ * @returns The sent and total bytes plus the route, or undefined before the transfer starts.
  */
 export const transferProgressOf = (
   status: SendStatus,
-): { readonly sent: number; readonly total: number } | undefined =>
+): { readonly sent: number; readonly total: number; readonly route: TransferRoute } | undefined =>
   Match.value(status).pipe(
-    Match.tag('Transferring', 'Verifying', 'Done', ({ sent, total }) => ({ sent, total })),
+    Match.tag('Transferring', 'Verifying', 'Done', ({ sent, total, route }) => ({
+      sent,
+      total,
+      route,
+    })),
     Match.orElse(() => undefined),
   );
 

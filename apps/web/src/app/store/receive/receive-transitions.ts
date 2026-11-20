@@ -129,6 +129,21 @@ export const accepted = (status: ReceiveStatus): ReceiveStatus =>
   );
 
 /**
+ * Records the path the bytes travel on a running transfer.
+ * @param status Current status.
+ * @param route Route the channel negotiated.
+ * @returns Status with the route recorded, or the status unchanged.
+ */
+export const routed = (status: ReceiveStatus, route: TransferRoute): ReceiveStatus =>
+  Match.value(status).pipe(
+    Match.tag('Transferring', 'Verifying', (active) => ({
+      ...active,
+      progress: { ...active.progress, route },
+    })),
+    Match.orElse(() => status),
+  );
+
+/**
  * Records the announced byte count on a transferring status.
  * @param status Current status.
  * @param total Bytes the sender announced.
