@@ -179,6 +179,8 @@ export class WebRtcService {
           channel.close();
           peer.close();
         },
+        // Placeholder until the turn-rtc slice detects the real route via getStats.
+        route: 'direct',
       };
 
       const open = (): void => {

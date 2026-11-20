@@ -1,4 +1,5 @@
 import type { Observable } from 'rxjs';
+import type { TransferRoute } from './transfer.interface';
 
 /** Open data channel handed to the transfer once the peer connection is up. */
 export interface RtcChannel {
@@ -10,6 +11,8 @@ export interface RtcChannel {
   drain(): Observable<void>;
   /** Closes the channel and its peer connection. */
   close(): void;
+  /** Path the bytes travel: direct or TURN relay. */
+  readonly route: TransferRoute;
 }
 
 /** Holds ICE candidates until the peer has a remote description. */
