@@ -1,0 +1,6 @@
+# Copy to apps/api/.dev.vars for `wrangler dev`; never commit the copy.
+# Deployed environments supply the TURN secrets with `wrangler secret put`.
+TURN_KEY_ID=your-turn-key-id
+TURN_KEY_API_TOKEN=your-turn-api-token
+TURN_CREDENTIAL_TTL=86400
+ALLOWED_ORIGIN=http://localhost:4200
