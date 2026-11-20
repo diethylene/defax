@@ -1,5 +1,6 @@
 import { AppConfig } from '@api/core/config/app-config.service';
 import { problemDetails, REQUEST_ID_HEADER } from '@api/core/http/problem-details.util';
+import { CLIENT_IP_HEADER } from '@api/core/rate-limit/rate-limit.constant';
 import { RateLimit } from '@api/core/rate-limit/rate-limit.model';
 import { RateLimiter } from '@api/core/rate-limit/rate-limit.service';
 import * as Context from 'effect/Context';
@@ -15,8 +16,6 @@ type Config = Context.Service.Shape<typeof AppConfig>;
 /** Token consumer the middleware calls. */
 type Limiter = Context.Service.Shape<typeof RateLimiter>;
 
-/** Header Cloudflare sets to the client's address. */
-const CLIENT_IP_HEADER = 'cf-connecting-ip';
 /** Header telling a client when to retry. */
 const RETRY_AFTER_HEADER = 'Retry-After';
 

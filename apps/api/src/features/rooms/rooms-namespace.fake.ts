@@ -1,4 +1,5 @@
 import type { Room } from '@api/features/room/room';
+import * as Match from 'effect/Match';
 
 /** One room init recorded by the fake namespace. */
 export interface FakeRoomInit {
@@ -6,6 +7,14 @@ export interface FakeRoomInit {
   readonly name: string;
   /** Session id sent in the init body. */
   readonly sid: string;
+}
+
+/** One room ws upgrade recorded by the fake namespace. */
+export interface FakeRoomUpgrade {
+  /** Name the stub was resolved with, which is the room code. */
+  readonly name: string;
+  /** URL of the forwarded handshake request. */
+  readonly url: string;
 }
 
 /**
@@ -32,19 +41,34 @@ const stubFor = (
   // The handler only calls fetch; the RPC surface cannot be built without the runtime.
   ({ id, fetch }) as unknown as DurableObjectStub<Room>;
 
-/** In-memory Durable Object namespace that records room init calls. */
+/**
+ * Builds a response with an arbitrary status.
+ * @param status Status the stub answers with.
+ * @returns A response carrying that status.
+ */
+const responseWithStatus = (status: number): Response =>
+  // Node's Response rejects the 1xx upgrade status the Workers runtime allows.
+  ({ status, headers: new Headers() }) as unknown as Response;
+
+/** In-memory Durable Object namespace that records room init and upgrade calls. */
 export class FakeRoomsNamespace implements DurableObjectNamespace<Room> {
   /** Room init calls in arrival order. */
   readonly inits: FakeRoomInit[] = [];
+  /** Room ws upgrade calls in arrival order. */
+  readonly upgrades: FakeRoomUpgrade[] = [];
   /** Whether init requests answer 500 instead of 204. */
   private readonly failing: boolean;
+  /** Status ws upgrade requests answer with. */
+  private readonly upgradeStatus: number;
 
   /**
    * Builds a namespace.
    * @param failing Whether init requests answer 500.
+   * @param upgradeStatus Status ws upgrade requests answer with.
    */
-  constructor(failing = false) {
+  constructor(failing = false, upgradeStatus = 101) {
     this.failing = failing;
+    this.upgradeStatus = upgradeStatus;
   }
 
   /**
@@ -82,12 +106,12 @@ export class FakeRoomsNamespace implements DurableObjectNamespace<Room> {
   }
 
   /**
-   * Resolves a stub and records the init calls it receives.
+   * Resolves a stub and records the calls it receives.
    * @param id Id of the object to resolve.
    * @returns The stub for that object.
    */
   get(id: DurableObjectId): DurableObjectStub<Room> {
-    return stubFor(id, (input, init) => this.handleInit(id, new Request(input, init)));
+    return stubFor(id, (input, init) => this.handle(id, new Request(input, init)));
   }
 
   /**
@@ -108,6 +132,20 @@ export class FakeRoomsNamespace implements DurableObjectNamespace<Room> {
   }
 
   /**
+   * Routes a request by its path action, defaulting to init.
+   * @param id Id of the object that received the request.
+   * @param request Request sent to the stub.
+   * @returns The stub's response.
+   */
+  private handle(id: DurableObjectId, request: Request): Promise<Response> {
+    const action = new URL(request.url).pathname.split('/').filter(Boolean).at(-1);
+    return Match.value(action).pipe(
+      Match.when('ws', () => this.handleUpgrade(id, request)),
+      Match.orElse(() => this.handleInit(id, request)),
+    );
+  }
+
+  /**
    * Records an init call and answers the configured status.
    * @param id Id of the object that received the request.
    * @param request Init request.
@@ -117,5 +155,16 @@ export class FakeRoomsNamespace implements DurableObjectNamespace<Room> {
     const sid = await request.text();
     this.inits.push({ name: id.name ?? id.toString(), sid });
     return this.failing ? new Response(null, { status: 500 }) : new Response(null, { status: 204 });
+  }
+
+  /**
+   * Records a ws upgrade and answers the configured status.
+   * @param id Id of the object that received the request.
+   * @param request Upgrade request.
+   * @returns The upgrade response.
+   */
+  private handleUpgrade(id: DurableObjectId, request: Request): Promise<Response> {
+    this.upgrades.push({ name: id.name ?? id.toString(), url: request.url });
+    return Promise.resolve(responseWithStatus(this.upgradeStatus));
   }
 }
