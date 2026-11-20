@@ -20,13 +20,13 @@ import {
   timer,
   toArray,
 } from 'rxjs';
+import { environment } from '../../../environments/environment';
 import {
   DATA_CHANNEL_BUFFER_LOW,
   DATA_CHANNEL_LABEL,
   RTC_CONFIGURATION,
 } from '../../shared/constants/transfer-protocol';
 import { decodeJson } from '../../shared/utils/decode-json.util';
-import { API_BASE_URL } from '../api/api-base-url.constant';
 import { TurnCredentialApiService } from '../api/turn-credential-api.service';
 import type { IceHandle, RtcChannel } from '../interfaces/rtc-channel.interface';
 import type { TransferRoute } from '../interfaces/transfer.interface';
@@ -60,8 +60,6 @@ export class WebRtcService {
   private readonly signaling = inject(SignalingService);
   /** Client minting the ICE servers the peer connection gathers candidates from. */
   private readonly turnCredentials = inject(TurnCredentialApiService);
-  /** API origin the credential request goes to. */
-  private readonly apiBaseUrl = inject(API_BASE_URL);
 
   /**
    * Opens the sender's data channel.
@@ -120,7 +118,7 @@ export class WebRtcService {
    * @returns ICE servers for RTCPeerConnection.
    */
   private iceServers(): Observable<RTCIceServer[]> {
-    return this.turnCredentials.getIceServers(this.apiBaseUrl).pipe(
+    return this.turnCredentials.getIceServers(environment.apiBaseUrl).pipe(
       map((result) =>
         Result.match(result, {
           onSuccess: (response) => response.iceServers.map(toRtcIceServer),
