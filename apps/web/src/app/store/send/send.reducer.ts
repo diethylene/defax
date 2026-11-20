@@ -8,6 +8,7 @@ import {
   withSas,
   withTransferComplete,
   withTransferProgress,
+  withTransferRoute,
   withTransferStarted,
   withVerified,
 } from './send-transitions';
@@ -93,6 +94,12 @@ export const sendFeature = createFeature({
       SendActions.transferStarted,
       (state, { total }): SendState => ({
         status: withTransferStarted(state.status, total),
+      }),
+    ),
+    on(
+      SendActions.transferRouted,
+      (state, { route }): SendState => ({
+        status: withTransferRoute(state.status, route),
       }),
     ),
     on(

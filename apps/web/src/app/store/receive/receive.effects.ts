@@ -35,6 +35,7 @@ import type { ReceiveStatus } from './receive-transitions';
 /** Receive actions each transfer event becomes. */
 const receiveSink: TransferEventActionSink = {
   started: (total) => ReceiveActions.transferStarted({ total }),
+  route: (route) => ReceiveActions.transferRouted({ route }),
   progress: (received) => ReceiveActions.transferProgress({ received }),
   complete: () => ReceiveActions.transferComplete(),
   verified: (elapsed) => ReceiveActions.transferVerified({ elapsed }),

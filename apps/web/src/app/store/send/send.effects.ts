@@ -43,6 +43,7 @@ const sendErrorFor = {
 /** Send actions each transfer event becomes. */
 const sendSink: TransferEventActionSink = {
   started: (total) => SendActions.transferStarted({ total }),
+  route: (route) => SendActions.transferRouted({ route }),
   progress: (sent) => SendActions.transferProgress({ sent }),
   complete: () => SendActions.transferComplete(),
   verified: (elapsed) => SendActions.transferVerified({ elapsed }),

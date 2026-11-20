@@ -25,6 +25,7 @@ const recordingSink = (): {
     complete: () => record('complete'),
     verified: (elapsed) => record(`verified:${elapsed}`),
     failed: (error) => record(`failed:${error}`),
+    route: (route) => record(`route:${route}`),
   };
 
   return { calls, sink };
@@ -94,6 +95,17 @@ describe('transferEventActionFor', () => {
 
       expect(action).toEqual({ type: 'failed:verification-failed' });
       expect(calls).toEqual(['failed:verification-failed']);
+    });
+
+    it('passes the negotiated route through unchanged', () => {
+      const { sink, calls } = recordingSink();
+
+      const action = transferEventActionFor(sink)(
+        timedAt({ type: 'route', route: 'relay' }, 1_000, 1_500),
+      );
+
+      expect(action).toEqual({ type: 'route:relay' });
+      expect(calls).toEqual(['route:relay']);
     });
   });
 });

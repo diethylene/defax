@@ -1,11 +1,13 @@
 import type { Action } from '@ngrx/store';
 import * as Match from 'effect/Match';
+import type { TransferRoute } from '../interfaces/transfer.interface';
 import type { TransferErrorTag } from '../types/transfer-event.type';
 import type { TimedTransferEvent } from './transfer-event-time.util';
 
 /** Store actions a transfer event can become, one method per event kind. */
 export interface TransferEventActionSink {
   started(total: number): Action;
+  route(route: TransferRoute): Action;
   progress(transferred: number): Action;
   complete(): Action;
   verified(elapsed: number): Action;
@@ -22,6 +24,7 @@ export const transferEventActionFor =
   ({ event, startedAt, at }: TimedTransferEvent): Action =>
     Match.value(event).pipe(
       Match.discriminator('type')('started', ({ total }) => sink.started(total)),
+      Match.discriminator('type')('route', ({ route }) => sink.route(route)),
       Match.discriminator('type')('progress', ({ transferred }) => sink.progress(transferred)),
       Match.discriminator('type')('complete', () => sink.complete()),
       Match.discriminator('type')('verified', () => sink.verified(at - startedAt)),
