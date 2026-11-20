@@ -38,7 +38,11 @@ export class AppConfig extends Context.Service<
     };
     /** Browser access settings. */
     readonly cors: {
-      /** Origins allowed to call the API; `*` allows every origin and sends no credentials. */
+      /**
+       * Origins allowed to call the API, from ALLOWED_ORIGIN. Defaults to `*`, which sends
+       * no credentials. Production must set it to the deployed web origin, comma-separated
+       * when more than one origin is allowed.
+       */
       readonly allowedOrigins: readonly string[];
     };
   }
