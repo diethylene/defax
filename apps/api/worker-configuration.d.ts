@@ -7,6 +7,8 @@ interface __BaseEnv_Env {
 	RATE_LIMIT_WINDOW: "1 minute";
 	ROOMS: DurableObjectNamespace<import("./src/worker").Room>;
 	RATE_LIMITER: DurableObjectNamespace<import("./src/worker").RateLimiterDo>;
+	TURN_KEY_ID: string;
+	TURN_KEY_API_TOKEN: string;
 }
 declare namespace Cloudflare {
 	interface GlobalProps {
