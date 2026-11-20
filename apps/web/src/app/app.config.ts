@@ -15,7 +15,6 @@ import { provideRouterStore, routerReducer } from '@ngrx/router-store';
 import { provideStore, Store } from '@ngrx/store';
 import { provideSpartanHlm } from '@spartan-ng/helm/utils';
 import { routes } from './app.routes';
-import { API_BASE_URL } from './core/api/api-base-url.token';
 import { BroadcastChannelTransport } from './core/services/broadcast-channel-transport.service';
 import { ServerTransport } from './core/services/server-transport.service';
 import { navDirection } from './core/utils/navigation-direction.util';
@@ -78,7 +77,6 @@ export const appConfig: ApplicationConfig = {
     provideMaskedUrls('/send', '/receive'),
     provideRouterStore(),
     provideSpartanHlm(),
-    { provide: API_BASE_URL, useValue: '' },
     {
       provide: SignalTransport,
       useClass: isDevMode() ? BroadcastChannelTransport : ServerTransport,

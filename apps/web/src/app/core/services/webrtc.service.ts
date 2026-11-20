@@ -26,7 +26,7 @@ import {
   RTC_CONFIGURATION,
 } from '../../shared/constants/transfer-protocol';
 import { decodeJson } from '../../shared/utils/decode-json.util';
-import { API_BASE_URL } from '../api/api-base-url.token';
+import { API_BASE_URL } from '../api/api-base-url.constant';
 import { TurnCredentialApiService } from '../api/turn-credential-api.service';
 import type { IceHandle, RtcChannel } from '../interfaces/rtc-channel.interface';
 import type { TransferRoute } from '../interfaces/transfer.interface';
