@@ -8,6 +8,9 @@
     "RATE_LIMIT_DEFAULT": "30",
     "RATE_LIMIT_WINDOW": "1 minute"
   },
+  "secrets": {
+    "required": ["TURN_KEY_ID", "TURN_KEY_API_TOKEN"]
+  },
   "durable_objects": {
     "bindings": [
       { "name": "ROOMS", "class_name": "Room" },
