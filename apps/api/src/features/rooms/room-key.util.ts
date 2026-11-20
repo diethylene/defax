@@ -1,7 +1,7 @@
 import * as Match from 'effect/Match';
 
-/** Path actions served by a room Durable Object. */
-const ROOM_ACTIONS: ReadonlySet<string> = new Set(['init', 'ws']);
+/** Path actions routed to a room Durable Object. */
+const ROOM_ACTIONS: ReadonlySet<string> = new Set(['ws']);
 /** Path keys reserved for the HTTP API rather than a room. */
 const RESERVED_KEYS: ReadonlySet<string> = new Set(['create']);
 
@@ -22,7 +22,7 @@ const isRoomKey = (key: string | undefined): key is string =>
   key !== undefined && !RESERVED_KEYS.has(key);
 
 /**
- * Extracts the room key from an init or upgrade path.
+ * Extracts the room key from an upgrade path.
  * @param pathname Request pathname.
  * @returns The room key, or null when the path is not a room handshake path.
  */

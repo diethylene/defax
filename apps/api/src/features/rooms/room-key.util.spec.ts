@@ -3,26 +3,26 @@ import { roomKeyFromPath } from './room-key.util';
 
 describe('roomKeyFromPath', () => {
   describe('success', () => {
-    it('extracts the key from an init path', () => {
-      expect(roomKeyFromPath('/rooms/123456/init')).toBe('123456');
-    });
-
     it('extracts the key from an upgrade path', () => {
       expect(roomKeyFromPath('/rooms/123456/ws')).toBe('123456');
     });
 
     it('accepts a path without the leading slash', () => {
-      expect(roomKeyFromPath('rooms/123456/init')).toBe('123456');
+      expect(roomKeyFromPath('rooms/123456/ws')).toBe('123456');
     });
   });
 
   describe('invariants', () => {
+    it('rejects the init path', () => {
+      expect(roomKeyFromPath('/rooms/123456/init')).toBeNull();
+    });
+
     it('rejects the create path', () => {
       expect(roomKeyFromPath('/rooms/create')).toBeNull();
     });
 
     it('rejects a room code named create', () => {
-      expect(roomKeyFromPath('/rooms/create/init')).toBeNull();
+      expect(roomKeyFromPath('/rooms/create/ws')).toBeNull();
     });
 
     it('rejects the rooms root', () => {
@@ -38,7 +38,7 @@ describe('roomKeyFromPath', () => {
     });
 
     it('rejects extra segments', () => {
-      expect(roomKeyFromPath('/rooms/123456/init/extra')).toBeNull();
+      expect(roomKeyFromPath('/rooms/123456/ws/extra')).toBeNull();
     });
 
     it('rejects an unrelated route', () => {
