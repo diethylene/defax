@@ -9,8 +9,10 @@ import {
   EMPTY,
   finalize,
   from,
+  identity,
   ignoreElements,
   last,
+  type MonoTypeOperatorFunction,
   map,
   type Observable,
   of,
@@ -20,15 +22,26 @@ import {
   take,
   tap,
 } from 'rxjs';
-import { TRANSFER_CHUNK_SIZE } from '../../shared/constants/transfer-protocol';
+import {
+  RELAY_THROTTLE_BYTES_PER_SECOND,
+  TRANSFER_CHUNK_SIZE,
+} from '../../shared/constants/transfer-protocol';
 import { decodeJson } from '../../shared/utils/decode-json.util';
+import { paceBytes } from '../../shared/utils/pace-bytes.util';
 import type { ReceiveRequest } from '../interfaces/receive-request.interface';
 import type { RtcChannel } from '../interfaces/rtc-channel.interface';
+import type { TransferRoute } from '../interfaces/transfer.interface';
 import type { TransferEvent } from '../types/transfer-event.type';
 import { HashService } from './hash.service';
 import { SignalingService } from './signaling.service';
 import { StorageService } from './storage.service';
 import { WebRtcService } from './webrtc.service';
+
+/** Chunk pacing each route gets, since only relayed bytes are throttled. */
+const chunkPacing = {
+  direct: identity,
+  relay: paceBytes(RELAY_THROTTLE_BYTES_PER_SECOND),
+} satisfies Record<TransferRoute, MonoTypeOperatorFunction<ArrayBuffer>>;
 
 /** Moves file bytes over a WebRTC data channel. */
 @Injectable({ providedIn: 'root' })
@@ -89,6 +102,7 @@ export class TransferService {
       .pipe(
         switchMap((channel) =>
           concat(
+            of<TransferEvent>({ type: 'route', route: channel.route }),
             this.sendChunks(file, channel),
             channel.drain().pipe(ignoreElements()),
             of<TransferEvent>({ type: 'complete' }).pipe(tap(() => channel.close())),
@@ -112,6 +126,7 @@ export class TransferService {
           file.slice(index * TRANSFER_CHUNK_SIZE, (index + 1) * TRANSFER_CHUNK_SIZE).arrayBuffer(),
         ),
       ),
+      chunkPacing[channel.route],
       concatMap((bytes) => channel.send(bytes).pipe(map(() => bytes.byteLength))),
       scan((sent, byteLength) => sent + byteLength, 0),
       map((sent): TransferEvent => ({ type: 'progress', transferred: sent })),
@@ -144,6 +159,7 @@ export class TransferService {
       return this.webrtc.openResponder().pipe(
         switchMap((channel) =>
           concat(
+            of<TransferEvent>({ type: 'route', route: channel.route }),
             of<TransferEvent>({
               type: 'started',
               total: input.metadata.size,
