@@ -1,54 +1,88 @@
 import { Injectable, inject } from '@angular/core';
 import { RtcAnswer, RtcIce, RtcOffer } from '@contract/signal/payload.model';
 import type { SealedKind } from '@contract/signal/sealed-kind.model';
+import type { IceServer } from '@contract/turn/ice-servers.model';
+import * as Result from 'effect/Result';
 import {
   catchError,
   defer,
   EMPTY,
   finalize,
   from,
+  map,
   Observable,
+  of,
   ReplaySubject,
   switchMap,
+  take,
   tap,
   timeout,
+  timer,
+  toArray,
 } from 'rxjs';
+import { environment } from '../../../environments/environment';
 import {
   DATA_CHANNEL_BUFFER_LOW,
   DATA_CHANNEL_LABEL,
   RTC_CONFIGURATION,
 } from '../../shared/constants/transfer-protocol';
 import { decodeJson } from '../../shared/utils/decode-json.util';
+import { TurnCredentialApiService } from '../api/turn-credential-api.service';
 import type { IceHandle, RtcChannel } from '../interfaces/rtc-channel.interface';
+import type { TransferRoute } from '../interfaces/transfer.interface';
+import { routeFromStats } from '../utils/route-from-stats.util';
 import { SignalingService } from './signaling.service';
 
 /** Time a peer connection has to open before the negotiation fails. */
 const CONNECT_TIMEOUT_MS = 30_000;
+
+/** Interval between ICE stat reads while waiting for a nominated pair. */
+const ROUTE_POLL_INTERVAL_MS = 250;
+
+/** Reads of the ICE stats before the route defaults to direct. */
+const ROUTE_POLL_ATTEMPTS = 3;
+
+/**
+ * Converts a contract ICE server to the browser's shape, dropping absent credentials.
+ * @param server Decoded STUN or TURN server entry.
+ * @returns The server as RTCPeerConnection expects it.
+ */
+const toRtcIceServer = (server: IceServer): RTCIceServer => ({
+  urls: [...server.urls],
+  ...(server.username === undefined ? {} : { username: server.username }),
+  ...(server.credential === undefined ? {} : { credential: server.credential }),
+});
 
 /** Opens the data channels the transfer runs over. */
 @Injectable({ providedIn: 'root' })
 export class WebRtcService {
   /** Signaling channel carrying SDP and ICE between the peers. */
   private readonly signaling = inject(SignalingService);
+  /** Client minting the ICE servers the peer connection gathers candidates from. */
+  private readonly turnCredentials = inject(TurnCredentialApiService);
 
   /**
    * Opens the sender's data channel.
    * @returns Observable emitting the open channel.
    */
   openInitiator(): Observable<RtcChannel> {
-    return defer(() => {
-      const peer = new RTCPeerConnection(RTC_CONFIGURATION);
-      const channel = peer.createDataChannel(DATA_CHANNEL_LABEL, {
-        ordered: true,
-      });
-      const ice = this.attachIce(peer);
-      return this.negotiateInitiator(peer, channel, ice).pipe(
-        finalize(() => {
-          ice.dispose();
-          if (channel.readyState !== 'open') peer.close();
-        }),
-      );
-    }).pipe(timeout(CONNECT_TIMEOUT_MS));
+    return this.iceServers().pipe(
+      switchMap((iceServers) =>
+        defer(() => {
+          const peer = new RTCPeerConnection({ iceServers });
+          const channel = peer.createDataChannel(DATA_CHANNEL_LABEL, {
+            ordered: true,
+          });
+          const ice = this.attachIce(peer);
+          return this.negotiateInitiator(peer, channel, ice).pipe(
+            finalize(() => {
+              ice.dispose();
+              if (channel.readyState !== 'open') peer.close();
+            }),
+          );
+        }).pipe(timeout(CONNECT_TIMEOUT_MS)),
+      ),
+    );
   }
 
   /**
@@ -56,23 +90,42 @@ export class WebRtcService {
    * @returns Observable emitting the channel the sender opened.
    */
   openResponder(): Observable<RtcChannel> {
-    return defer(() => {
-      const peer = new RTCPeerConnection(RTC_CONFIGURATION);
-      const ice = this.attachIce(peer);
-      const incoming = new ReplaySubject<RTCDataChannel>(1);
-      peer.ondatachannel = (event) => {
-        incoming.next(event.channel);
-        incoming.complete();
-      };
-      // The teardown cannot see the channel, so the peer's own state marks
-      // the handover of the peer to the caller.
-      return this.negotiateResponder(peer, incoming, ice).pipe(
-        finalize(() => {
-          ice.dispose();
-          if (peer.connectionState !== 'connected') peer.close();
+    return this.iceServers().pipe(
+      switchMap((iceServers) =>
+        defer(() => {
+          const peer = new RTCPeerConnection({ iceServers });
+          const ice = this.attachIce(peer);
+          const incoming = new ReplaySubject<RTCDataChannel>(1);
+          peer.ondatachannel = (event) => {
+            incoming.next(event.channel);
+            incoming.complete();
+          };
+          // The teardown cannot see the channel, so the peer's own state marks
+          // the handover of the peer to the caller.
+          return this.negotiateResponder(peer, incoming, ice).pipe(
+            finalize(() => {
+              ice.dispose();
+              if (peer.connectionState !== 'connected') peer.close();
+            }),
+          );
+        }).pipe(timeout(CONNECT_TIMEOUT_MS)),
+      ),
+    );
+  }
+
+  /**
+   * Fetches the ICE servers for a peer connection, falling back to STUN only.
+   * @returns ICE servers for RTCPeerConnection.
+   */
+  private iceServers(): Observable<RTCIceServer[]> {
+    return this.turnCredentials.getIceServers(environment.apiBaseUrl).pipe(
+      map((result) =>
+        Result.match(result, {
+          onSuccess: (response) => response.iceServers.map(toRtcIceServer),
+          onFailure: () => RTC_CONFIGURATION.iceServers ?? [],
         }),
-      );
-    }).pipe(timeout(CONNECT_TIMEOUT_MS));
+      ),
+    );
   }
 
   /**
@@ -160,46 +213,78 @@ export class WebRtcService {
   }
 
   /**
+   * Reads the negotiated route from the peer's ICE stats, waiting briefly for a
+   * nominated pair before defaulting to direct.
+   * @param peer Peer connection whose stats are read.
+   * @returns The route the connection took.
+   */
+  private detectRoute(peer: RTCPeerConnection): Observable<TransferRoute> {
+    return timer(0, ROUTE_POLL_INTERVAL_MS).pipe(
+      take(ROUTE_POLL_ATTEMPTS),
+      switchMap(() => from(peer.getStats())),
+      map((report) => routeFromStats(Array.from(report.values()))),
+      toArray(),
+      map((routes) => (routes.includes('relay') ? 'relay' : 'direct')),
+      catchError(() => of<TransferRoute>('direct')),
+    );
+  }
+
+  /**
    * Wraps a data channel as an RtcChannel once it opens.
    * @param channel Channel created by either peer.
    * @param peer Peer connection owning the channel.
    * @returns Observable emitting the open channel.
    */
   private openChannel(channel: RTCDataChannel, peer: RTCPeerConnection): Observable<RtcChannel> {
-    return new Observable<RtcChannel>((subscriber) => {
-      const messages = new ReplaySubject<ArrayBuffer>();
-      channel.binaryType = 'arraybuffer';
-      channel.bufferedAmountLowThreshold = DATA_CHANNEL_BUFFER_LOW;
+    const messages = new ReplaySubject<ArrayBuffer>();
+    channel.binaryType = 'arraybuffer';
+    channel.bufferedAmountLowThreshold = DATA_CHANNEL_BUFFER_LOW;
 
-      const handle: RtcChannel = {
-        send: (data) => this.sendData(channel, data),
-        messages$: messages.asObservable(),
-        drain: () => this.drain(channel),
-        close: () => {
-          channel.close();
-          peer.close();
-        },
-      };
-
-      const open = (): void => {
-        subscriber.next(handle);
-        subscriber.complete();
-      };
-
+    return new Observable<RTCDataChannel>((subscriber) => {
       channel.onmessage = (event) => messages.next(event.data as ArrayBuffer);
       channel.onerror = () => subscriber.error(new Error('data channel error'));
       channel.onclose = () => {
         messages.complete();
         subscriber.error(new Error('data channel closed'));
       };
-      channel.onopen = open;
-
       // The channel can already be open by the time this observable is
       // subscribed, in which case onopen has already fired and never will.
       if (channel.readyState === 'open') {
-        open();
+        subscriber.next(channel);
+        return;
       }
-    });
+      channel.onopen = () => subscriber.next(channel);
+    }).pipe(
+      take(1),
+      switchMap(() => this.detectRoute(peer)),
+      map((route) => this.channelHandle(channel, peer, messages.asObservable(), route)),
+    );
+  }
+
+  /**
+   * Builds the transfer-facing handle for an open channel.
+   * @param channel Open data channel.
+   * @param peer Peer connection owning the channel.
+   * @param messages Buffers received from the peer.
+   * @param route Path the bytes travel.
+   * @returns The channel handle.
+   */
+  private channelHandle(
+    channel: RTCDataChannel,
+    peer: RTCPeerConnection,
+    messages: Observable<ArrayBuffer>,
+    route: TransferRoute,
+  ): RtcChannel {
+    return {
+      send: (data) => this.sendData(channel, data),
+      messages$: messages,
+      drain: () => this.drain(channel),
+      close: () => {
+        channel.close();
+        peer.close();
+      },
+      route,
+    };
   }
 
   /**

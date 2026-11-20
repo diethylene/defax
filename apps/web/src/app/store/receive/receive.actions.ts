@@ -1,6 +1,7 @@
 import type { FileMetadata } from '@contract/signal/file-metadata.model';
 import type { Identity } from '@contract/signal/identity.model';
 import { createActionGroup, emptyProps, props } from '@ngrx/store';
+import type { TransferRoute } from '@web/core/interfaces/transfer.interface';
 import type { ReceiveErrorTag } from './receive-transitions';
 
 /** Everything that can happen to the receive slice. */
@@ -17,6 +18,7 @@ export const ReceiveActions = createActionGroup({
     'Handshake Failed': emptyProps(),
     Accepted: emptyProps(),
     'Transfer Started': props<{ readonly total: number }>(),
+    'Transfer Routed': props<{ readonly route: TransferRoute }>(),
     'Transfer Progress': props<{ readonly received: number }>(),
     'Transfer Complete': emptyProps(),
     'Transfer Verified': props<{ readonly elapsed: number }>(),

@@ -1,5 +1,6 @@
 import { Directionality } from '@angular/cdk/bidi';
 import { DOCUMENT } from '@angular/common';
+import { provideHttpClient } from '@angular/common/http';
 import {
   APP_INITIALIZER,
   type ApplicationConfig,
@@ -43,6 +44,7 @@ import { sendFeature } from './store/send/send.reducer';
 export const appConfig: ApplicationConfig = {
   providers: [
     provideBrowserGlobalErrorListeners(),
+    provideHttpClient(),
     provideAnimationsAsync(),
     provideStore({
       applicationConfig: applicationConfigFeature.reducer,
