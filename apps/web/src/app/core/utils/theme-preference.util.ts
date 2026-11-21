@@ -1,4 +1,5 @@
 import * as Match from 'effect/Match';
+import { catchError, EMPTY, finalize, from } from 'rxjs';
 import type { ThemeMode } from '../../store/application-config/application-config.reducer';
 
 /** Local storage key holding the persisted theme mode. */
@@ -44,7 +45,12 @@ export const transitionMode = (mode: ThemeMode): void => {
   root.setAttribute('data-theme-transition', '');
   const transition = document.startViewTransition(() => applyMode(mode));
   const clearFlag = (): void => root.removeAttribute('data-theme-transition');
-  void transition.finished.then(clearFlag, clearFlag);
+  from(transition.finished)
+    .pipe(
+      finalize(clearFlag),
+      catchError(() => EMPTY),
+    )
+    .subscribe();
 };
 
 /**

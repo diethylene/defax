@@ -2,7 +2,7 @@ import { inject } from '@angular/core';
 import { Router } from '@angular/router';
 import { createEffect } from '@ngrx/effects';
 import { type Selector, Store } from '@ngrx/store';
-import { distinctUntilChanged, map, skip, tap } from 'rxjs';
+import { catchError, distinctUntilChanged, EMPTY, from, map, skip, switchMap } from 'rxjs';
 
 /** Everything one transfer slice gives its route effect. */
 export interface RouteToPhaseConfig<TStatus, TPhase extends string> {
@@ -28,11 +28,11 @@ export const createRouteToPhaseEffect = <TStatus, TPhase extends string>(
         map(config.phaseForStatus),
         distinctUntilChanged(),
         skip(1),
-        tap((phase) => {
+        switchMap((phase) => {
           const url = config.routeForPhase(phase);
-          if (router.url !== url) {
-            void router.navigateByUrl(url);
-          }
+          return router.url === url
+            ? EMPTY
+            : from(router.navigateByUrl(url)).pipe(catchError(() => EMPTY));
         }),
       ),
     { functional: true, dispatch: false },
