@@ -6,10 +6,8 @@ import { pipe } from 'effect/Function';
 import * as Result from 'effect/Result';
 import * as Schema from 'effect/Schema';
 import { catchError, map, type Observable, of, timeout } from 'rxjs';
+import { environment } from '../../../environments/environment';
 import { type RoomsApiError, RoomsRequestFailed, RoomsWireError } from './rooms-api-errors.model';
-
-/** A create is a write; it is abandoned rather than retried after this long. */
-const REQUEST_TIMEOUT_MS = 10_000;
 
 /** Envelope the rooms endpoint returns on success. */
 const RoomCreatedEnvelope = apiEnvelopeOf(RoomCreated);
@@ -61,7 +59,7 @@ export class RoomsApiService {
    */
   createRoom(baseUrl: string): Observable<Result.Result<RoomCreated, RoomsApiError>> {
     return this.http.post<unknown>(`${baseUrl}/rooms/create`, null).pipe(
-      timeout(REQUEST_TIMEOUT_MS),
+      timeout(environment.timeouts.request),
       map(decodeRoomCreated),
       catchError((error: unknown) => of(decodeFailure(error))),
     );

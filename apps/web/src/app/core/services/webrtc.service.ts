@@ -21,26 +21,13 @@ import {
   toArray,
 } from 'rxjs';
 import { environment } from '../../../environments/environment';
-import {
-  DATA_CHANNEL_BUFFER_LOW,
-  DATA_CHANNEL_LABEL,
-  RTC_CONFIGURATION,
-} from '../../shared/constants/transfer-protocol';
+import { DATA_CHANNEL_LABEL } from '../../shared/constants/transfer-protocol';
 import { decodeJson } from '../../shared/utils/decode-json.util';
 import { TurnCredentialApiService } from '../api/turn-credential-api.service';
 import type { IceHandle, RtcChannel } from '../interfaces/rtc-channel.interface';
 import type { TransferRoute } from '../interfaces/transfer.interface';
 import { routeFromStats } from '../utils/route-from-stats.util';
 import { SignalingService } from './signaling.service';
-
-/** Time a peer connection has to open before the negotiation fails. */
-const CONNECT_TIMEOUT_MS = 30_000;
-
-/** Interval between ICE stat reads while waiting for a nominated pair. */
-const ROUTE_POLL_INTERVAL_MS = 250;
-
-/** Reads of the ICE stats before the route defaults to direct. */
-const ROUTE_POLL_ATTEMPTS = 3;
 
 /**
  * Converts a contract ICE server to the browser's shape, dropping absent credentials.
@@ -80,7 +67,7 @@ export class WebRtcService {
               if (channel.readyState !== 'open') peer.close();
             }),
           );
-        }).pipe(timeout(CONNECT_TIMEOUT_MS)),
+        }).pipe(timeout(environment.timeouts.connect)),
       ),
     );
   }
@@ -108,7 +95,7 @@ export class WebRtcService {
               if (peer.connectionState !== 'connected') peer.close();
             }),
           );
-        }).pipe(timeout(CONNECT_TIMEOUT_MS)),
+        }).pipe(timeout(environment.timeouts.connect)),
       ),
     );
   }
@@ -122,7 +109,7 @@ export class WebRtcService {
       map((result) =>
         Result.match(result, {
           onSuccess: (response) => response.iceServers.map(toRtcIceServer),
-          onFailure: () => RTC_CONFIGURATION.iceServers ?? [],
+          onFailure: () => environment.rtc.stunUrls.map((url) => ({ urls: [url] })),
         }),
       ),
     );
@@ -197,7 +184,7 @@ export class WebRtcService {
         if (candidate === null) return;
         const init: RTCIceCandidateInit = { candidate, sdpMid, sdpMLineIndex };
         if (peer.remoteDescription) {
-          void peer.addIceCandidate(init).catch(() => undefined);
+          this.addIceCandidate(peer, init);
         } else {
           pending.push(init);
         }
@@ -205,11 +192,22 @@ export class WebRtcService {
     return {
       flush: () => {
         for (const init of pending.splice(0)) {
-          void peer.addIceCandidate(init).catch(() => undefined);
+          this.addIceCandidate(peer, init);
         }
       },
       dispose: () => sub.unsubscribe(),
     };
+  }
+
+  /**
+   * Adds one ICE candidate to the peer, dropping failures.
+   * @param peer Peer connection the candidate belongs to.
+   * @param init Candidate received from signaling.
+   */
+  private addIceCandidate(peer: RTCPeerConnection, init: RTCIceCandidateInit): void {
+    from(peer.addIceCandidate(init))
+      .pipe(catchError(() => EMPTY))
+      .subscribe();
   }
 
   /**
@@ -219,8 +217,8 @@ export class WebRtcService {
    * @returns The route the connection took.
    */
   private detectRoute(peer: RTCPeerConnection): Observable<TransferRoute> {
-    return timer(0, ROUTE_POLL_INTERVAL_MS).pipe(
-      take(ROUTE_POLL_ATTEMPTS),
+    return timer(0, environment.timeouts.routePollInterval).pipe(
+      take(environment.timeouts.routePollAttempts),
       switchMap(() => from(peer.getStats())),
       map((report) => routeFromStats(Array.from(report.values()))),
       toArray(),
@@ -238,7 +236,7 @@ export class WebRtcService {
   private openChannel(channel: RTCDataChannel, peer: RTCPeerConnection): Observable<RtcChannel> {
     const messages = new ReplaySubject<ArrayBuffer>();
     channel.binaryType = 'arraybuffer';
-    channel.bufferedAmountLowThreshold = DATA_CHANNEL_BUFFER_LOW;
+    channel.bufferedAmountLowThreshold = environment.transfer.bufferLow;
 
     return new Observable<RTCDataChannel>((subscriber) => {
       channel.onmessage = (event) => messages.next(event.data as ArrayBuffer);
@@ -313,7 +311,7 @@ export class WebRtcService {
         channel.removeEventListener('close', onClose);
       };
       channel.send(data);
-      if (channel.bufferedAmount <= DATA_CHANNEL_BUFFER_LOW) {
+      if (channel.bufferedAmount <= environment.transfer.bufferLow) {
         subscriber.next();
         subscriber.complete();
         return;
@@ -342,7 +340,7 @@ export class WebRtcService {
       }
       channel.bufferedAmountLowThreshold = 0;
       const onLow = (): void => {
-        channel.bufferedAmountLowThreshold = DATA_CHANNEL_BUFFER_LOW;
+        channel.bufferedAmountLowThreshold = environment.transfer.bufferLow;
         cleanup();
         subscriber.next();
         subscriber.complete();

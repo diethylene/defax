@@ -1,6 +1,7 @@
 import { DestroyRef, Directive, inject, input, signal } from '@angular/core';
-
-const COPIED_RESET_MS = 2000;
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { catchError, EMPTY, from } from 'rxjs';
+import { environment } from '../../../environments/environment';
 
 @Directive({
   selector: '[appCopy]',
@@ -16,14 +17,16 @@ export class CopyDirective {
   private resetTimer: ReturnType<typeof setTimeout> | undefined;
 
   copy(): void {
-    navigator.clipboard
-      .writeText(this.value())
-      .then(() => {
+    from(navigator.clipboard.writeText(this.value()))
+      .pipe(
+        takeUntilDestroyed(this.destroyRef),
+        catchError(() => EMPTY),
+      )
+      .subscribe(() => {
         this.copiedState.set(true);
         clearTimeout(this.resetTimer);
-        this.resetTimer = setTimeout(() => this.copiedState.set(false), COPIED_RESET_MS);
-      })
-      .catch(() => undefined);
+        this.resetTimer = setTimeout(() => this.copiedState.set(false), environment.ui.copiedReset);
+      });
   }
 
   constructor() {
