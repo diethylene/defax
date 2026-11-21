@@ -12,7 +12,7 @@ import type { RoomCreated } from '@contract/signal/room-created.model';
 import { type RoomId, randomRoomId } from '@contract/signal/room-id.model';
 import { randomSid, type Sid } from '@contract/signal/sid.model';
 import * as Match from 'effect/Match';
-import { Subject } from 'rxjs';
+import { Observable, of, Subject } from 'rxjs';
 import { SignalTransport } from '../../shared/interfaces/signal-transport';
 import type { SignalMessage } from '../../shared/utils/signal-message.util';
 import { parseSignalMessage } from '../../shared/utils/signal-message.util';
@@ -60,27 +60,36 @@ export class BroadcastChannelTransport extends SignalTransport {
 
   /**
    * Creates a room and becomes its host.
-   * @returns The generated room id and the host session id.
+   * @returns Observable of the generated room id and host session id.
    */
-  override createRoom(): RoomCreated {
+  override createRoom(): Observable<RoomCreated> {
     this.close();
     const sid = randomSid();
     this.phase = { _tag: 'host-waiting', sid };
     const roomId = randomRoomId();
     this.openChannel(roomId);
-    return { roomId, sid };
+    return of({ roomId, sid });
   }
 
   /**
    * Joins an existing room as a guest.
    * @param roomId Room to join.
-   * @returns Promise resolving with the host session id.
+   * @returns Observable of the host session id.
    */
-  override joinRoom(roomId: RoomId): Promise<Sid> {
+  override joinRoom(roomId: RoomId): Observable<Sid> {
     this.close();
     this.openChannel(roomId);
-    return new Promise<Sid>((resolve, reject) => {
-      this.phase = { _tag: 'guest-connecting', pending: { resolve, reject } };
+    return new Observable<Sid>((subscriber) => {
+      this.phase = {
+        _tag: 'guest-connecting',
+        pending: {
+          resolve: (sid) => {
+            subscriber.next(sid);
+            subscriber.complete();
+          },
+          reject: (error) => subscriber.error(error),
+        },
+      };
       this.post({ type: 'join', protocol: PROTOCOL_VERSION });
     });
   }

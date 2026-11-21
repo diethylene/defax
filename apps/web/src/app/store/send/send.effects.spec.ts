@@ -7,7 +7,6 @@ import { sidFromBytes } from '@contract/signal/sid.model';
 import { Actions } from '@ngrx/effects';
 import type { Action } from '@ngrx/store';
 import { Store } from '@ngrx/store';
-import type { InitiatorSession } from '@web/core/interfaces/handshake.interface';
 import { HashService } from '@web/core/services/hash.service';
 import { SignalingService } from '@web/core/services/signaling.service';
 import { TransferService } from '@web/core/services/transfer.service';
@@ -79,11 +78,12 @@ describe('sendStartSession$', () => {
         {
           provide: SignalingService,
           useValue: {
-            createSession: (): InitiatorSession => ({
-              roomId,
-              sid,
-              password: 'pw',
-            }),
+            createSession: () =>
+              of({
+                roomId,
+                sid,
+                password: 'pw',
+              }),
             connectAsInitiator: () => of({ sas: '123456', peerIdentity }),
           },
         },
@@ -105,11 +105,12 @@ describe('sendStartSession$', () => {
         {
           provide: SignalingService,
           useValue: {
-            createSession: (): InitiatorSession => ({
-              roomId,
-              sid,
-              password: 'pw',
-            }),
+            createSession: () =>
+              of({
+                roomId,
+                sid,
+                password: 'pw',
+              }),
             connectAsInitiator: () => throwError(() => new Error('nope')),
           },
         },
@@ -117,6 +118,22 @@ describe('sendStartSession$', () => {
       ]);
 
       expect(emitted.at(-1)).toEqual(SendActions.handshakeFailed());
+    });
+
+    it('emits the room failure tag when the session cannot be created', async () => {
+      const emitted = await run(sendStartSession$, [
+        actionsFor(SendActions.fileSelected({ file, metadata })),
+        {
+          provide: SignalingService,
+          useValue: {
+            createSession: () => throwError(() => new Error('room creation failed')),
+            connectAsInitiator: () => of({ sas: '123456', peerIdentity }),
+          },
+        },
+        { provide: IdentityService, useValue: { detect: () => peerIdentity } },
+      ]);
+
+      expect(emitted).toEqual([SendActions.roomFailed()]);
     });
   });
 });

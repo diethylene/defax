@@ -17,6 +17,7 @@ import { provideSpartanHlm } from '@spartan-ng/helm/utils';
 import { routes } from './app.routes';
 import { BroadcastChannelTransport } from './core/services/broadcast-channel-transport.service';
 import { ServerTransport } from './core/services/server-transport.service';
+import { WEB_SOCKET_CONSTRUCTOR } from './core/services/web-socket-constructor.token';
 import { navDirection } from './core/utils/navigation-direction.util';
 import { applyMode, resolveInitialMode } from './core/utils/theme-preference.util';
 import { SignalTransport } from './shared/interfaces/signal-transport';
@@ -81,6 +82,7 @@ export const appConfig: ApplicationConfig = {
       provide: SignalTransport,
       useClass: isDevMode() ? BroadcastChannelTransport : ServerTransport,
     },
+    { provide: WEB_SOCKET_CONSTRUCTOR, useValue: WebSocket },
     { provide: Directionality, useClass: Directionality },
     {
       provide: APP_INITIALIZER,

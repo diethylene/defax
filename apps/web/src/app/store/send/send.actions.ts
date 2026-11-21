@@ -20,6 +20,7 @@ export const SendActions = createActionGroup({
       readonly peerIdentity: Identity;
     }>(),
     'Handshake Failed': emptyProps(),
+    'Room Failed': emptyProps(),
     'Hash Started': emptyProps(),
     'Hash Progress': props<{ readonly processed: number }>(),
     'Hash Complete': props<{ readonly digest: string }>(),

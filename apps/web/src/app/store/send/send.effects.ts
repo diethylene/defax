@@ -91,19 +91,23 @@ export const sendStartSession$ = createEffect(
   ) =>
     actions$.pipe(
       ofType(SendActions.fileSelected),
-      switchMap(({ metadata }) => {
-        const session = signaling.createSession();
-        return concat(
-          of(
-            SendActions.roomCreated({ roomId: session.roomId }),
-            SendActions.passwordGenerated({ password: session.password }),
+      switchMap(({ metadata }) =>
+        signaling.createSession().pipe(
+          switchMap((session) =>
+            concat(
+              of(
+                SendActions.roomCreated({ roomId: session.roomId }),
+                SendActions.passwordGenerated({ password: session.password }),
+              ),
+              signaling.connectAsInitiator(session, identity.detect(), metadata).pipe(
+                map(({ sas, peerIdentity }) => SendActions.sasComputed({ sas, peerIdentity })),
+                catchError(() => of(SendActions.handshakeFailed())),
+              ),
+            ),
           ),
-          signaling.connectAsInitiator(session, identity.detect(), metadata).pipe(
-            map(({ sas, peerIdentity }) => SendActions.sasComputed({ sas, peerIdentity })),
-            catchError(() => of(SendActions.handshakeFailed())),
-          ),
-        );
-      }),
+          catchError(() => of(SendActions.roomFailed())),
+        ),
+      ),
     ),
   { functional: true },
 );

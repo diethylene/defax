@@ -85,11 +85,12 @@ export class SignalingService {
 
   /**
    * Creates a room and the session the initiator will run in.
-   * @returns The room id, session id, and generated password.
+   * @returns Observable of the room id, session id, and generated password.
    */
-  createSession(): InitiatorSession {
-    const { roomId, sid } = this.transport.createRoom();
-    return { roomId, sid, password: generatePassword() };
+  createSession(): Observable<InitiatorSession> {
+    return this.transport
+      .createRoom()
+      .pipe(map(({ roomId, sid }) => ({ roomId, sid, password: generatePassword() })));
   }
 
   /**

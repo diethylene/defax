@@ -168,6 +168,12 @@ describe('sendFeature.reducer', () => {
       });
     });
 
+    it('moves to Failed with the room tag', () => {
+      const next = reduce(awaiting, SendActions.roomFailed());
+
+      expect(next.status).toEqual({ _tag: 'Failed', error: 'room-failed' });
+    });
+
     it('moves to Failed with the hash tag', () => {
       const next = reduce(awaiting, SendActions.hashFailed());
 

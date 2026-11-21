@@ -11,16 +11,16 @@ export abstract class SignalTransport {
 
   /**
    * Creates a room and becomes its host.
-   * @returns The generated room id and the host session id.
+   * @returns Observable of the generated room id and host session id.
    */
-  abstract createRoom(): RoomCreated;
+  abstract createRoom(): Observable<RoomCreated>;
 
   /**
    * Joins an existing room as a guest.
    * @param roomId Room to join.
-   * @returns Promise resolving with the host session id.
+   * @returns Observable of the host session id.
    */
-  abstract joinRoom(roomId: RoomId): Promise<Sid>;
+  abstract joinRoom(roomId: RoomId): Observable<Sid>;
 
   /**
    * Sends a signaling message to the other peer.
