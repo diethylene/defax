@@ -1,5 +1,10 @@
+import type { Environment } from './environment.interface';
+
 /** Settings for local development and tests. */
-export const environment = {
-  /** Origin the web app calls the API on; '' means same-origin relative paths. */
+export const environment: Environment = {
   apiBaseUrl: '',
+  rtc: { stunUrls: ['stun:stun.cloudflare.com:3478'] },
+  transfer: { chunkSize: 256 * 1024, bufferLow: 1024 * 1024, relayThrottleBytesPerSecond: 625_000 },
+  timeouts: { connect: 30_000, request: 10_000, routePollInterval: 250, routePollAttempts: 3 },
+  ui: { copiedReset: 2000, sampleInterval: 1000 },
 };
