@@ -64,6 +64,12 @@ export const sendFeature = createFeature({
       }),
     ),
     on(
+      SendActions.roomFailed,
+      (): SendState => ({
+        status: { _tag: 'Failed', error: 'room-failed' },
+      }),
+    ),
+    on(
       SendActions.hashStarted,
       (state): SendState => ({
         status: withHash(state.status, { _tag: 'Hashing', progress: 0 }),

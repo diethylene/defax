@@ -15,6 +15,7 @@ export type HashStatus =
 export type SendErrorTag =
   | 'handshake-failed'
   | 'hash-failed'
+  | 'room-failed'
   | 'transfer-failed'
   | 'verification-failed';
 

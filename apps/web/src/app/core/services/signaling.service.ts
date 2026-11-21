@@ -85,11 +85,14 @@ export class SignalingService {
 
   /**
    * Creates a room and the session the initiator will run in.
-   * @returns The room id, session id, and generated password.
+   * @returns Promise resolving with the room id, session id, and generated password.
    */
-  createSession(): InitiatorSession {
-    const { roomId, sid } = this.transport.createRoom();
-    return { roomId, sid, password: generatePassword() };
+  createSession(): Promise<InitiatorSession> {
+    return this.transport.createRoom().then(({ roomId, sid }) => ({
+      roomId,
+      sid,
+      password: generatePassword(),
+    }));
   }
 
   /**

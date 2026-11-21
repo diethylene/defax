@@ -79,11 +79,12 @@ describe('sendStartSession$', () => {
         {
           provide: SignalingService,
           useValue: {
-            createSession: (): InitiatorSession => ({
-              roomId,
-              sid,
-              password: 'pw',
-            }),
+            createSession: (): Promise<InitiatorSession> =>
+              Promise.resolve({
+                roomId,
+                sid,
+                password: 'pw',
+              }),
             connectAsInitiator: () => of({ sas: '123456', peerIdentity }),
           },
         },
@@ -105,11 +106,12 @@ describe('sendStartSession$', () => {
         {
           provide: SignalingService,
           useValue: {
-            createSession: (): InitiatorSession => ({
-              roomId,
-              sid,
-              password: 'pw',
-            }),
+            createSession: (): Promise<InitiatorSession> =>
+              Promise.resolve({
+                roomId,
+                sid,
+                password: 'pw',
+              }),
             connectAsInitiator: () => throwError(() => new Error('nope')),
           },
         },
@@ -117,6 +119,23 @@ describe('sendStartSession$', () => {
       ]);
 
       expect(emitted.at(-1)).toEqual(SendActions.handshakeFailed());
+    });
+
+    it('emits the room failure tag when the session cannot be created', async () => {
+      const emitted = await run(sendStartSession$, [
+        actionsFor(SendActions.fileSelected({ file, metadata })),
+        {
+          provide: SignalingService,
+          useValue: {
+            createSession: (): Promise<InitiatorSession> =>
+              Promise.reject(new Error('room creation failed')),
+            connectAsInitiator: () => of({ sas: '123456', peerIdentity }),
+          },
+        },
+        { provide: IdentityService, useValue: { detect: () => peerIdentity } },
+      ]);
+
+      expect(emitted).toEqual([SendActions.roomFailed()]);
     });
   });
 });

@@ -60,15 +60,15 @@ export class BroadcastChannelTransport extends SignalTransport {
 
   /**
    * Creates a room and becomes its host.
-   * @returns The generated room id and the host session id.
+   * @returns Promise resolving with the generated room id and host session id.
    */
-  override createRoom(): RoomCreated {
+  override createRoom(): Promise<RoomCreated> {
     this.close();
     const sid = randomSid();
     this.phase = { _tag: 'host-waiting', sid };
     const roomId = randomRoomId();
     this.openChannel(roomId);
-    return { roomId, sid };
+    return Promise.resolve({ roomId, sid });
   }
 
   /**

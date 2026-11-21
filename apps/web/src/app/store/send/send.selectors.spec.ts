@@ -46,6 +46,10 @@ describe('selectSendErrorMessage', () => {
         'receiver verification failed',
       );
     });
+
+    it('returns the room failure message', () => {
+      expect(selectSendErrorMessage.projector(failed('room-failed'))).toBe('Could not create room');
+    });
   });
 
   describe('invariants', () => {
@@ -57,6 +61,7 @@ describe('selectSendErrorMessage', () => {
       expect(Object.keys(sendErrorMessages).sort()).toEqual([
         'handshake-failed',
         'hash-failed',
+        'room-failed',
         'transfer-failed',
         'verification-failed',
       ]);
