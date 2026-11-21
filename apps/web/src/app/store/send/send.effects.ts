@@ -8,7 +8,6 @@ import {
   concat,
   EMPTY,
   filter,
-  from,
   map,
   of,
   switchMap,
@@ -93,7 +92,7 @@ export const sendStartSession$ = createEffect(
     actions$.pipe(
       ofType(SendActions.fileSelected),
       switchMap(({ metadata }) =>
-        from(signaling.createSession()).pipe(
+        signaling.createSession().pipe(
           switchMap((session) =>
             concat(
               of(

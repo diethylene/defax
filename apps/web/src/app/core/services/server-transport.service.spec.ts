@@ -5,7 +5,7 @@ import type { RoomCreated } from '@contract/signal/room-created.model';
 import { roomIdFromValue } from '@contract/signal/room-id.model';
 import { type Sid, sidFromBytes } from '@contract/signal/sid.model';
 import * as Result from 'effect/Result';
-import { of } from 'rxjs';
+import { firstValueFrom, of } from 'rxjs';
 import { beforeEach, describe, expect, it } from 'vitest';
 import { RoomsApiService } from '../api/rooms-api.service';
 import type { RoomsApiError } from '../api/rooms-api-errors.model';
@@ -53,7 +53,7 @@ const socketAfterConnect = async (): Promise<FakeWebSocket> => {
  */
 const hostTransport = async (): Promise<{ transport: ServerTransport; socket: FakeWebSocket }> => {
   const transport = transportWith(Result.succeed(room));
-  const created = transport.createRoom();
+  const created = firstValueFrom(transport.createRoom());
   const socket = await socketAfterConnect();
   socket.open();
   await created;
@@ -70,7 +70,7 @@ const guestTransport = async (): Promise<{
   joined: Promise<Sid>;
 }> => {
   const transport = transportWith(Result.succeed(room));
-  const joined = transport.joinRoom(roomId);
+  const joined = firstValueFrom(transport.joinRoom(roomId));
   const socket = await socketAfterConnect();
   socket.open();
   await Promise.resolve();
@@ -87,7 +87,7 @@ describe('ServerTransport createRoom', () => {
     it('opens the host socket and resolves once it connects', async () => {
       const transport = transportWith(Result.succeed(room));
 
-      const created = transport.createRoom();
+      const created = firstValueFrom(transport.createRoom());
       const socket = await socketAfterConnect();
       socket.open();
 
@@ -100,14 +100,16 @@ describe('ServerTransport createRoom', () => {
     it('rejects without opening a socket when the API reports a failure', async () => {
       const transport = transportWith(Result.fail(new RoomsRequestFailed({ cause: 'boom' })));
 
-      await expect(transport.createRoom()).rejects.toMatchObject({ _tag: 'RoomsRequestFailed' });
+      await expect(firstValueFrom(transport.createRoom())).rejects.toMatchObject({
+        _tag: 'RoomsRequestFailed',
+      });
       expect(FakeWebSocket.instances).toHaveLength(0);
     });
 
     it('rejects when the socket fails before it opens', async () => {
       const transport = transportWith(Result.succeed(room));
 
-      const created = transport.createRoom();
+      const created = firstValueFrom(transport.createRoom());
       const socket = await socketAfterConnect();
       socket.fail();
 

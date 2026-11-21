@@ -7,7 +7,7 @@ import * as Match from 'effect/Match';
 import * as Option from 'effect/Option';
 import * as Result from 'effect/Result';
 import * as Schema from 'effect/Schema';
-import { firstValueFrom, Subject } from 'rxjs';
+import { map, Observable, Subject, switchMap, throwError } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import { SignalTransport } from '../../shared/interfaces/signal-transport';
 import { parseSignalMessage, type SignalMessage } from '../../shared/utils/signal-message.util';
@@ -83,31 +83,44 @@ export class ServerTransport extends SignalTransport {
 
   /**
    * Creates a room through the relay and opens the host socket.
-   * @returns Promise resolving with the created room once the socket is open.
+   * @returns Observable of the created room once the socket is open.
    */
-  override createRoom(): Promise<RoomCreated> {
+  override createRoom(): Observable<RoomCreated> {
     this.close();
-    return firstValueFrom(this.roomsApi.createRoom(environment.apiBaseUrl)).then((result) =>
-      Result.match(result, {
-        onSuccess: (room) => this.connectInitiator(room),
-        onFailure: (failure) => Promise.reject(failure),
-      }),
+    return this.roomsApi.createRoom(environment.apiBaseUrl).pipe(
+      switchMap((result) =>
+        Result.match(result, {
+          onSuccess: (room) => this.connectInitiator(room),
+          onFailure: (failure) => throwError(() => failure),
+        }),
+      ),
     );
   }
 
   /**
    * Joins a room through the relay and becomes its guest.
    * @param roomId Room to join.
-   * @returns Promise resolving with the host session id.
+   * @returns Observable of the host session id.
    */
-  override joinRoom(roomId: RoomId): Promise<Sid> {
+  override joinRoom(roomId: RoomId): Observable<Sid> {
     this.close();
-    return this.openSocket(responderUrl(roomId)).then(
-      () =>
-        new Promise<Sid>((resolve, reject) => {
-          this.phase = { _tag: 'guest-connecting', pending: { resolve, reject } };
-          this.send({ type: 'join', protocol: PROTOCOL_VERSION });
-        }),
+    return this.openSocket(responderUrl(roomId)).pipe(
+      switchMap(
+        () =>
+          new Observable<Sid>((subscriber) => {
+            this.phase = {
+              _tag: 'guest-connecting',
+              pending: {
+                resolve: (sid) => {
+                  subscriber.next(sid);
+                  subscriber.complete();
+                },
+                reject: (error) => subscriber.error(error),
+              },
+            };
+            this.send({ type: 'join', protocol: PROTOCOL_VERSION });
+          }),
+      ),
     );
   }
 
@@ -134,28 +147,36 @@ export class ServerTransport extends SignalTransport {
   /**
    * Opens the host socket and records the host phase.
    * @param room Room the host created.
-   * @returns Promise resolving with the room once the socket is open.
+   * @returns Observable of the room once the socket is open.
    */
-  private connectInitiator(room: RoomCreated): Promise<RoomCreated> {
-    return this.openSocket(initiatorUrl(room)).then(() => {
-      this.phase = { _tag: 'host-waiting', sid: room.sid };
-      return room;
-    });
+  private connectInitiator(room: RoomCreated): Observable<RoomCreated> {
+    return this.openSocket(initiatorUrl(room)).pipe(
+      map(() => {
+        this.phase = { _tag: 'host-waiting', sid: room.sid };
+        return room;
+      }),
+    );
   }
 
   /**
    * Opens a relay socket and waits for it to connect.
    * @param url Socket URL to open.
-   * @returns Promise resolving with the open socket.
+   * @returns Observable of the open socket.
    */
-  private openSocket(url: string): Promise<TransportSocket> {
-    const socket = new this.socketConstructor(url);
-    this.socket = socket;
-    socket.onmessage = this.onMessage;
-    socket.onerror = () => this.fail(new Error('relay socket failed'));
-    socket.onclose = () => this.fail(new Error('relay socket closed'));
-    return new Promise<TransportSocket>((resolve, reject) => {
-      this.pendingOpen = { resolve: () => resolve(socket), reject };
+  private openSocket(url: string): Observable<TransportSocket> {
+    return new Observable<TransportSocket>((subscriber) => {
+      const socket = new this.socketConstructor(url);
+      this.socket = socket;
+      socket.onmessage = this.onMessage;
+      socket.onerror = () => this.fail(new Error('relay socket failed'));
+      socket.onclose = () => this.fail(new Error('relay socket closed'));
+      this.pendingOpen = {
+        resolve: () => {
+          subscriber.next(socket);
+          subscriber.complete();
+        },
+        reject: (error) => subscriber.error(error),
+      };
       socket.onopen = () => this.resolveOpen();
     });
   }

@@ -70,10 +70,7 @@ export class HandshakeService {
   runAsResponder(transport: SignalTransport, code: string): Observable<HandshakeResult> {
     const { roomId, password } = parsePasscode(code);
 
-    return combineLatest([
-      this.peerKey(transport),
-      defer(() => from(transport.joinRoom(roomId))),
-    ]).pipe(
+    return combineLatest([this.peerKey(transport), defer(() => transport.joinRoom(roomId))]).pipe(
       switchMap(([peerPublicKey, sid]) => {
         const { secret, publicKey } = this.deriveKeyPair(sid, password);
         transport.send({ type: 'pake', y: encodeBase64Url(publicKey) });
