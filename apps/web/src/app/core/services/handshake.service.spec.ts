@@ -16,7 +16,7 @@ const runHandshakePair = async (
   const initiator = new HandshakeService();
   const responder = new HandshakeService();
 
-  const { roomId, sid } = initiatorTransport.createRoom();
+  const { roomId, sid } = await initiatorTransport.createRoom();
   const [initiatorResult, responderResult] = await Promise.all([
     firstValueFrom(
       initiator.runAsInitiator(initiatorTransport, {

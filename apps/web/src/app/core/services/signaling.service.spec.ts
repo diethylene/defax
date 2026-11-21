@@ -46,7 +46,7 @@ describe('SignalingService', () => {
     const initiator = createSignaling(initiatorTransport);
     const responder = createSignaling(responderTransport);
 
-    const session = initiator.createSession();
+    const session = await initiator.createSession();
     const code = `${session.roomId}-${session.password}`;
 
     const [initiatorResult, responderResult] = await Promise.all([

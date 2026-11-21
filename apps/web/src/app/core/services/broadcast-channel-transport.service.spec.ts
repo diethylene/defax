@@ -5,9 +5,9 @@ import { BroadcastChannelTransport } from './broadcast-channel-transport.service
 const pakeY = encodeBase64Url(new Uint8Array(32).fill(1));
 
 describe('BroadcastChannelTransport room lifecycle', () => {
-  it('creates a room with a room id and a base64url sid', () => {
+  it('creates a room with a room id and a base64url sid', async () => {
     const host = new BroadcastChannelTransport();
-    const room = host.createRoom();
+    const room = await host.createRoom();
     expect(room.roomId).toMatch(/^[1-9]\d{5}$/);
     expect(room.sid).toMatch(/^[A-Za-z0-9_-]{22}$/);
     host.close();
@@ -21,7 +21,7 @@ describe('BroadcastChannelTransport room lifecycle', () => {
     const hostReceived: SignalMessage[] = [];
     host.messages$.subscribe((message) => hostReceived.push(message));
 
-    const room = host.createRoom();
+    const room = await host.createRoom();
     const sid = await guest.joinRoom(room.roomId);
     host.send({ type: 'pake', y: pakeY });
     await new Promise((resolve) => setTimeout(resolve, 20));
@@ -41,7 +41,7 @@ describe('BroadcastChannelTransport room lifecycle', () => {
     const guestReceived: SignalMessage[] = [];
     guest.messages$.subscribe((message) => guestReceived.push(message));
 
-    const room = host.createRoom();
+    const room = await host.createRoom();
     host.send({ type: 'pake', y: pakeY });
 
     await guest.joinRoom(room.roomId);
@@ -60,7 +60,7 @@ describe('BroadcastChannelTransport join rejection', () => {
     const first = new BroadcastChannelTransport();
     const second = new BroadcastChannelTransport();
 
-    const room = host.createRoom();
+    const room = await host.createRoom();
     await first.joinRoom(room.roomId);
     await expect(second.joinRoom(room.roomId)).rejects.toThrow('room-full');
 
@@ -71,7 +71,7 @@ describe('BroadcastChannelTransport join rejection', () => {
 
   it('rejects a join that speaks an unknown protocol', async () => {
     const host = new BroadcastChannelTransport();
-    const room = host.createRoom();
+    const room = await host.createRoom();
 
     const rogue = new BroadcastChannel(`room-${room.roomId}`);
     const received: SignalMessage[] = [];
@@ -92,7 +92,7 @@ describe('BroadcastChannelTransport join rejection', () => {
     const host = new BroadcastChannelTransport();
     const guest = new BroadcastChannelTransport();
 
-    const room = host.createRoom();
+    const room = await host.createRoom();
     await guest.joinRoom(room.roomId);
 
     const received: SignalMessage[] = [];

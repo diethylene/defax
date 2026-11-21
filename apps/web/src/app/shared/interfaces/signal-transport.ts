@@ -11,9 +11,9 @@ export abstract class SignalTransport {
 
   /**
    * Creates a room and becomes its host.
-   * @returns The generated room id and the host session id.
+   * @returns Promise resolving with the generated room id and host session id.
    */
-  abstract createRoom(): RoomCreated;
+  abstract createRoom(): Promise<RoomCreated>;
 
   /**
    * Joins an existing room as a guest.

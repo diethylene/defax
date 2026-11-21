@@ -14,9 +14,9 @@ export class ServerTransport extends SignalTransport {
 
   /**
    * Creates a room through the relay.
-   * @returns The created room.
+   * @returns Promise resolving with the created room.
    */
-  override createRoom(): RoomCreated {
+  override createRoom(): Promise<RoomCreated> {
     throw new Error('ServerTransport.createRoom is not implemented');
   }
 

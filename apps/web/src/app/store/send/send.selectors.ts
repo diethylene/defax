@@ -31,6 +31,7 @@ export const selectSendPhase = createSelector(
 export const sendErrorMessages = {
   'handshake-failed': 'Handshake failed',
   'hash-failed': 'File hashing failed',
+  'room-failed': 'Could not create room',
   'transfer-failed': 'Transfer failed',
   'verification-failed': 'receiver verification failed',
 } satisfies Record<SendErrorTag, string>;
