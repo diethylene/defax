@@ -5,12 +5,10 @@ import type { Identity } from '@contract/signal/identity.model';
 import { Store } from '@ngrx/store';
 import * as Match from 'effect/Match';
 import { type Observable, throttleTime } from 'rxjs';
+import { environment } from '../../../../environments/environment';
 import type { TransferSnapshot } from '../../interfaces/transfer.interface';
 import type { ProgressTransfer } from './progress-transfer/progress-transfer.component';
 import { TransferMetricsStore } from './transfer-metrics.store';
-
-/** Interval at which the transferred byte count is sampled for the speed. */
-const SAMPLE_INTERVAL_MS = 1000;
 
 /** Snapshot shown before a transfer reports its first byte. */
 const EMPTY_SNAPSHOT: TransferSnapshot = {
@@ -56,7 +54,7 @@ export abstract class TransferComponent {
     this.liveTransfer = toSignal(transfer$, { initialValue: EMPTY_SNAPSHOT });
     this.sampledTransfer = toSignal(
       transfer$.pipe(
-        throttleTime(SAMPLE_INTERVAL_MS, undefined, {
+        throttleTime(environment.ui.sampleInterval, undefined, {
           leading: true,
           trailing: true,
         }),

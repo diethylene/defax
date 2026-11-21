@@ -22,10 +22,7 @@ import {
   take,
   tap,
 } from 'rxjs';
-import {
-  RELAY_THROTTLE_BYTES_PER_SECOND,
-  TRANSFER_CHUNK_SIZE,
-} from '../../shared/constants/transfer-protocol';
+import { environment } from '../../../environments/environment';
 import { decodeJson } from '../../shared/utils/decode-json.util';
 import { paceBytes } from '../../shared/utils/pace-bytes.util';
 import type { ReceiveRequest } from '../interfaces/receive-request.interface';
@@ -40,7 +37,7 @@ import { WebRtcService } from './webrtc.service';
 /** Chunk pacing each route gets, since only relayed bytes are throttled. */
 const chunkPacing = {
   direct: identity,
-  relay: paceBytes(RELAY_THROTTLE_BYTES_PER_SECOND),
+  relay: paceBytes(environment.transfer.relayThrottleBytesPerSecond),
 } satisfies Record<TransferRoute, MonoTypeOperatorFunction<ArrayBuffer>>;
 
 /** Moves file bytes over a WebRTC data channel. */
@@ -119,11 +116,16 @@ export class TransferService {
    * @returns Observable of progress events.
    */
   private sendChunks(file: File, channel: RtcChannel): Observable<TransferEvent> {
-    const chunkCount = Math.ceil(file.size / TRANSFER_CHUNK_SIZE);
+    const chunkCount = Math.ceil(file.size / environment.transfer.chunkSize);
     return range(chunkCount).pipe(
       concatMap((index) =>
         from(
-          file.slice(index * TRANSFER_CHUNK_SIZE, (index + 1) * TRANSFER_CHUNK_SIZE).arrayBuffer(),
+          file
+            .slice(
+              index * environment.transfer.chunkSize,
+              (index + 1) * environment.transfer.chunkSize,
+            )
+            .arrayBuffer(),
         ),
       ),
       chunkPacing[channel.route],

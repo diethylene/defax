@@ -6,14 +6,12 @@ import { pipe } from 'effect/Function';
 import * as Result from 'effect/Result';
 import * as Schema from 'effect/Schema';
 import { catchError, map, type Observable, of, timeout } from 'rxjs';
+import { environment } from '../../../environments/environment';
 import {
   type TurnCredentialApiError,
   TurnCredentialRequestFailed,
   TurnCredentialWireError,
 } from './turn-credential-api-errors.model';
-
-/** A mint is a small write; it is abandoned rather than retried after this long. */
-const REQUEST_TIMEOUT_MS = 10_000;
 
 /** Envelope the credential endpoint returns on success. */
 const IceServersEnvelope = apiEnvelopeOf(IceServersResponse);
@@ -69,7 +67,7 @@ export class TurnCredentialApiService {
     baseUrl: string,
   ): Observable<Result.Result<IceServersResponse, TurnCredentialApiError>> {
     return this.http.post<unknown>(`${baseUrl}/turn/credentials`, null).pipe(
-      timeout(REQUEST_TIMEOUT_MS),
+      timeout(environment.timeouts.request),
       map(decodeIceServers),
       catchError((error: unknown) => of(decodeFailure(error))),
     );
