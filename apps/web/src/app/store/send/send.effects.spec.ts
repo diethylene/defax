@@ -7,7 +7,6 @@ import { sidFromBytes } from '@contract/signal/sid.model';
 import { Actions } from '@ngrx/effects';
 import type { Action } from '@ngrx/store';
 import { Store } from '@ngrx/store';
-import type { InitiatorSession } from '@web/core/interfaces/handshake.interface';
 import { HashService } from '@web/core/services/hash.service';
 import { SignalingService } from '@web/core/services/signaling.service';
 import { TransferService } from '@web/core/services/transfer.service';
@@ -79,8 +78,8 @@ describe('sendStartSession$', () => {
         {
           provide: SignalingService,
           useValue: {
-            createSession: (): Promise<InitiatorSession> =>
-              Promise.resolve({
+            createSession: () =>
+              of({
                 roomId,
                 sid,
                 password: 'pw',
@@ -106,8 +105,8 @@ describe('sendStartSession$', () => {
         {
           provide: SignalingService,
           useValue: {
-            createSession: (): Promise<InitiatorSession> =>
-              Promise.resolve({
+            createSession: () =>
+              of({
                 roomId,
                 sid,
                 password: 'pw',
@@ -127,8 +126,7 @@ describe('sendStartSession$', () => {
         {
           provide: SignalingService,
           useValue: {
-            createSession: (): Promise<InitiatorSession> =>
-              Promise.reject(new Error('room creation failed')),
+            createSession: () => throwError(() => new Error('room creation failed')),
             connectAsInitiator: () => of({ sas: '123456', peerIdentity }),
           },
         },
