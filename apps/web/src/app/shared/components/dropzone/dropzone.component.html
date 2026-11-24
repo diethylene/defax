@@ -61,7 +61,7 @@
       <div
         class="button-layer button-choose"
         [class.button-hidden]="isSelectedView()"
-        [attr.aria-hidden]="isSelectedView()"
+        [inert]="isSelectedView()"
       >
         <button type="button" hlmBtn tabindex="-1">
           {{ buttonLabel() }}
