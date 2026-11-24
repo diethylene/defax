@@ -6,7 +6,8 @@
   "vars": {
     "APP_VERSION": "0.0.0",
     "RATE_LIMIT_DEFAULT": "30",
-    "RATE_LIMIT_WINDOW": "1 minute"
+    "RATE_LIMIT_WINDOW": "1 minute",
+    "ALLOWED_ORIGIN": "https://defax.axelson.gg"
   },
   "secrets": {
     "required": ["TURN_KEY_ID", "TURN_KEY_API_TOKEN"]
@@ -18,7 +19,7 @@
     ]
   },
   "migrations": [
-    { "tag": "v1", "new_classes": ["Room"] },
-    { "tag": "v2", "new_classes": ["RateLimiterDo"] }
+    { "tag": "v1", "new_sqlite_classes": ["Room"] },
+    { "tag": "v2", "new_sqlite_classes": ["RateLimiterDo"] }
   ]
 }
