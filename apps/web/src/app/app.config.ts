@@ -29,6 +29,9 @@ import {
   transitionThemeMode$,
 } from './store/application-config/application-config.effects';
 import { applicationConfigFeature } from './store/application-config/application-config.reducer';
+import { ConnectivityActions } from './store/connectivity/connectivity.actions';
+import { liveRoute$, recheck$, startCheck$ } from './store/connectivity/connectivity.effects';
+import { connectivityFeature } from './store/connectivity/connectivity.reducer';
 import {
   closeRoom$ as closeReceiveRoom$,
   connect$ as connectReceive$,
@@ -49,19 +52,25 @@ export const appConfig: ApplicationConfig = {
     provideAnimationsAsync(),
     provideStore({
       applicationConfig: applicationConfigFeature.reducer,
+      connectivity: connectivityFeature.reducer,
       send: sendFeature.reducer,
       receive: receiveFeature.reducer,
       router: routerReducer,
     }),
-    provideEffects({ applyThemeMode$, persistThemeMode$, transitionThemeMode$ }, sendEffects, {
-      routeToPhase: routeToReceivePhase$,
-      connect: connectReceive$,
-      closeRoom: closeReceiveRoom$,
-      disconnect: disconnectReceive$,
-      peerDisconnected: peerDisconnectedReceive$,
-      fileHash: fileHashReceive$,
-      startTransfer: startReceiveTransfer$,
-    }),
+    provideEffects(
+      { applyThemeMode$, persistThemeMode$, transitionThemeMode$ },
+      { startCheck$, recheck$, liveRoute$ },
+      sendEffects,
+      {
+        routeToPhase: routeToReceivePhase$,
+        connect: connectReceive$,
+        closeRoom: closeReceiveRoom$,
+        disconnect: disconnectReceive$,
+        peerDisconnected: peerDisconnectedReceive$,
+        fileHash: fileHashReceive$,
+        startTransfer: startReceiveTransfer$,
+      },
+    ),
     provideRouter(
       routes,
       withViewTransitions({
@@ -92,6 +101,15 @@ export const appConfig: ApplicationConfig = {
           const mode = resolveInitialMode();
           applyMode(mode);
           store.dispatch(ApplicationConfigActions.setMode({ mode }));
+        },
+      multi: true,
+    },
+    {
+      provide: APP_INITIALIZER,
+      useFactory:
+        (store = inject(Store)) =>
+        () => {
+          store.dispatch(ConnectivityActions.check());
         },
       multi: true,
     },
