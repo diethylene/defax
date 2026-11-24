@@ -11,8 +11,8 @@ export interface RtcChannel {
   drain(): Observable<void>;
   /** Closes the channel and its peer connection. */
   close(): void;
-  /** Path the bytes travel: direct or TURN relay. */
-  readonly route: TransferRoute;
+  /** Live path the bytes travel; emits the current route and re-emits on change. */
+  readonly route$: Observable<TransferRoute>;
 }
 
 /** Holds ICE candidates until the peer has a remote description. */
