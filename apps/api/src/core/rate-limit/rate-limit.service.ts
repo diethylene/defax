@@ -55,33 +55,34 @@ export class RateLimiter extends Context.Service<
     ) => Effect.Effect<ConsumeResult, RateLimiterUnavailable>;
   }
 >()('RateLimiter', {
-  make: Effect.map(RateLimiterNamespace, ({ namespace }) => {
-    const stub = namespace.get(namespace.idFromName('default'));
-    return {
-      consume: (key, limit, window) =>
-        Effect.tryPromise({
-          try: () =>
-            stub.fetch(CONSUME_URL, {
-              method: 'POST',
-              headers: { 'content-type': 'application/json' },
-              body: JSON.stringify(
-                Schema.encodeSync(ConsumeRequestSchema)({
-                  key,
-                  limit,
-                  windowMs: Duration.toMillis(window),
-                }),
-              ),
-            }),
-          catch: (cause) => new RateLimiterUnavailable({ cause }),
-        }).pipe(
-          Effect.timeout(CONSUME_TIMEOUT),
-          Effect.catchTag('TimeoutError', (cause) =>
-            Effect.fail(new RateLimiterUnavailable({ cause })),
+  make: Effect.map(RateLimiterNamespace, ({ namespace }) => ({
+    consume: (key, limit, window) =>
+      Effect.sync(() => namespace.get(namespace.idFromName('default'))).pipe(
+        Effect.flatMap((stub) =>
+          Effect.tryPromise({
+            try: () =>
+              stub.fetch(CONSUME_URL, {
+                method: 'POST',
+                headers: { 'content-type': 'application/json' },
+                body: JSON.stringify(
+                  Schema.encodeSync(ConsumeRequestSchema)({
+                    key,
+                    limit,
+                    windowMs: Duration.toMillis(window),
+                  }),
+                ),
+              }),
+            catch: (cause) => new RateLimiterUnavailable({ cause }),
+          }).pipe(
+            Effect.timeout(CONSUME_TIMEOUT),
+            Effect.catchTag('TimeoutError', (cause) =>
+              Effect.fail(new RateLimiterUnavailable({ cause })),
+            ),
+            Effect.flatMap(decodeResult),
           ),
-          Effect.flatMap(decodeResult),
         ),
-    };
-  }),
+      ),
+  })),
 }) {
   /** Layer providing the limiter from the RATE_LIMITER namespace. */
   static readonly layer = Layer.effect(RateLimiter, RateLimiter.make);
