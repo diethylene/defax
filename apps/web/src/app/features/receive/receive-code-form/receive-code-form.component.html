@@ -16,6 +16,7 @@
             autocomplete="off"
             autocapitalize="none"
             spellcheck="false"
+            (keydown)="blockSpace($event)"
           />
           @if (valid()) {
             <ng-icon

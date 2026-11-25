@@ -123,6 +123,15 @@ export class ReceiveCodeFormComponent {
   }
 
   /**
+   * Stops the space bar from entering a character in the code field.
+   * @param event The keydown event from the code input.
+   */
+  protected blockSpace(event: KeyboardEvent): void {
+    if (event.key !== ' ') return;
+    event.preventDefault();
+  }
+
+  /**
    * Submits the form and emits the parsed code when it is valid.
    * @param event The native submit event, cancelled so the page does not reload.
    */
