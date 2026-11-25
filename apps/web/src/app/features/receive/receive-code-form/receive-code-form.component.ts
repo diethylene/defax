@@ -3,13 +3,16 @@ import {
   ChangeDetectionStrategy,
   Component,
   computed,
+  DestroyRef,
   type ElementRef,
   effect,
+  inject,
   input,
   output,
   signal,
   viewChild,
 } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { disabled, FormField, form, submit, validate } from '@angular/forms/signals';
 import { NgIcon, provideIcons } from '@ng-icons/core';
 import { lucideCheck } from '@ng-icons/lucide';
@@ -20,6 +23,7 @@ import { HlmInput } from '@spartan-ng/helm/input';
 import { HlmLabel } from '@spartan-ng/helm/label';
 import { HlmSeparator } from '@spartan-ng/helm/separator';
 import * as Option from 'effect/Option';
+import { fromEvent } from 'rxjs';
 import { SpinnerComponent } from '../../../core/components/spinner/spinner.component';
 import { NoSpacesDirective } from '../../../shared/directives/no-spaces.directive';
 import { parseReceiveCode } from '../../../shared/utils/passcode.util';
@@ -117,24 +121,44 @@ export class ReceiveCodeFormComponent {
   /** True when a submitted code failed to parse. */
   protected readonly showError = computed(() => this.submitted() && this.codeForm.code().invalid());
 
+  /** True while the code input holds focus. */
+  protected readonly focused = signal(false);
+
   /** The card scrolled to the top of the scroll container on focus. */
   private readonly card = viewChild<ElementRef<HTMLElement>>('card');
 
-  /** Resets the field on disconnect. */
+  /** Tears down the viewport resize subscription with the component. */
+  private readonly destroyRef = inject(DestroyRef);
+
+  /** Resets the field on disconnect and re-scrolls the card when the viewport resizes while focused. */
   constructor() {
     effect(() => {
       if (this.connecting()) return;
       this.model.set(emptyCode);
       this.submitted.set(false);
     });
+
+    // The viewport resize fires after the on-screen keyboard opens, which moves the card off screen.
+    const viewport: EventTarget = window.visualViewport ?? window;
+    fromEvent(viewport, 'resize')
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe(() => {
+        if (this.focused()) this.scrollCardToTop();
+      });
   }
 
-  /** Scrolls the card to the top of the scroll container when the input is focused. */
+  /** Scrolls the main container so the card sits at its top with a 4px margin. */
   protected scrollCardToTop(): void {
     const card = this.card()?.nativeElement;
     if (card === undefined) return;
     // Deferred a frame so the browser's own focus scroll does not override this one.
-    requestAnimationFrame(() => card.scrollIntoView({ behavior: 'smooth', block: 'start' }));
+    requestAnimationFrame(() => {
+      const main = card.closest('main');
+      if (main === null) return;
+      const top =
+        card.getBoundingClientRect().top - main.getBoundingClientRect().top + main.scrollTop - 4;
+      main.scrollTo({ top: Math.max(0, top), behavior: 'smooth' });
+    });
   }
 
   /**
