@@ -1,13 +1,20 @@
 import { animate, style, transition, trigger } from '@angular/animations';
 import {
+  afterNextRender,
   ChangeDetectionStrategy,
   Component,
   computed,
+  DestroyRef,
+  type ElementRef,
   effect,
+  Injector,
+  inject,
   input,
   output,
   signal,
+  viewChild,
 } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { disabled, FormField, form, submit, validate } from '@angular/forms/signals';
 import { NgIcon, provideIcons } from '@ng-icons/core';
 import { lucideCheck } from '@ng-icons/lucide';
@@ -18,6 +25,7 @@ import { HlmInput } from '@spartan-ng/helm/input';
 import { HlmLabel } from '@spartan-ng/helm/label';
 import { HlmSeparator } from '@spartan-ng/helm/separator';
 import * as Option from 'effect/Option';
+import { fromEvent } from 'rxjs';
 import { SpinnerComponent } from '../../../core/components/spinner/spinner.component';
 import { parseReceiveCode } from '../../../shared/utils/passcode.util';
 
@@ -113,6 +121,17 @@ export class ReceiveCodeFormComponent {
   /** True when a submitted code failed to parse. */
   protected readonly showError = computed(() => this.submitted() && this.codeForm.code().invalid());
 
+  /** The code input, used to read and restore the caret while pasting. */
+  private readonly codeInput = viewChild<ElementRef<HTMLInputElement>>('codeInput');
+  /** The card scrolled to the top of the viewport when the keyboard opens. */
+  private readonly card = viewChild<ElementRef<HTMLElement>>('card');
+  /** Injector that registers the post-render caret restore. */
+  private readonly injector = inject(Injector);
+  /** Tear-down scope for the viewport resize listener. */
+  private readonly destroyRef = inject(DestroyRef);
+  /** True while the code input holds focus. */
+  protected readonly focused = signal(false);
+
   /** Clears the field whenever a connection attempt ends. */
   constructor() {
     effect(() => {
@@ -120,6 +139,46 @@ export class ReceiveCodeFormComponent {
       this.model.set(emptyCode);
       this.submitted.set(false);
     });
+
+    const viewport: EventTarget = window.visualViewport ?? window;
+    fromEvent(viewport, 'resize')
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe(() => this.scrollCardIntoView());
+  }
+
+  /**
+   * Scrolls the card to the top of its scroll container when the keyboard opens.
+   */
+  private scrollCardIntoView(): void {
+    if (!this.focused()) return;
+    this.card()?.nativeElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+
+  /**
+   * Stops the space bar from entering a character in the code field.
+   * @param event The keydown event from the code input.
+   */
+  protected blockSpace(event: KeyboardEvent): void {
+    if (event.key !== ' ') return;
+    event.preventDefault();
+  }
+
+  /**
+   * Strips spaces from pasted text and inserts it at the caret.
+   * @param event The paste event from the code input, whose native insert is cancelled.
+   */
+  protected paste(event: ClipboardEvent): void {
+    event.preventDefault();
+    const input = this.codeInput()?.nativeElement;
+    if (input === undefined) return;
+    const pasted = (event.clipboardData?.getData('text/plain') ?? '').replaceAll(' ', '');
+    const value = this.codeForm.code().value();
+    const start = input.selectionStart ?? value.length;
+    const end = input.selectionEnd ?? value.length;
+    const next = `${value.slice(0, start)}${pasted}${value.slice(end)}`;
+    this.codeForm.code().value.set(next);
+    const caret = start + pasted.length;
+    afterNextRender(() => input.setSelectionRange(caret, caret), { injector: this.injector });
   }
 
   /**
