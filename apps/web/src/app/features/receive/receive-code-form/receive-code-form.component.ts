@@ -3,16 +3,13 @@ import {
   ChangeDetectionStrategy,
   Component,
   computed,
-  DestroyRef,
   type ElementRef,
   effect,
-  inject,
   input,
   output,
   signal,
   viewChild,
 } from '@angular/core';
-import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { disabled, FormField, form, submit, validate } from '@angular/forms/signals';
 import { NgIcon, provideIcons } from '@ng-icons/core';
 import { lucideCheck } from '@ng-icons/lucide';
@@ -23,7 +20,6 @@ import { HlmInput } from '@spartan-ng/helm/input';
 import { HlmLabel } from '@spartan-ng/helm/label';
 import { HlmSeparator } from '@spartan-ng/helm/separator';
 import * as Option from 'effect/Option';
-import { fromEvent } from 'rxjs';
 import { SpinnerComponent } from '../../../core/components/spinner/spinner.component';
 import { NoSpacesDirective } from '../../../shared/directives/no-spaces.directive';
 import { parseReceiveCode } from '../../../shared/utils/passcode.util';
@@ -121,33 +117,24 @@ export class ReceiveCodeFormComponent {
   /** True when a submitted code failed to parse. */
   protected readonly showError = computed(() => this.submitted() && this.codeForm.code().invalid());
 
-  /** The card scrolled to the top of the viewport when the keyboard opens. */
+  /** The card scrolled to the top of the scroll container on focus. */
   private readonly card = viewChild<ElementRef<HTMLElement>>('card');
-  /** Tear-down scope for the viewport resize listener. */
-  private readonly destroyRef = inject(DestroyRef);
-  /** True while the code input holds focus. */
-  protected readonly focused = signal(false);
 
-  /** Resets the field on disconnect and scrolls the card clear of the keyboard while focused. */
+  /** Resets the field on disconnect. */
   constructor() {
     effect(() => {
       if (this.connecting()) return;
       this.model.set(emptyCode);
       this.submitted.set(false);
     });
-
-    const viewport: EventTarget = window.visualViewport ?? window;
-    fromEvent(viewport, 'resize')
-      .pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe(() => this.scrollCardIntoView());
   }
 
-  /**
-   * Scrolls the card to the top of its scroll container when the keyboard opens.
-   */
-  private scrollCardIntoView(): void {
-    if (!this.focused()) return;
-    this.card()?.nativeElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  /** Scrolls the card to the top of the scroll container when the input is focused. */
+  protected scrollCardToTop(): void {
+    const card = this.card()?.nativeElement;
+    if (card === undefined) return;
+    // Deferred a frame so the browser's own focus scroll does not override this one.
+    requestAnimationFrame(() => card.scrollIntoView({ behavior: 'smooth', block: 'start' }));
   }
 
   /**
