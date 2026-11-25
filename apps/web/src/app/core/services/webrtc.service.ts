@@ -6,19 +6,22 @@ import * as Result from 'effect/Result';
 import {
   catchError,
   defer,
+  distinctUntilChanged,
   EMPTY,
+  filter,
   finalize,
   from,
+  fromEvent,
   map,
+  merge,
   Observable,
   of,
   ReplaySubject,
+  shareReplay,
   switchMap,
   take,
   tap,
   timeout,
-  timer,
-  toArray,
 } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import { DATA_CHANNEL_LABEL } from '../../shared/constants/transfer-protocol';
@@ -211,20 +214,29 @@ export class WebRtcService {
   }
 
   /**
-   * Reads the negotiated route from the peer's ICE stats, waiting briefly for a
-   * nominated pair before defaulting to direct.
-   * @param peer Peer connection whose stats are read.
-   * @returns The route the connection took.
+   * Builds the live route stream for a peer connection, reading the settled ICE
+   * pair once connected and again whenever the connection state changes.
+   * @param peer Peer connection whose stats decide the route.
+   * @returns Hot route stream emitting the current route and re-emitting on change.
    */
-  private detectRoute(peer: RTCPeerConnection): Observable<TransferRoute> {
-    return timer(0, environment.timeouts.routePollInterval).pipe(
-      take(environment.timeouts.routePollAttempts),
-      switchMap(() => from(peer.getStats())),
-      map((report) => routeFromStats(Array.from(report.values()))),
-      toArray(),
-      map((routes) => (routes.includes('relay') ? 'relay' : 'direct')),
-      catchError(() => of<TransferRoute>('direct')),
-    );
+  private routeStream(peer: RTCPeerConnection): Observable<TransferRoute> {
+    const read = (): Observable<TransferRoute> =>
+      from(peer.getStats()).pipe(
+        map((report) => routeFromStats(Array.from(report.values()))),
+        catchError(() => EMPTY),
+      );
+    const connected$: Observable<unknown> =
+      peer.connectionState === 'connected'
+        ? of(undefined)
+        : fromEvent(peer, 'connectionstatechange').pipe(
+            filter(() => peer.connectionState === 'connected'),
+            take(1),
+          );
+    return merge(
+      connected$.pipe(switchMap(() => read())),
+      fromEvent(peer, 'connectionstatechange').pipe(switchMap(() => read())),
+      fromEvent(peer, 'iceconnectionstatechange').pipe(switchMap(() => read())),
+    ).pipe(distinctUntilChanged(), shareReplay({ bufferSize: 1, refCount: false }));
   }
 
   /**
@@ -254,8 +266,7 @@ export class WebRtcService {
       channel.onopen = () => subscriber.next(channel);
     }).pipe(
       take(1),
-      switchMap(() => this.detectRoute(peer)),
-      map((route) => this.channelHandle(channel, peer, messages.asObservable(), route)),
+      map(() => this.channelHandle(channel, peer, messages.asObservable(), this.routeStream(peer))),
     );
   }
 
@@ -264,14 +275,14 @@ export class WebRtcService {
    * @param channel Open data channel.
    * @param peer Peer connection owning the channel.
    * @param messages Buffers received from the peer.
-   * @param route Path the bytes travel.
+   * @param route$ Live path the bytes travel.
    * @returns The channel handle.
    */
   private channelHandle(
     channel: RTCDataChannel,
     peer: RTCPeerConnection,
     messages: Observable<ArrayBuffer>,
-    route: TransferRoute,
+    route$: Observable<TransferRoute>,
   ): RtcChannel {
     return {
       send: (data) => this.sendData(channel, data),
@@ -281,7 +292,7 @@ export class WebRtcService {
         channel.close();
         peer.close();
       },
-      route,
+      route$,
     };
   }
 
