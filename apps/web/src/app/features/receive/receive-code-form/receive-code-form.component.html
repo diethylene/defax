@@ -1,4 +1,4 @@
-<section hlmCard #card class="w-full scroll-mt-1">
+<section hlmCard #card class="w-full">
   <div hlmCardContent class="flex flex-col gap-3">
     <form class="flex flex-col gap-2" (submit)="submit($event)">
       <label hlmLabel for="receive-code">Code from the sender</label>
@@ -17,7 +17,8 @@
             autocomplete="off"
             autocapitalize="none"
             spellcheck="false"
-            (focus)="scrollCardToTop()"
+            (focus)="focused.set(true); scrollCardToTop()"
+            (blur)="focused.set(false)"
           />
           @if (valid()) {
             <ng-icon
