@@ -22,10 +22,6 @@ export interface Environment {
     readonly connect: number;
     /** Milliseconds an API request runs before it is abandoned. */
     readonly request: number;
-    /** Milliseconds between ICE route reads. */
-    readonly routePollInterval: number;
-    /** Reads of the ICE stats before the route defaults to direct. */
-    readonly routePollAttempts: number;
   };
   /** Presentation timings distinct from protocol tuning. */
   readonly ui: {
