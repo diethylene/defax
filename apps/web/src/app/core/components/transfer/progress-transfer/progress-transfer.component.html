@@ -1,6 +1,7 @@
 <section hlmCard>
   <div hlmCardContent class="flex flex-col gap-6">
     <app-transfer-file-summary
+      [mode]="mode()"
       [name]="progress().fileName"
       [peerBrowser]="progress().peerBrowser"
       [peerOs]="progress().peerOs"
