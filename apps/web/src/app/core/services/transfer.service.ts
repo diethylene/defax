@@ -6,25 +6,28 @@ import {
   concat,
   concatMap,
   defer,
+  distinctUntilChanged,
   EMPTY,
+  filter,
   finalize,
   from,
-  identity,
   ignoreElements,
   last,
-  type MonoTypeOperatorFunction,
   map,
+  merge,
   type Observable,
   of,
   range,
   scan,
+  share,
   switchMap,
   take,
+  takeUntil,
   tap,
 } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import { decodeJson } from '../../shared/utils/decode-json.util';
-import { paceBytes } from '../../shared/utils/pace-bytes.util';
+import { paceBytesBy } from '../../shared/utils/pace-bytes-by.util';
 import type { ReceiveRequest } from '../interfaces/receive-request.interface';
 import type { RtcChannel } from '../interfaces/rtc-channel.interface';
 import type { TransferRoute } from '../interfaces/transfer.interface';
@@ -34,11 +37,11 @@ import { SignalingService } from './signaling.service';
 import { StorageService } from './storage.service';
 import { WebRtcService } from './webrtc.service';
 
-/** Chunk pacing each route gets, since only relayed bytes are throttled. */
-const chunkPacing = {
-  direct: identity,
-  relay: paceBytes(environment.transfer.relayThrottleBytesPerSecond),
-} satisfies Record<TransferRoute, MonoTypeOperatorFunction<ArrayBuffer>>;
+/** Byte ceiling each route sends under, since only relayed bytes are throttled. */
+const ceilingByRoute = {
+  direct: Number.POSITIVE_INFINITY,
+  relay: environment.transfer.relayThrottleBytesPerSecond,
+} satisfies Record<TransferRoute, number>;
 
 /** Moves file bytes over a WebRTC data channel. */
 @Injectable({ providedIn: 'root' })
@@ -94,30 +97,31 @@ export class TransferService {
    * @returns Observable of transfer events.
    */
   private streamOut(file: File): Observable<TransferEvent> {
-    return this.webrtc
-      .openInitiator()
-      .pipe(
-        switchMap((channel) =>
-          concat(
-            of<TransferEvent>({ type: 'route', route: channel.route }),
-            this.sendChunks(file, channel),
-            channel.drain().pipe(ignoreElements()),
-            of<TransferEvent>({ type: 'complete' }).pipe(tap(() => channel.close())),
-            this.awaitVerification(),
-          ).pipe(finalize(() => channel.close())),
-        ),
-      );
+    return this.webrtc.openInitiator().pipe(
+      switchMap((channel) => {
+        const transfer$ = concat(
+          this.sendChunks(file, channel),
+          channel.drain().pipe(ignoreElements()),
+          of<TransferEvent>({ type: 'complete' }).pipe(tap(() => channel.close())),
+          this.awaitVerification(),
+        ).pipe(
+          finalize(() => channel.close()),
+          share(),
+        );
+        return merge(routeEventsOf(channel, transfer$), transfer$);
+      }),
+    );
   }
 
   /**
-   * Sends the file in chunks, reporting the running total.
+   * Sends the file in chunks, pacing each under the live route's ceiling.
    * @param file File to send.
    * @param channel Open data channel.
    * @returns Observable of progress events.
    */
   private sendChunks(file: File, channel: RtcChannel): Observable<TransferEvent> {
     const chunkCount = Math.ceil(file.size / environment.transfer.chunkSize);
-    return range(chunkCount).pipe(
+    const chunks$ = range(chunkCount).pipe(
       concatMap((index) =>
         from(
           file
@@ -128,7 +132,10 @@ export class TransferService {
             .arrayBuffer(),
         ),
       ),
-      chunkPacing[channel.route],
+    );
+    const ceiling$ = channel.route$.pipe(map((route) => ceilingByRoute[route]));
+    return chunks$.pipe(
+      paceBytesBy(ceiling$),
       concatMap((bytes) => channel.send(bytes).pipe(map(() => bytes.byteLength))),
       scan((sent, byteLength) => sent + byteLength, 0),
       map((sent): TransferEvent => ({ type: 'progress', transferred: sent })),
@@ -159,17 +166,20 @@ export class TransferService {
     return defer(() => {
       this.sendAccept();
       return this.webrtc.openResponder().pipe(
-        switchMap((channel) =>
-          concat(
-            of<TransferEvent>({ type: 'route', route: channel.route }),
+        switchMap((channel) => {
+          const transfer$ = concat(
             of<TransferEvent>({
               type: 'started',
               total: input.metadata.size,
             }),
             this.receiveChunks(channel),
             this.verifyAndFinish(input),
-          ).pipe(finalize(() => channel.close())),
-        ),
+          ).pipe(
+            finalize(() => channel.close()),
+            share(),
+          );
+          return merge(routeEventsOf(channel, transfer$), transfer$);
+        }),
       );
     });
   }
@@ -272,6 +282,27 @@ export class TransferService {
       .subscribe();
   }
 }
+
+/**
+ * Emits the channel's live route as transfer events until the transfer ends.
+ * @param channel Open data channel carrying the route.
+ * @param transfer$ Transfer events whose end stops the route feed.
+ * @returns Observable of distinct route events.
+ */
+const routeEventsOf = (
+  channel: RtcChannel,
+  transfer$: Observable<TransferEvent>,
+): Observable<TransferEvent> =>
+  channel.route$.pipe(
+    distinctUntilChanged(),
+    takeUntil(
+      transfer$.pipe(
+        filter((event) => event.type === 'complete' || event.type === 'failed'),
+        take(1),
+      ),
+    ),
+    map((route): TransferEvent => ({ type: 'route', route })),
+  );
 
 /**
  * Tells whether the origin has room for the incoming file.

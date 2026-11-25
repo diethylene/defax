@@ -10,6 +10,7 @@ import {
   transitionThemeMode$,
 } from './store/application-config/application-config.effects';
 import { applicationConfigFeature } from './store/application-config/application-config.reducer';
+import { connectivityFeature } from './store/connectivity/connectivity.reducer';
 import { sendFeature } from './store/send/send.reducer';
 
 describe('App', () => {
@@ -20,6 +21,7 @@ describe('App', () => {
         provideRouter([]),
         provideStore({
           applicationConfig: applicationConfigFeature.reducer,
+          connectivity: connectivityFeature.reducer,
           send: sendFeature.reducer,
           router: routerReducer,
         }),
