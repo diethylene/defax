@@ -1,12 +1,17 @@
 import { animate, style, transition, trigger } from '@angular/animations';
 import {
+  afterNextRender,
   ChangeDetectionStrategy,
   Component,
   computed,
+  type ElementRef,
   effect,
+  Injector,
+  inject,
   input,
   output,
   signal,
+  viewChild,
 } from '@angular/core';
 import { disabled, FormField, form, submit, validate } from '@angular/forms/signals';
 import { NgIcon, provideIcons } from '@ng-icons/core';
@@ -113,6 +118,11 @@ export class ReceiveCodeFormComponent {
   /** True when a submitted code failed to parse. */
   protected readonly showError = computed(() => this.submitted() && this.codeForm.code().invalid());
 
+  /** The code input, used to read and restore the caret while pasting. */
+  private readonly codeInput = viewChild<ElementRef<HTMLInputElement>>('codeInput');
+  /** Injector that registers the post-render caret restore. */
+  private readonly injector = inject(Injector);
+
   /** Clears the field whenever a connection attempt ends. */
   constructor() {
     effect(() => {
@@ -129,6 +139,24 @@ export class ReceiveCodeFormComponent {
   protected blockSpace(event: KeyboardEvent): void {
     if (event.key !== ' ') return;
     event.preventDefault();
+  }
+
+  /**
+   * Strips spaces from pasted text and inserts it at the caret.
+   * @param event The paste event from the code input, whose native insert is cancelled.
+   */
+  protected paste(event: ClipboardEvent): void {
+    event.preventDefault();
+    const input = this.codeInput()?.nativeElement;
+    if (input === undefined) return;
+    const pasted = (event.clipboardData?.getData('text/plain') ?? '').replaceAll(' ', '');
+    const value = this.codeForm.code().value();
+    const start = input.selectionStart ?? value.length;
+    const end = input.selectionEnd ?? value.length;
+    const next = `${value.slice(0, start)}${pasted}${value.slice(end)}`;
+    this.codeForm.code().value.set(next);
+    const caret = start + pasted.length;
+    afterNextRender(() => input.setSelectionRange(caret, caret), { injector: this.injector });
   }
 
   /**
