@@ -1,10 +1,12 @@
-import { ChangeDetectionStrategy, Component, input } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, input } from '@angular/core';
 import { NgIcon, provideIcons } from '@ng-icons/core';
 import { lucideFile } from '@ng-icons/lucide';
+import * as Match from 'effect/Match';
 import { DurationPipe } from '../../../../shared/pipes/duration.pipe';
 import { FileSizePipe } from '../../../../shared/pipes/file-size.pipe';
+import type { TransferMode } from '../../../interfaces/transfer.interface';
 
-/** Summary of the file with its destination peer. */
+/** Summary of the file with the transfer direction and peer. */
 @Component({
   selector: 'app-transfer-file-summary',
   imports: [NgIcon, FileSizePipe, DurationPipe],
@@ -27,11 +29,11 @@ import { FileSizePipe } from '../../../../shared/pipes/file-size.pipe';
         <p class="truncate text-sm text-muted-foreground">
           @if (size(); as value) {
             <span>{{ value | fileSize }}</span>
-            <span aria-hidden="true">·</span>
+            <span aria-hidden="true"> · </span>
           }
-          <span>To {{ peerBrowser() }} on {{ peerOs() }}</span>
+          <span>{{ directionLabel() }} {{ peerBrowser() }} on {{ peerOs() }}</span>
           @if (timeTaken(); as value) {
-            <span aria-hidden="true">·</span>
+            <span aria-hidden="true"> · </span>
             <span>{{ value | duration }}</span>
           }
         </p>
@@ -42,6 +44,8 @@ import { FileSizePipe } from '../../../../shared/pipes/file-size.pipe';
   `,
 })
 export class TransferFileSummaryComponent {
+  /** Direction of the transfer. */
+  readonly mode = input.required<TransferMode>();
   /** Name of the file. */
   readonly name = input.required<string>();
   /** Size of the file in bytes, or undefined when unknown. */
@@ -52,4 +56,13 @@ export class TransferFileSummaryComponent {
   readonly peerOs = input('');
   /** Seconds the transfer took, or undefined when unknown. */
   readonly timeTaken = input<number | undefined>(undefined);
+
+  /** Direction word shown before the peer. */
+  protected readonly directionLabel = computed(() =>
+    Match.value(this.mode()).pipe(
+      Match.when('send', () => 'To'),
+      Match.when('receive', () => 'From'),
+      Match.exhaustive,
+    ),
+  );
 }

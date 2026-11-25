@@ -1,4 +1,4 @@
-<section hlmCard class="w-full">
+<section hlmCard #card class="w-full scroll-mt-1">
   <div hlmCardContent class="flex flex-col gap-3">
     <form class="flex flex-col gap-2" (submit)="submit($event)">
       <label hlmLabel for="receive-code">Code from the sender</label>
@@ -7,6 +7,7 @@
         <div class="relative flex-1">
           <input
             hlmInput
+            appNoSpaces
             [formField]="codeForm.code"
             id="receive-code"
             class="h-11 pr-9"
@@ -16,6 +17,8 @@
             autocomplete="off"
             autocapitalize="none"
             spellcheck="false"
+            (focus)="focused.set(true)"
+            (blur)="focused.set(false)"
           />
           @if (valid()) {
             <ng-icon

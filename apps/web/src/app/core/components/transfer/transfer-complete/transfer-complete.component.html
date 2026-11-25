@@ -2,6 +2,7 @@
   <section hlmCard class="w-full">
     <div hlmCardContent class="flex flex-col gap-6">
       <app-transfer-file-summary
+        [mode]="mode()"
         [name]="fileName()"
         [size]="fileSize()"
         [peerBrowser]="peerBrowser()"
