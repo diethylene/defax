@@ -1,11 +1,11 @@
-import { ChangeDetectionStrategy, Component, computed } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, inject } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { NgIcon, provideIcons } from '@ng-icons/core';
 import { lucideHelpCircle, lucideLock } from '@ng-icons/lucide';
-import { signalState } from '@ngrx/signals';
+import { Store } from '@ngrx/store';
 import { HlmButton } from '@spartan-ng/helm/button';
+import { selectStatus } from '@web/store/connectivity/connectivity.selectors';
 import { StatusPillComponent } from './status-pill.component';
-import type { StatusBarStatus } from './status-state.type';
 import { statusStates } from './status-states.mapping';
 
 /** Footer bar with the connection status and the relay help link. */
@@ -17,14 +17,10 @@ import { statusStates } from './status-states.mapping';
   templateUrl: './status-bar.component.html',
 })
 export class StatusBarComponent {
-  /** Current connection status. */
-  private readonly state = signalState<{ status: StatusBarStatus }>({
-    status: 'positive',
-  });
-
-  /** Connection status shown in the pill. */
-  protected readonly status = this.state.status;
-
-  /** One-line explanation of the current status. */
-  protected readonly description = computed(() => statusStates[this.status()].description);
+  /** Global store the connectivity status is read from. */
+  private readonly store = inject(Store);
+  /** Current connectivity status. */
+  protected readonly status = this.store.selectSignal(selectStatus);
+  /** Copy and dot colour for the current status. */
+  protected readonly state = computed(() => statusStates[this.status()._tag]);
 }

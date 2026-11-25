@@ -1,9 +1,13 @@
-/** Copy shown for one connection status. */
+import type { StatusLightVariant } from '../../../shared/components/status-light/status-light.component';
+
+/** Copy and dot colour shown for one connection status. */
 export interface StatusState {
   /** Label on wide screens. */
-  label: string;
+  readonly label: string;
   /** Shorter label on narrow screens. */
-  labelMobile: string;
+  readonly labelMobile: string;
   /** One-line explanation. */
-  description: string;
+  readonly description: string;
+  /** Colour of the status dot. */
+  readonly variant: StatusLightVariant;
 }
