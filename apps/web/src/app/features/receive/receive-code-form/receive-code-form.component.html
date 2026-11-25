@@ -6,8 +6,8 @@
       <div class="flex items-center gap-2">
         <div class="relative flex-1">
           <input
-            #codeInput
             hlmInput
+            appNoSpaces
             [formField]="codeForm.code"
             id="receive-code"
             class="h-11 pr-9"
@@ -17,8 +17,6 @@
             autocomplete="off"
             autocapitalize="none"
             spellcheck="false"
-            (keydown)="blockSpace($event)"
-            (paste)="paste($event)"
             (focus)="focused.set(true)"
             (blur)="focused.set(false)"
           />
