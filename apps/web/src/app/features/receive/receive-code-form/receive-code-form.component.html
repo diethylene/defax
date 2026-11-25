@@ -17,8 +17,7 @@
             autocomplete="off"
             autocapitalize="none"
             spellcheck="false"
-            (focus)="focused.set(true)"
-            (blur)="focused.set(false)"
+            (focus)="scrollCardToTop()"
           />
           @if (valid()) {
             <ng-icon
