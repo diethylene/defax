@@ -132,7 +132,7 @@ export class ReceiveCodeFormComponent {
   /** True while the code input holds focus. */
   protected readonly focused = signal(false);
 
-  /** Clears the field whenever a connection attempt ends. */
+  /** Resets the field on disconnect and scrolls the card clear of the keyboard while focused. */
   constructor() {
     effect(() => {
       if (this.connecting()) return;
