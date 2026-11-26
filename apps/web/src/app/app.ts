@@ -3,7 +3,7 @@ import { RouterOutlet } from '@angular/router';
 import { HashToasterComponent } from './core/components/hash-toaster/hash-toaster.component';
 import { NavbarComponent } from './core/components/navbar/navbar.component';
 import { StatusBarComponent } from './core/components/status-bar/status-bar.component';
-import { KeyboardInsetDirective } from './shared/directives/keyboard-inset.directive';
+import { KeyboardPaddingDirective } from './shared/directives/keyboard-padding.directive';
 
 /** Root component hosting the router, navbar, status bar and hash toaster. */
 @Component({
@@ -12,7 +12,7 @@ import { KeyboardInsetDirective } from './shared/directives/keyboard-inset.direc
     NavbarComponent,
     StatusBarComponent,
     HashToasterComponent,
-    KeyboardInsetDirective,
+    KeyboardPaddingDirective,
   ],
   selector: 'app-root',
   styleUrl: './app.css',
